@@ -23,7 +23,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .chip-a{background:#E3F0FF;color:#0058B0;}
 .chip-g{background:#FFF3E0;color:#8A4D00;}
 .chip-e{background:#E8F5E9;color:#1B5E20;}
-
 .header{background:#fff;border-bottom:1px solid #E8E8ED;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:10;}
 .hdr-l{display:flex;align-items:center;gap:10px;}
 .hdr-title{font-size:15px;font-weight:600;color:#1D1D1F;}
@@ -31,27 +30,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .suc-pill{font-size:11px;padding:2px 10px;border-radius:12px;background:#F5F5F7;border:1px solid #E0E0E5;color:#6E6E73;}
 .btn-out{font-size:12px;color:#6E6E73;background:none;border:none;cursor:pointer;padding:4px 8px;}
 .btn-out:hover{color:#1D1D1F;}
-
 .tabs{display:flex;border-bottom:1px solid #E8E8ED;background:#fff;padding:0 1.5rem;overflow-x:auto;}
 .tab{padding:11px 14px;font-size:12px;color:#6E6E73;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
 .tab.active{color:#0071E3;border-bottom-color:#0071E3;font-weight:500;}
 .tab:hover:not(.active){color:#1D1D1F;}
-
 .content{padding:1.25rem 1.5rem;}
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:1.1rem;}
 .sc{background:#F5F5F7;border-radius:12px;padding:0.75rem 1rem;}
 .sc-label{font-size:10px;color:#6E6E73;letter-spacing:0.04em;margin-bottom:3px;font-weight:500;}
 .sc-val{font-size:19px;font-weight:600;color:#1D1D1F;}
 .sc-sub{font-size:10px;color:#6E6E73;margin-top:1px;}
-
-/* Stock por sucursal en accesorios */
+.sc-green{background:#E8F5E9;}.sc-green .sc-val{color:#1B5E20;}
+.sc-red{background:#FFEBEE;}.sc-red .sc-val{color:#C62828;}
+.sc-blue{background:#E3F0FF;}.sc-blue .sc-val{color:#0058B0;}
 .suc-stock-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
 .suc-stock-card{background:#fff;border:1px solid #E8E8ED;border-radius:12px;padding:10px 16px;flex:1;min-width:140px;}
-.suc-stock-card h4{font-size:11px;color:#6E6E73;font-weight:500;margin-bottom:6px;letter-spacing:0.03em;}
+.suc-stock-card h4{font-size:11px;color:#6E6E73;font-weight:500;margin-bottom:6px;}
 .suc-stock-item{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid #F5F5F7;}
 .suc-stock-item:last-child{border-bottom:none;}
 .suc-stock-item span:last-child{font-weight:600;color:#1D1D1F;}
-
 .search-wrap{position:relative;margin-bottom:0.85rem;}
 .search-wrap input{width:100%;padding:9px 36px 9px 36px;font-size:13px;border:1px solid #D2D2D7;border-radius:10px;background:#fff;color:#1D1D1F;}
 .search-wrap input:focus{outline:none;border-color:#0071E3;}
@@ -59,20 +56,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .search-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:13px;color:#6E6E73;padding:2px 5px;display:none;}
 .search-count{font-size:11px;color:#6E6E73;margin-bottom:0.6rem;}
 .search-count span{font-weight:600;color:#1D1D1F;}
-
 .toolbar{display:flex;gap:7px;margin-bottom:0.9rem;flex-wrap:wrap;align-items:center;}
 .toolbar select{padding:7px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;}
 .btn-add{padding:7px 15px;background:#0071E3;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;margin-left:auto;}
 .btn-add:hover{background:#0058B0;}
 .btn-readonly{padding:7px 13px;background:#F5F5F7;color:#6E6E73;border:1px solid #D2D2D7;border-radius:9px;font-size:12px;cursor:not-allowed;margin-left:auto;}
-
 .twrap{background:#fff;border:1px solid #E8E8ED;border-radius:14px;overflow:hidden;}
 table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
 th{padding:9px 11px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;letter-spacing:0.04em;border-bottom:1px solid #E8E8ED;background:#F5F5F7;}
 td{padding:9px 11px;color:#1D1D1F;border-bottom:1px solid #F0F0F5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:#FAFAFA;}
-
 .sbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;}
 .s-ok{background:#E8F5E9;color:#1B5E20;}
 .s-low{background:#FFF3E0;color:#8A4D00;}
@@ -82,7 +76,6 @@ tr:hover td{background:#FAFAFA;}
 .bat-bar{width:36px;height:7px;background:#E8E8ED;border-radius:4px;overflow:hidden;}
 .bat-fill{height:100%;border-radius:4px;}
 .imei-tag{font-size:10px;font-family:monospace;background:#F5F5F7;padding:2px 6px;border-radius:5px;color:#6E6E73;}
-
 .btn-e{padding:3px 8px;font-size:11px;border:1px solid #D2D2D7;border-radius:8px;background:none;color:#1D1D1F;cursor:pointer;}
 .btn-e:hover{background:#F5F5F7;}
 .btn-e:disabled{opacity:0.3;cursor:not-allowed;}
@@ -94,21 +87,16 @@ tr:hover td{background:#FAFAFA;}
 .btn-sell:disabled{opacity:0.3;cursor:not-allowed;}
 .btn-anular{padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;}
 .btn-anular:hover{background:#FFEBEE;}
-
 .vtag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;}
 .vtag-eq{background:#E3F0FF;color:#0058B0;}
 .vtag-ac{background:#FFF3E0;color:#8A4D00;}
 .vtag-an{background:#F5F5F7;color:#9E9E9E;}
 .pago-tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;background:#F5F5F7;color:#6E6E73;margin-right:2px;margin-bottom:2px;}
-
-/* SERVICIO TECNICO */
 .st-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600;}
 .st-pend{background:#FFF3E0;color:#8A4D00;}
 .st-prog{background:#E3F0FF;color:#0058B0;}
 .st-list{background:#E8F5E9;color:#1B5E20;}
 .st-ent{background:#F3E5F5;color:#6A1B9A;}
-
-/* PAGOS */
 .pago-section{background:#F5F5F7;border-radius:12px;padding:13px;margin-bottom:10px;}
 .pago-section-title{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:11px;}
 .pago-metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -123,7 +111,34 @@ tr:hover td{background:#FAFAFA;}
 .pago-resumen-total{display:flex;justify-content:space-between;font-weight:600;font-size:13px;border-top:1px solid #F0F0F5;padding-top:7px;margin-top:5px;}
 .pago-ok{color:#1B5E20;font-size:11px;margin-top:5px;text-align:center;font-weight:500;}
 .pago-err{color:#C62828;font-size:11px;margin-top:5px;text-align:center;font-weight:500;}
-
+/* REPORTES */
+.reporte-tabs{display:flex;gap:6px;margin-bottom:1.2rem;}
+.rtab{padding:7px 18px;font-size:13px;border:1px solid #D2D2D7;border-radius:20px;cursor:pointer;background:#fff;color:#6E6E73;font-weight:500;}
+.rtab.active{background:#0071E3;color:#fff;border-color:#0071E3;}
+.reporte-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;}
+.reporte-card{background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;}
+.reporte-card h3{font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.85rem;display:flex;align-items:center;gap:6px;}
+.reporte-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F5F5F7;font-size:12px;}
+.reporte-row:last-child{border-bottom:none;}
+.reporte-row .label{color:#6E6E73;}
+.reporte-row .val{font-weight:600;color:#1D1D1F;}
+.reporte-row .val.green{color:#1B5E20;}
+.reporte-row .val.red{color:#C62828;}
+.reporte-row .val.blue{color:#0058B0;}
+.chart-bar-wrap{margin-top:0.5rem;}
+.chart-bar-item{margin-bottom:8px;}
+.chart-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6E6E73;margin-bottom:3px;}
+.chart-bar-label span:last-child{font-weight:600;color:#1D1D1F;}
+.chart-bar-bg{height:8px;background:#F0F0F5;border-radius:4px;overflow:hidden;}
+.chart-bar-fill{height:100%;border-radius:4px;background:#0071E3;transition:width 0.4s;}
+.reporte-ventas-table{width:100%;font-size:12px;border-collapse:collapse;}
+.reporte-ventas-table th{padding:7px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;background:#F5F5F7;}
+.reporte-ventas-table td{padding:7px 10px;border-bottom:1px solid #F5F5F7;}
+.reporte-ventas-table tr:last-child td{border-bottom:none;}
+.period-label{font-size:12px;color:#6E6E73;margin-bottom:1rem;}
+.period-label strong{color:#1D1D1F;}
+.costo-lock{font-size:11px;color:#6E6E73;background:#F5F5F7;border-radius:8px;padding:8px 12px;margin-bottom:0.85rem;display:flex;align-items:center;gap:6px;}
+#cotiz-block{border-left:3px solid #0071E3;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:200;}
 .modal{background:#fff;border:1px solid #E8E8ED;border-radius:16px;padding:1.5rem;width:100%;max-width:500px;max-height:93vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
 .modal h3{font-size:15px;font-weight:600;margin-bottom:1rem;}
@@ -143,18 +158,13 @@ tr:hover td{background:#FAFAFA;}
 .empty-state{text-align:center;padding:2rem;color:#6E6E73;font-size:13px;}
 .anulada-row td{opacity:0.4;}
 .detail-cell{white-space:normal;line-height:1.4;max-height:36px;overflow:hidden;}
+@media(max-width:600px){.reporte-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">
-      <span class="logo-icon">📱</span>
-      <h2>iStock Pro</h2>
-      <p>Tunuyán &amp; La Consulta</p>
-    </div>
+    <div class="login-logo"><span class="logo-icon">📱</span><h2>iStock Pro</h2><p>Tunuyán &amp; La Consulta</p></div>
     <div class="fl"><label>ROL</label>
       <select id="sel-rol" onchange="onRolChange()">
         <option value="empleado">Empleado</option>
@@ -180,7 +190,6 @@ tr:hover td{background:#FAFAFA;}
   </div>
 </div>
 
-<!-- MAIN -->
 <div id="main-app" style="display:none">
   <div class="header">
     <div class="hdr-l">
@@ -191,10 +200,11 @@ tr:hover td{background:#FAFAFA;}
     <button class="btn-out" onclick="logout()">Salir</button>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos (USD)</button>
-    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios (ARS)</button>
+    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos</button>
+    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios</button>
     <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
-    <button class="tab" onclick="switchTab('st',this)">🔧 Servicio Técnico</button>
+    <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
+    <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
   </div>
 
   <!-- EQUIPOS -->
@@ -202,7 +212,7 @@ tr:hover td{background:#FAFAFA;}
     <div class="stats-row" id="stats-eq"></div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria, batería…" oninput="onSearch('eq',this)"/>
+      <input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria…" oninput="onSearch('eq',this)"/>
       <button class="search-clear" id="clear-eq" onclick="clearSearch('eq')">✕</button>
     </div>
     <div class="search-count" id="count-eq"></div>
@@ -210,11 +220,12 @@ tr:hover td{background:#FAFAFA;}
     <div class="twrap">
       <table>
         <thead><tr>
-          <th style="width:21%">Modelo</th><th style="width:8%">Mem.</th>
-          <th style="width:10%">Batería</th><th style="width:13%">IMEI</th>
-          <th style="width:11%">Sucursal</th><th style="width:10%">Precio USD</th>
+          <th style="width:19%">Modelo</th><th style="width:7%">Mem.</th>
+          <th style="width:9%">Batería</th><th style="width:12%">IMEI</th>
+          <th style="width:10%">Sucursal</th><th style="width:9%">Precio</th>
+          <th style="width:9%" id="th-costo-eq">Costo</th>
           <th style="width:6%">Stock</th><th style="width:7%">Estado</th>
-          <th style="width:14%">Acciones</th>
+          <th style="width:12%">Acciones</th>
         </tr></thead>
         <tbody id="tbody-eq"></tbody>
       </table>
@@ -224,7 +235,6 @@ tr:hover td{background:#FAFAFA;}
   <!-- ACCESORIOS -->
   <div class="content" id="tab-ac" style="display:none">
     <div class="stats-row" id="stats-ac"></div>
-    <!-- Stock por sucursal -->
     <div class="suc-stock-row" id="suc-stock-ac"></div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -236,11 +246,11 @@ tr:hover td{background:#FAFAFA;}
     <div class="twrap">
       <table>
         <thead><tr>
-          <th style="width:26%">Producto</th><th style="width:16%">Categoría</th>
-          <th style="width:12%">Precio ARS</th>
-          <th style="width:8%">Tunuyán</th><th style="width:10%">La Consulta</th>
-          <th style="width:7%">Total</th><th style="width:8%">Estado</th>
-          <th style="width:13%">Acciones</th>
+          <th style="width:24%">Producto</th><th style="width:15%">Categoría</th>
+          <th style="width:10%">Precio</th><th style="width:9%" id="th-costo-ac">Costo</th>
+          <th style="width:8%">Tunuyán</th><th style="width:9%">La Consulta</th>
+          <th style="width:6%">Total</th><th style="width:7%">Estado</th>
+          <th style="width:12%">Acciones</th>
         </tr></thead>
         <tbody id="tbody-ac"></tbody>
       </table>
@@ -271,10 +281,10 @@ tr:hover td{background:#FAFAFA;}
       <table>
         <thead><tr>
           <th style="width:11%">Fecha</th><th style="width:6%">Tipo</th>
-          <th style="width:20%">Producto</th><th style="width:10%">Sucursal</th>
+          <th style="width:19%">Producto</th><th style="width:10%">Sucursal</th>
           <th style="width:5%">Cant.</th><th style="width:9%">Total</th>
-          <th style="width:15%">Pagos</th><th style="width:6%">Por</th>
-          <th style="width:18%">Acciones</th>
+          <th style="width:14%">Pagos</th><th style="width:6%">Por</th>
+          <th style="width:20%">Acciones</th>
         </tr></thead>
         <tbody id="tbody-ventas"></tbody>
       </table>
@@ -301,14 +311,10 @@ tr:hover td{background:#FAFAFA;}
     <div class="twrap">
       <table>
         <thead><tr>
-          <th style="width:8%">Fecha</th>
-          <th style="width:13%">Cliente</th>
-          <th style="width:10%">Teléfono</th>
-          <th style="width:13%">Modelo</th>
-          <th style="width:14%">Detalle</th>
-          <th style="width:9%">Precio</th>
-          <th style="width:11%">Estado</th>
-          <th style="width:10%">Sucursal</th>
+          <th style="width:8%">Fecha</th><th style="width:13%">Cliente</th>
+          <th style="width:10%">Teléfono</th><th style="width:13%">Modelo</th>
+          <th style="width:14%">Detalle</th><th style="width:9%">Precio</th>
+          <th style="width:11%">Estado</th><th style="width:10%">Sucursal</th>
           <th style="width:12%">Acciones</th>
         </tr></thead>
         <tbody id="tbody-st"></tbody>
@@ -316,7 +322,47 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
 
-  <!-- MODAL -->
+  <!-- REPORTES -->
+  <div class="content" id="tab-rep" style="display:none">
+    <div class="reporte-tabs">
+      <button class="rtab active" onclick="switchReporte('dia',this)">Hoy</button>
+      <button class="rtab" onclick="switchReporte('semana',this)">Esta semana</button>
+      <button class="rtab" onclick="switchReporte('mes',this)">Este mes</button>
+    </div>
+    <div class="period-label" id="rep-period-label"></div>
+    <div class="stats-row" id="rep-stats"></div>
+    <div class="reporte-grid">
+      <div class="reporte-card">
+        <h3>💰 Ingresos por método de pago</h3>
+        <div id="rep-pagos"></div>
+      </div>
+      <div class="reporte-card">
+        <h3>📱 Productos más vendidos</h3>
+        <div id="rep-top"></div>
+      </div>
+      <div class="reporte-card">
+        <h3>🏪 Ventas por sucursal</h3>
+        <div id="rep-suc"></div>
+      </div>
+      <div class="reporte-card" id="rep-ganancia-card">
+        <h3>📈 Rentabilidad <span style="font-size:10px;color:#6E6E73;font-weight:400">(solo admin)</span></h3>
+        <div id="rep-ganancia"></div>
+      </div>
+    </div>
+    <div class="reporte-card" style="margin-bottom:1rem">
+      <h3>🧾 Detalle de ventas del período</h3>
+      <div style="overflow-x:auto">
+        <table class="reporte-ventas-table">
+          <thead><tr>
+            <th>Fecha</th><th>Producto</th><th>Sucursal</th>
+            <th>Cant.</th><th>Total</th><th>Pagos</th>
+          </tr></thead>
+          <tbody id="rep-tabla-ventas"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <h3 id="modal-ttl"></h3>
@@ -327,45 +373,41 @@ tr:hover td{background:#FAFAFA;}
 </div>
 
 <script>
-let rol='', sucursal='', modalType='', editIdx=null;
-let searchEq='', searchAc='';
+let rol='',sucursal='',modalType='',editIdx=null,reportePeriodo='dia';
+let searchEq='',searchAc='';
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
 const ST_ESTADOS=['Pendiente','En progreso','Listo para entregar','Entregado'];
 const METODOS=[
-  {id:'efectivo',    label:'💵 Efectivo (ARS)',    prefix:'$'},
-  {id:'transferencia',label:'📲 Transferencia',   prefix:'$'},
-  {id:'dolares',     label:'💲 Dólares billete',  prefix:'USD'},
-  {id:'dolares_dig', label:'💻 Dólares digitales',prefix:'USD'},
+  {id:'efectivo',label:'💵 Efectivo (ARS)',prefix:'$'},
+  {id:'transferencia',label:'📲 Transferencia',prefix:'$'},
+  {id:'dolares',label:'💲 Dólares billete',prefix:'USD'},
+  {id:'dolares_dig',label:'💻 Dólares digitales',prefix:'USD'},
 ];
 
-// Accesorios ahora tienen stock por sucursal
 let equipos=[
-  {modelo:'iPhone 16 Pro Max',memoria:'256GB',bateria:92,imei:'354621087432100',sucursal:'Tunuyán',precio:1299,stock:3},
-  {modelo:'iPhone 16 Pro Max',memoria:'512GB',bateria:98,imei:'354621087432101',sucursal:'La Consulta',precio:1449,stock:1},
-  {modelo:'iPhone 16 Pro',    memoria:'128GB',bateria:85,imei:'354621087432102',sucursal:'Tunuyán',precio:1199,stock:5},
-  {modelo:'iPhone 16',        memoria:'128GB',bateria:100,imei:'354621087432103',sucursal:'La Consulta',precio:899,stock:4},
-  {modelo:'iPhone 15 Pro Max',memoria:'512GB',bateria:78,imei:'354621087432104',sucursal:'Tunuyán',precio:1099,stock:2},
-  {modelo:'iPhone 15',        memoria:'128GB',bateria:91,imei:'354621087432105',sucursal:'Tunuyán',precio:749,stock:6},
-  {modelo:'iPhone 14 Pro Max',memoria:'256GB',bateria:72,imei:'354621087432106',sucursal:'La Consulta',precio:799,stock:3},
-  {modelo:'iPhone 14',        memoria:'128GB',bateria:65,imei:'354621087432107',sucursal:'La Consulta',precio:649,stock:0},
-  {modelo:'iPhone 13',        memoria:'128GB',bateria:88,imei:'354621087432108',sucursal:'La Consulta',precio:449,stock:4},
-  {modelo:'iPhone 12',        memoria:'64GB', bateria:61,imei:'354621087432109',sucursal:'Tunuyán',precio:349,stock:1},
+  {modelo:'iPhone 16 Pro Max',memoria:'256GB',bateria:92,imei:'354621087432100',sucursal:'Tunuyán',precio:1299,costo:950,stock:3},
+  {modelo:'iPhone 16 Pro Max',memoria:'512GB',bateria:98,imei:'354621087432101',sucursal:'La Consulta',precio:1449,costo:1080,stock:1},
+  {modelo:'iPhone 16 Pro',memoria:'128GB',bateria:85,imei:'354621087432102',sucursal:'Tunuyán',precio:1199,costo:880,stock:5},
+  {modelo:'iPhone 16',memoria:'128GB',bateria:100,imei:'354621087432103',sucursal:'La Consulta',precio:899,costo:650,stock:4},
+  {modelo:'iPhone 15 Pro Max',memoria:'512GB',bateria:78,imei:'354621087432104',sucursal:'Tunuyán',precio:1099,costo:800,stock:2},
+  {modelo:'iPhone 15',memoria:'128GB',bateria:91,imei:'354621087432105',sucursal:'Tunuyán',precio:749,costo:540,stock:6},
+  {modelo:'iPhone 14 Pro Max',memoria:'256GB',bateria:72,imei:'354621087432106',sucursal:'La Consulta',precio:799,costo:580,stock:3},
+  {modelo:'iPhone 14',memoria:'128GB',bateria:65,imei:'354621087432107',sucursal:'La Consulta',precio:649,costo:470,stock:0},
+  {modelo:'iPhone 13',memoria:'128GB',bateria:88,imei:'354621087432108',sucursal:'La Consulta',precio:449,costo:310,stock:4},
+  {modelo:'iPhone 12',memoria:'64GB',bateria:61,imei:'354621087432109',sucursal:'Tunuyán',precio:349,costo:230,stock:1},
 ];
-
-// stockT = Tunuyán, stockC = La Consulta
 let accesorios=[
-  {nombre:'Funda MagSafe iPhone 16 Pro',cat:'Fundas / Cases',precio:18500,stockT:5,stockC:3},
-  {nombre:'Funda silicona iPhone 15',   cat:'Fundas / Cases',precio:12000,stockT:2,stockC:3},
-  {nombre:'Cable USB-C 1m original',    cat:'Cargadores / Cables',precio:9500,stockT:8,stockC:4},
-  {nombre:'Cargador 20W original',      cat:'Cargadores / Cables',precio:22000,stockT:1,stockC:3},
-  {nombre:'AirPods Pro 2da gen',        cat:'AirPods / Auriculares',precio:178000,stockT:2,stockC:0},
-  {nombre:'AirPods 3ra generación',     cat:'AirPods / Auriculares',precio:115000,stockT:0,stockC:1},
-  {nombre:'Vidrio templado iPhone 16',  cat:'Vidrios templados',precio:6500,stockT:0,stockC:0},
-  {nombre:'Vidrio templado iPhone 15',  cat:'Vidrios templados',precio:5500,stockT:4,stockC:2},
+  {nombre:'Funda MagSafe iPhone 16 Pro',cat:'Fundas / Cases',precio:18500,costo:8000,stockT:5,stockC:3},
+  {nombre:'Funda silicona iPhone 15',cat:'Fundas / Cases',precio:12000,costo:5000,stockT:2,stockC:3},
+  {nombre:'Cable USB-C 1m original',cat:'Cargadores / Cables',precio:9500,costo:4000,stockT:8,stockC:4},
+  {nombre:'Cargador 20W original',cat:'Cargadores / Cables',precio:22000,costo:9000,stockT:1,stockC:3},
+  {nombre:'AirPods Pro 2da gen',cat:'AirPods / Auriculares',precio:178000,costo:90000,stockT:2,stockC:0},
+  {nombre:'AirPods 3ra generación',cat:'AirPods / Auriculares',precio:115000,costo:58000,stockT:0,stockC:1},
+  {nombre:'Vidrio templado iPhone 16',cat:'Vidrios templados',precio:6500,costo:2000,stockT:0,stockC:0},
+  {nombre:'Vidrio templado iPhone 15',cat:'Vidrios templados',precio:5500,costo:1800,stockT:4,stockC:2},
 ];
-
 let ventas=[];
 let servicios=[];
 
@@ -378,11 +420,14 @@ function stockBadge(s){return s===0?'<span class="sbadge s-out">Sin stock</span>
 function totalAc(a){return(a.stockT||0)+(a.stockC||0);}
 function stBadge(e){const m={Pendiente:'st-pend','En progreso':'st-prog','Listo para entregar':'st-list',Entregado:'st-ent'};return`<span class="st-badge ${m[e]||'st-pend'}">${e}</span>`;}
 function canEdit(){return rol==='admin'||rol==='gerente';}
+function isAdmin(){return rol==='admin';}
 function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empleado';}
 function shortImei(i){return i?'···'+i.slice(-4):'-';}
 function hl(text,q){if(!q)return text;const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');return String(text).replace(re,'<mark class="hl">$1</mark>');}
 function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria)].some(v=>v&&v.toLowerCase().includes(q));}
 function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio)].some(v=>v&&v.toLowerCase().includes(q));}
+function fmtARS(n){return'$ '+Number(n||0).toLocaleString('es-AR');}
+function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
 
 function renderToolbar(){
   const ce=canEdit();
@@ -393,11 +438,13 @@ function renderToolbar(){
   document.getElementById('toolbar-ac').innerHTML=ce
     ?`${cats}<button class="btn-add" onclick="openModal('ac-edit',null)">+ Agregar accesorio</button>`
     :`${cats}<span class="btn-readonly">🔒 Solo lectura</span>`;
+  // columnas costo solo para admin
+  document.getElementById('th-costo-eq').style.display=isAdmin()?'':'none';
+  document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
 
-function onRolChange(){
-  document.getElementById('pin-wrap').style.display=document.getElementById('sel-rol').value!=='empleado'?'block':'none';
-}
+function onRolChange(){document.getElementById('pin-wrap').style.display=document.getElementById('sel-rol').value!=='empleado'?'block':'none';}
+
 function login(){
   const r=document.getElementById('sel-rol').value;
   const s=document.getElementById('sel-suc').value;
@@ -412,8 +459,9 @@ function login(){
   const br=document.getElementById('badge-role');
   br.textContent=labels[rol];br.className='badge-role rchip '+cls[rol];
   document.getElementById('badge-suc').textContent='📍 '+sucursal;
-  renderToolbar();renderEq();renderAc();renderVentas();renderST();
+  renderToolbar();renderEq();renderAc();renderVentas();renderST();renderReporte();
 }
+
 function logout(){
   rol='';sucursal='';searchEq='';searchAc='';
   document.getElementById('main-app').style.display='none';
@@ -425,8 +473,16 @@ function logout(){
   onRolChange();switchTabByName('eq');
 }
 
-function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');['eq','ac','ventas','st'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');}
-function switchTabByName(tab){document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st'][i]===tab));['eq','ac','ventas','st'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');}
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['eq','ac','ventas','st','rep'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  if(tab==='rep')renderReporte();
+}
+function switchTabByName(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep'][i]===tab));
+  ['eq','ac','ventas','st','rep'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+}
 
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
@@ -442,29 +498,35 @@ function clearSearch(tipo){
 function renderEq(){
   const q=searchEq;
   const data=equipos.filter(e=>matchEq(e,q));
-  const ce=canEdit();
+  const ce=canEdit();const admin=isAdmin();
   document.getElementById('count-eq').innerHTML=q?`Se encontraron <span>${data.length}</span> resultado${data.length!==1?'s':''} para "<span>${q}</span>"`:'';
   document.getElementById('tbody-eq').innerHTML=data.length===0
-    ?`<tr><td colspan="9" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
-    :data.map(e=>{const ri=equipos.indexOf(e);return`<tr>
-      <td title="${e.modelo}">${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
-      <td>${batBadge(e.bateria)}</td>
-      <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
-      <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
-      <td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
-      <td>
-        <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
-        <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('eq-edit',${ri})">Editar</button>
-        <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('eq',${ri})">✕</button>
-      </td>
-    </tr>`;}).join('');
+    ?`<tr><td colspan="10" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
+    :data.map(e=>{
+      const ri=equipos.indexOf(e);
+      const costoCell=admin?`<td>USD ${(e.costo||0).toLocaleString('es-AR')}</td>`:`<td style="display:none"></td>`;
+      return`<tr>
+        <td title="${e.modelo}">${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
+        <td>${batBadge(e.bateria)}</td>
+        <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
+        <td>${e.sucursal}</td>
+        <td>USD ${e.precio.toLocaleString('es-AR')}</td>
+        ${costoCell}
+        <td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
+        <td>
+          <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
+          <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('eq-edit',${ri})">Editar</button>
+          <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('eq',${ri})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
   const tot=equipos.reduce((a,e)=>a+e.stock,0);
   const val=equipos.reduce((a,e)=>a+e.precio*e.stock,0);
   const out=equipos.filter(e=>e.stock===0).length;
   document.getElementById('stats-eq').innerHTML=`
     <div class="sc"><div class="sc-label">UNIDADES</div><div class="sc-val">${tot}</div></div>
-    <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:14px;padding-top:3px">USD ${val.toLocaleString('es-AR')}</div></div>
-    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div><div class="sc-sub">modelos</div></div>
+    <div class="sc"><div class="sc-label">VALOR STOCK</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${val.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>
     <div class="sc"><div class="sc-label">PRODUCTOS</div><div class="sc-val">${equipos.length}</div></div>`;
 }
 
@@ -474,51 +536,45 @@ function renderAc(){
   const fCel=document.getElementById('f-cat');
   const fC=fCel?fCel.value:'';
   const data=accesorios.filter(a=>(!fC||a.cat===fC)&&matchAc(a,q));
-  const ce=canEdit();
-
-  // Stock por sucursal card
+  const ce=canEdit();const admin=isAdmin();
   const totT=accesorios.reduce((s,a)=>s+(a.stockT||0),0);
   const totC=accesorios.reduce((s,a)=>s+(a.stockC||0),0);
-  // por categoria
   const byCatT={},byCatC={};
   CATS.forEach(c=>{byCatT[c]=accesorios.filter(a=>a.cat===c).reduce((s,a)=>s+(a.stockT||0),0);byCatC[c]=accesorios.filter(a=>a.cat===c).reduce((s,a)=>s+(a.stockC||0),0);});
   document.getElementById('suc-stock-ac').innerHTML=`
-    <div class="suc-stock-card">
-      <h4>📍 Tunuyán — ${totT} uds</h4>
-      ${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatT[c]}</span></div>`).join('')}
-    </div>
-    <div class="suc-stock-card">
-      <h4>📍 La Consulta — ${totC} uds</h4>
-      ${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatC[c]}</span></div>`).join('')}
-    </div>`;
-
+    <div class="suc-stock-card"><h4>📍 Tunuyán — ${totT} uds</h4>${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatT[c]}</span></div>`).join('')}</div>
+    <div class="suc-stock-card"><h4>📍 La Consulta — ${totC} uds</h4>${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatC[c]}</span></div>`).join('')}</div>`;
   document.getElementById('count-ac').innerHTML=q?`Se encontraron <span>${data.length}</span> resultado${data.length!==1?'s':''} para "<span>${q}</span>"`:'';
   document.getElementById('tbody-ac').innerHTML=data.length===0
-    ?`<tr><td colspan="8" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
-    :data.map(a=>{const ri=accesorios.indexOf(a);const tot=totalAc(a);return`<tr>
-      <td title="${a.nombre}">${hl(a.nombre,q)}</td>
-      <td>${hl(a.cat,q)}</td>
-      <td>$ ${a.precio.toLocaleString('es-AR')}</td>
-      <td style="text-align:center;font-weight:600">${a.stockT||0}</td>
-      <td style="text-align:center;font-weight:600">${a.stockC||0}</td>
-      <td style="text-align:center">${tot}</td>
-      <td>${stockBadge(tot)}</td>
-      <td>
-        <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
-        <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('ac-edit',${ri})">Editar</button>
-        <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('ac',${ri})">✕</button>
-      </td>
-    </tr>`;}).join('');
-
+    ?`<tr><td colspan="9" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
+    :data.map(a=>{
+      const ri=accesorios.indexOf(a);const tot=totalAc(a);
+      const costoCell=admin?`<td>${fmtARS(a.costo||0)}</td>`:`<td style="display:none"></td>`;
+      return`<tr>
+        <td title="${a.nombre}">${hl(a.nombre,q)}</td>
+        <td>${hl(a.cat,q)}</td>
+        <td>${fmtARS(a.precio)}</td>
+        ${costoCell}
+        <td style="text-align:center;font-weight:600">${a.stockT||0}</td>
+        <td style="text-align:center;font-weight:600">${a.stockC||0}</td>
+        <td style="text-align:center">${tot}</td>
+        <td>${stockBadge(tot)}</td>
+        <td>
+          <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
+          <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('ac-edit',${ri})">Editar</button>
+          <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('ac',${ri})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
   const totAll=accesorios.reduce((s,a)=>s+totalAc(a),0);
   const val=accesorios.reduce((s,a)=>s+a.precio*totalAc(a),0);
   const out=accesorios.filter(a=>totalAc(a)===0).length;
   document.getElementById('stats-ac').innerHTML=`
     <div class="sc"><div class="sc-label">TOTAL UNIDADES</div><div class="sc-val">${totAll}</div></div>
-    <div class="sc"><div class="sc-label">TUNUYÁN</div><div class="sc-val">${totT}</div><div class="sc-sub">unidades</div></div>
-    <div class="sc"><div class="sc-label">LA CONSULTA</div><div class="sc-val">${totC}</div><div class="sc-sub">unidades</div></div>
-    <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">$ ${val.toLocaleString('es-AR')}</div></div>
-    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div><div class="sc-sub">productos</div></div>`;
+    <div class="sc"><div class="sc-label">TUNUYÁN</div><div class="sc-val">${totT}</div></div>
+    <div class="sc"><div class="sc-label">LA CONSULTA</div><div class="sc-val">${totC}</div></div>
+    <div class="sc"><div class="sc-label">VALOR STOCK</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(val)}</div></div>
+    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>`;
 }
 
 /* ---- VENTAS ---- */
@@ -533,8 +589,8 @@ function renderVentas(){
   const hoy=activas.filter(v=>new Date(v.ts).toDateString()===new Date().toDateString()).length;
   document.getElementById('stats-ventas').innerHTML=`
     <div class="sc"><div class="sc-label">VENTAS HOY</div><div class="sc-val">${hoy}</div></div>
-    <div class="sc"><div class="sc-label">TOTAL EQUIPOS</div><div class="sc-val" style="font-size:14px;padding-top:3px">USD ${usd.toLocaleString('es-AR')}</div></div>
-    <div class="sc"><div class="sc-label">TOTAL ACCES.</div><div class="sc-val" style="font-size:14px;padding-top:3px">$ ${ars.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL EQUIPOS</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL ACCES.</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
     <div class="sc"><div class="sc-label">TOTAL VENTAS</div><div class="sc-val">${activas.length}</div></div>`;
   document.getElementById('tbody-ventas').innerHTML=data.length===0
     ?'<tr><td colspan="9" class="empty-state">Sin ventas registradas</td></tr>'
@@ -550,7 +606,8 @@ function renderVentas(){
         <td style="white-space:normal;line-height:1.6">${ph||'—'}</td>
         <td style="font-size:10px;color:#6E6E73">${v.por}</td>
         <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button>`:'<span style="font-size:10px;color:#aaa">—</span>'}</td>
-      </tr>`;}).join('');
+      </tr>`;
+    }).join('');
 }
 
 /* ---- SERVICIO TECNICO ---- */
@@ -561,9 +618,8 @@ function renderST(){
   const pend=servicios.filter(s=>s.estado==='Pendiente').length;
   const prog=servicios.filter(s=>s.estado==='En progreso').length;
   const list=servicios.filter(s=>s.estado==='Listo para entregar').length;
-  const total=servicios.length;
   document.getElementById('stats-st').innerHTML=`
-    <div class="sc"><div class="sc-label">TOTAL</div><div class="sc-val">${total}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL</div><div class="sc-val">${servicios.length}</div></div>
     <div class="sc"><div class="sc-label">PENDIENTES</div><div class="sc-val">${pend}</div></div>
     <div class="sc"><div class="sc-label">EN PROGRESO</div><div class="sc-val">${prog}</div></div>
     <div class="sc"><div class="sc-label">LISTOS</div><div class="sc-val">${list}</div></div>`;
@@ -573,27 +629,165 @@ function renderST(){
       const ri=servicios.indexOf(s);
       return`<tr>
         <td style="font-size:10px">${fmtDate(s.fechaIngreso)}</td>
-        <td title="${s.nombre}">${s.nombre}</td>
-        <td>${s.telefono}</td>
+        <td title="${s.nombre}">${s.nombre}</td><td>${s.telefono}</td>
         <td title="${s.modelo}">${s.modelo}</td>
         <td class="detail-cell" title="${s.detalle}">${s.detalle}</td>
-        <td>$ ${Number(s.precio||0).toLocaleString('es-AR')}</td>
-        <td>${stBadge(s.estado)}</td>
-        <td>${s.sucursal}</td>
+        <td>${fmtARS(s.precio)}</td>
+        <td>${stBadge(s.estado)}</td><td>${s.sucursal}</td>
         <td>
           <button class="btn-e" onclick="openModal('st-edit',${ri})">Editar</button>
           <button class="btn-d" onclick="delItem('st',${ri})">✕</button>
         </td>
-      </tr>`;}).join('');
+      </tr>`;
+    }).join('');
+}
+
+/* ---- REPORTES ---- */
+function switchReporte(periodo,el){
+  reportePeriodo=periodo;
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderReporte();
+}
+
+function getPeriodRange(periodo){
+  const now=new Date();
+  let desde,hasta;
+  if(periodo==='dia'){
+    desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
+    hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
+  } else if(periodo==='semana'){
+    const day=now.getDay();
+    const diff=now.getDate()-day+(day===0?-6:1);
+    desde=new Date(now.getFullYear(),now.getMonth(),diff,0,0,0);
+    hasta=new Date(desde);hasta.setDate(desde.getDate()+6);hasta.setHours(23,59,59);
+  } else {
+    desde=new Date(now.getFullYear(),now.getMonth(),1,0,0,0);
+    hasta=new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59);
+  }
+  return{desde,hasta};
+}
+
+function renderReporte(){
+  const {desde,hasta}=getPeriodRange(reportePeriodo);
+  const labels={dia:'Hoy '+fmtDate(Date.now()),semana:`Semana: ${fmtDate(desde)} — ${fmtDate(hasta)}`,mes:`Mes: ${desde.toLocaleString('es-AR',{month:'long',year:'numeric'})}`};
+  document.getElementById('rep-period-label').innerHTML=`<strong>${labels[reportePeriodo]}</strong>`;
+
+  const data=ventas.filter(v=>v.estado==='activa'&&v.ts>=desde.getTime()&&v.ts<=hasta.getTime());
+  const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+  const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+  const totalVentas=data.length;
+
+  // ganancia (solo admin)
+  let gananciaUSD=0,gananciaARS=0;
+  if(isAdmin()){
+    data.forEach(v=>{
+      if(v.tipo==='equipo'&&v.eqIdx!=null){
+        const e=equipos[v.eqIdx];
+        if(e) gananciaUSD+=(v.precioUnit-(e.costo||0))*v.cantidad;
+      }
+      if(v.tipo==='accesorio'&&v.acIdx!=null){
+        const a=accesorios[v.acIdx];
+        if(a) gananciaARS+=(v.precioUnit-(a.costo||0))*v.cantidad;
+      }
+    });
+  }
+
+  document.getElementById('rep-stats').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-label">VENTAS</div><div class="sc-val">${totalVentas}</div></div>
+    <div class="sc"><div class="sc-label">EQUIPOS</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
+    <div class="sc"><div class="sc-label">ACCESORIOS</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
+    ${isAdmin()?`
+    <div class="sc sc-green"><div class="sc-label">GANANCIA EQUIPOS</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(gananciaUSD)}</div></div>
+    <div class="sc sc-green"><div class="sc-label">GANANCIA ACCES.</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(gananciaARS)}</div></div>`:''}`;
+
+  // Pagos
+  const pagoTotals={};
+  METODOS.forEach(m=>pagoTotals[m.id]=0);
+  data.forEach(v=>(v.pagos||[]).forEach(p=>{pagoTotals[p.id]=(pagoTotals[p.id]||0)+p.monto;}));
+  const maxPago=Math.max(...Object.values(pagoTotals),1);
+  document.getElementById('rep-pagos').innerHTML=`<div class="chart-bar-wrap">${METODOS.map(m=>`
+    <div class="chart-bar-item">
+      <div class="chart-bar-label"><span>${m.label}</span><span>${m.prefix} ${(pagoTotals[m.id]||0).toLocaleString('es-AR')}</span></div>
+      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round((pagoTotals[m.id]||0)/maxPago*100)}%"></div></div>
+    </div>`).join('')}</div>`;
+
+  // Top productos
+  const prodCount={};
+  data.forEach(v=>{prodCount[v.producto]=(prodCount[v.producto]||0)+v.cantidad;});
+  const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxTop=top.length?top[0][1]:1;
+  document.getElementById('rep-top').innerHTML=top.length===0?'<div style="color:#6E6E73;font-size:12px;padding:0.5rem 0">Sin ventas en este período</div>'
+    :`<div class="chart-bar-wrap">${top.map(([prod,cnt])=>`
+    <div class="chart-bar-item">
+      <div class="chart-bar-label"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${prod}</span><span>${cnt} uds</span></div>
+      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(cnt/maxTop*100)}%;background:#1B5E20"></div></div>
+    </div>`).join('')}</div>`;
+
+  // Por sucursal
+  const sucData={Tunuyán:{cant:0,usd:0,ars:0},LaConsulta:{cant:0,usd:0,ars:0}};
+  data.forEach(v=>{
+    const k=v.sucursal==='Tunuyán'?'Tunuyán':'LaConsulta';
+    sucData[k].cant+=v.cantidad;
+    if(v.moneda==='USD')sucData[k].usd+=v.total;
+    else sucData[k].ars+=v.total;
+  });
+  document.getElementById('rep-suc').innerHTML=`
+    <div class="reporte-row"><span class="label">📍 Tunuyán — ventas</span><span class="val">${sucData.Tunuyán.cant} uds</span></div>
+    <div class="reporte-row"><span class="label">Equipos</span><span class="val blue">${fmtUSD(sucData.Tunuyán.usd)}</span></div>
+    <div class="reporte-row"><span class="label">Accesorios</span><span class="val">${fmtARS(sucData.Tunuyán.ars)}</span></div>
+    <div class="reporte-row" style="margin-top:8px"><span class="label">📍 La Consulta — ventas</span><span class="val">${sucData.LaConsulta.cant} uds</span></div>
+    <div class="reporte-row"><span class="label">Equipos</span><span class="val blue">${fmtUSD(sucData.LaConsulta.usd)}</span></div>
+    <div class="reporte-row"><span class="label">Accesorios</span><span class="val">${fmtARS(sucData.LaConsulta.ars)}</span></div>`;
+
+  // Rentabilidad (solo admin)
+  if(isAdmin()){
+    document.getElementById('rep-ganancia').innerHTML=`
+      <div class="reporte-row"><span class="label">Ingresos equipos</span><span class="val blue">${fmtUSD(usd)}</span></div>
+      <div class="reporte-row"><span class="label">Costo equipos</span><span class="val red">${fmtUSD(usd-gananciaUSD)}</span></div>
+      <div class="reporte-row"><span class="label">Ganancia equipos</span><span class="val green">${fmtUSD(gananciaUSD)}</span></div>
+      <div class="reporte-row" style="margin-top:8px"><span class="label">Ingresos accesorios</span><span class="val blue">${fmtARS(ars)}</span></div>
+      <div class="reporte-row"><span class="label">Costo accesorios</span><span class="val red">${fmtARS(ars-gananciaARS)}</span></div>
+      <div class="reporte-row"><span class="label">Ganancia accesorios</span><span class="val green">${fmtARS(gananciaARS)}</span></div>`;
+  } else {
+    document.getElementById('rep-ganancia').innerHTML='<div class="costo-lock">🔒 Solo el Administrador puede ver la rentabilidad</div>';
+  }
+
+  // Tabla detalle
+  document.getElementById('rep-tabla-ventas').innerHTML=data.length===0
+    ?'<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:#6E6E73">Sin ventas en este período</td></tr>'
+    :[...data].reverse().map(v=>{
+      const ph=(v.pagos||[]).map(p=>`<span class="pago-tag">${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}</span>`).join('');
+      return`<tr>
+        <td style="font-size:11px">${fmtDatetime(v.ts)}</td>
+        <td>${v.producto}</td><td>${v.sucursal}</td><td>${v.cantidad}</td>
+        <td style="font-weight:600">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
+        <td style="white-space:normal">${ph||'—'}</td>
+      </tr>`;
+    }).join('');
 }
 
 /* ---- PAGOS ---- */
-function buildPagoSection(){
+function buildPagoSection(esUSD){
+  // esUSD=true cuando el producto se cobra en dólares (equipos)
+  const cotizBlock=esUSD?`
+    <div id="cotiz-block" style="display:none;margin-bottom:10px;background:#fff;border:1px solid #E8E8ED;border-radius:10px;padding:10px 12px;">
+      <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.04em;margin-bottom:8px;">💱 COTIZACIÓN DEL DÓLAR</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;">
+        <div>
+          <label style="display:block;font-size:11px;color:#6E6E73;margin-bottom:4px;">TIPO DE CAMBIO ($ x USD)</label>
+          <input id="inp-cotiz" type="number" min="1" placeholder="ej: 1200" style="width:100%;padding:7px 9px;font-size:13px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" oninput="updateCotiz()"/>
+        </div>
+        <div id="cotiz-resultado" style="font-size:12px;color:#6E6E73;padding-bottom:8px;"></div>
+      </div>
+    </div>`:
+  '';
   return`<div class="pago-section">
     <div class="pago-section-title">MÉTODO DE PAGO</div>
+    ${cotizBlock}
     <div class="pago-metodos">
       ${METODOS.map(m=>`<div class="pago-item">
-        <label><input type="checkbox" id="chk-${m.id}" onchange="togglePago('${m.id}')"> ${m.label}</label>
+        <label><input type="checkbox" id="chk-${m.id}" onchange="togglePago('${m.id}',${esUSD?'true':'false'})"> ${m.label}</label>
         <input class="pago-amount" type="number" id="amt-${m.id}" placeholder="0" disabled oninput="updateResumen()"/>
       </div>`).join('')}
     </div>
@@ -601,20 +795,119 @@ function buildPagoSection(){
     <div id="pago-msg"></div>
   </div>`;
 }
-function togglePago(id){const chk=document.getElementById('chk-'+id);const inp=document.getElementById('amt-'+id);inp.disabled=!chk.checked;if(!chk.checked)inp.value='';updateResumen();}
+
+function updateCotiz(){
+  const cotiz=parseFloat(document.getElementById('inp-cotiz')?.value)||0;
+  const t=document.getElementById('vtotal');
+  const res=document.getElementById('cotiz-resultado');
+  if(!res)return;
+  if(cotiz>0&&t){
+    const usd=parseFloat(t.textContent.replace(/[^0-9.]/g,''))||0;
+    const pesos=usd*cotiz;
+    res.innerHTML=`<span style="font-weight:600;color:#1D1D1F;">USD ${usd.toLocaleString('es-AR')} = $ ${pesos.toLocaleString('es-AR')}</span>`;
+    // autocompletar si hay pesos activos
+    ['efectivo','transferencia'].forEach(id=>{
+      const chk=document.getElementById('chk-'+id);
+      const amt=document.getElementById('amt-'+id);
+      if(chk&&chk.checked&&amt&&!amt.value) amt.value=pesos;
+    });
+  } else {
+    res.innerHTML='';
+  }
+  updateResumen();
+}
+
+function togglePago(id,esUSD){
+  const chk=document.getElementById('chk-'+id);
+  const inp=document.getElementById('amt-'+id);
+  inp.disabled=!chk.checked;
+  if(!chk.checked)inp.value='';
+  // mostrar bloque cotización si es venta USD y se selecciona pago en pesos
+  if(esUSD){
+    const pagosPesos=['efectivo','transferencia'];
+    const algunPeso=pagosPesos.some(i=>{const c=document.getElementById('chk-'+i);return c&&c.checked;});
+    const cotizBlock=document.getElementById('cotiz-block');
+    if(cotizBlock) cotizBlock.style.display=algunPeso?'block':'none';
+    // si se desactiva pago en pesos, limpiar cotización sugerida de ese método
+    if(!chk.checked&&pagosPesos.includes(id)){
+      const ninguno=pagosPesos.every(i=>{const c=document.getElementById('chk-'+i);return!c||!c.checked;});
+      if(ninguno&&cotizBlock) cotizBlock.style.display='none';
+    }
+  }
+  updateResumen();
+}
+
 function updateResumen(){
   const t=document.getElementById('vtotal');if(!t)return;
   const ts=t.textContent||'0';const tn=parseFloat(ts.replace(/[^0-9.]/g,''))||0;
-  const mon=ts.includes('USD')?'USD':'ARS';
-  let pag=0;const act=[];
-  METODOS.forEach(m=>{const chk=document.getElementById('chk-'+m.id);const amt=document.getElementById('amt-'+m.id);if(chk&&chk.checked&&amt){const v=parseFloat(amt.value)||0;pag+=v;if(v>0)act.push({...m,monto:v});}});
+  const monedaVenta=ts.includes('USD')?'USD':'ARS';
+  const cotiz=parseFloat(document.getElementById('inp-cotiz')?.value)||0;
+
+  let pagUSD=0,pagARS=0;const act=[];
+  METODOS.forEach(m=>{
+    const chk=document.getElementById('chk-'+m.id);
+    const amt=document.getElementById('amt-'+m.id);
+    if(chk&&chk.checked&&amt){
+      const v=parseFloat(amt.value)||0;
+      if(v>0){
+        act.push({...m,monto:v});
+        if(m.prefix==='USD') pagUSD+=v;
+        else pagARS+=v;
+      }
+    }
+  });
+
   const rEl=document.getElementById('pago-resumen');const mEl=document.getElementById('pago-msg');
   if(!act.length){rEl.style.display='none';mEl.innerHTML='';return;}
-  rEl.style.display='block';const sym=mon==='USD'?'USD':'$';
-  rEl.innerHTML=`<div class="pago-resumen">${act.map(a=>`<div class="pago-resumen-row"><span>${a.label}</span><strong>${a.prefix} ${Number(a.monto).toLocaleString('es-AR')}</strong></div>`).join('')}<div class="pago-resumen-total"><span>Total pagado</span><span>${sym} ${pag.toLocaleString('es-AR')}</span></div></div>`;
-  const d=pag-tn;mEl.innerHTML=Math.abs(d)<0.01?`<div class="pago-ok">✓ Pago completo</div>`:d>0?`<div class="pago-ok">✓ Vuelto: ${sym} ${d.toLocaleString('es-AR')}</div>`:`<div class="pago-err">Falta cubrir: ${sym} ${Math.abs(d).toLocaleString('es-AR')}</div>`;
+  rEl.style.display='block';
+
+  // Calcular equivalente total en moneda de la venta
+  let totalEquiv=0;
+  if(monedaVenta==='USD'){
+    // equipos cobrados en USD: USD directo + pesos convertidos con cotización
+    const pesoEnUSD=(cotiz>0&&pagARS>0)?pagARS/cotiz:0;
+    totalEquiv=pagUSD+pesoEnUSD;
+  } else {
+    totalEquiv=pagARS+pagUSD; // para ARS simple suma (sin cotización)
+  }
+
+  const sym=monedaVenta==='USD'?'USD':'$';
+  let resumenHTML=`<div class="pago-resumen">
+    ${act.map(a=>`<div class="pago-resumen-row"><span>${a.label}</span><strong>${a.prefix} ${Number(a.monto).toLocaleString('es-AR')}</strong></div>`).join('')}`;
+
+  if(monedaVenta==='USD'&&pagARS>0&&cotiz>0){
+    const eqUSD=pagARS/cotiz;
+    resumenHTML+=`<div class="pago-resumen-row" style="font-size:11px;border-top:1px dashed #E8E8ED;margin-top:4px;padding-top:4px;color:#6E6E73"><span>Pesos equivalen a</span><strong style="color:#0058B0">USD ${eqUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</strong></div>`;
+  }
+  resumenHTML+=`<div class="pago-resumen-total"><span>Total pagado</span><span>${sym} ${totalEquiv.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div></div>`;
+  rEl.innerHTML=resumenHTML;
+
+  const d=totalEquiv-tn;
+  if(monedaVenta==='USD'&&pagARS>0&&cotiz===0){
+    mEl.innerHTML=`<div class="pago-err">⚠️ Ingresá la cotización del dólar para calcular el total en pesos</div>`;
+  } else {
+    mEl.innerHTML=Math.abs(d)<0.01?`<div class="pago-ok">✓ Pago completo</div>`:d>0?`<div class="pago-ok">✓ Vuelto: ${sym} ${d.toLocaleString('es-AR',{maximumFractionDigits:2})}</div>`:`<div class="pago-err">Falta cubrir: ${sym} ${Math.abs(d).toLocaleString('es-AR',{maximumFractionDigits:2})}</div>`;
+  }
 }
-function getPagos(){return METODOS.filter(m=>{const c=document.getElementById('chk-'+m.id);const a=document.getElementById('amt-'+m.id);return c&&c.checked&&a&&parseFloat(a.value)>0;}).map(m=>({id:m.id,label:m.label.replace(/^.\s/,''),prefix:m.prefix,monto:parseFloat(document.getElementById('amt-'+m.id).value)||0}));}
+
+function getPagos(){
+  const t=document.getElementById('vtotal');
+  const cotiz=parseFloat(document.getElementById('inp-cotiz')?.value)||0;
+  const monedaVenta=t&&t.textContent.includes('USD')?'USD':'ARS';
+  return METODOS.filter(m=>{
+    const c=document.getElementById('chk-'+m.id);
+    const a=document.getElementById('amt-'+m.id);
+    return c&&c.checked&&a&&parseFloat(a.value)>0;
+  }).map(m=>{
+    const monto=parseFloat(document.getElementById('amt-'+m.id).value)||0;
+    const obj={id:m.id,label:m.label.replace(/^.\s/,''),prefix:m.prefix,monto};
+    if(monedaVenta==='USD'&&m.prefix==='$'&&cotiz>0){
+      obj.cotizacion=cotiz;
+      obj.montoUSD=monto/cotiz;
+    }
+    return obj;
+  });
+}
 
 /* ---- MODAL ---- */
 function openModal(type,idx){
@@ -633,8 +926,10 @@ function openModal(type,idx){
 }
 
 function buildForm(type,idx){
+  const admin=isAdmin();
   if(type==='eq-edit'){
     const it=idx!==null?equipos[idx]:null;
+    const costoField=admin?`<div class="mfl"><label>COSTO (USD) 🔒 solo admin</label><input id="mf-costo" type="number" min="0" value="${it?it.costo:''}"/></div>`:``;
     return`
       <div class="mfl"><label>MODELO</label><input id="mf-modelo" type="text" placeholder="ej: iPhone 16 Pro Max" value="${it?it.modelo:''}"/></div>
       <div class="mgrid">
@@ -643,17 +938,20 @@ function buildForm(type,idx){
       </div>
       <div class="mfl"><label>IMEI</label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
       <div class="mgrid">
-        <div class="mfl"><label>PRECIO (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
+        <div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
         <div class="mfl"><label>SUCURSAL</label><select id="mf-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div>
       </div>
+      ${costoField}
       <div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>`;
   }
   if(type==='ac-edit'){
     const it=idx!==null?accesorios[idx]:null;
+    const costoField=admin?`<div class="mfl"><label>COSTO (ARS $) 🔒 solo admin</label><input id="mf-costo" type="number" min="0" value="${it?it.costo:''}"/></div>`:``;
     return`
       <div class="mfl"><label>NOMBRE</label><input id="mf-nombre" type="text" placeholder="ej: Funda MagSafe" value="${it?it.nombre:''}"/></div>
       <div class="mfl"><label>CATEGORÍA</label><select id="mf-cat-ac">${CATS.map(c=>opt(c,it?it.cat:'')).join('')}</select></div>
-      <div class="mfl"><label>PRECIO (ARS $)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
+      <div class="mfl"><label>PRECIO VENTA (ARS $)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
+      ${costoField}
       <div class="mgrid">
         <div class="mfl"><label>STOCK TUNUYÁN</label><input id="mf-stockT" type="number" min="0" value="${it!=null?(it.stockT||0):''}"/></div>
         <div class="mfl"><label>STOCK LA CONSULTA</label><input id="mf-stockC" type="number" min="0" value="${it!=null?(it.stockC||0):''}"/></div>
@@ -669,13 +967,13 @@ function buildForm(type,idx){
         <div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-pventa" type="number" min="0" value="${e.precio}" oninput="recalcTotal('eq',${idx})"/></div>
       </div>
       <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">USD ${e.precio.toLocaleString('es-AR')}</strong></div>
-      <hr class="divider"/>${buildPagoSection()}`;
+      <hr class="divider"/>${buildPagoSection(true)}`;
   }
   if(type==='venta-ac'){
     const a=accesorios[idx];const tot=totalAc(a);
     return`
       <div class="sell-info"><strong>${a.nombre}</strong><br>
-        Stock Tunuyán: <strong>${a.stockT||0}</strong> · La Consulta: <strong>${a.stockC||0}</strong> · Total: <strong>${tot}</strong></div>
+        Stock Tunuyán: <strong>${a.stockT||0}</strong> · La Consulta: <strong>${a.stockC||0}</strong></div>
       <div class="mfl"><label>DESCONTAR DE SUCURSAL</label><select id="mf-suc-venta">
         ${a.stockT>0?`<option value="Tunuyán">Tunuyán (${a.stockT||0} uds)</option>`:''}
         ${a.stockC>0?`<option value="La Consulta">La Consulta (${a.stockC||0} uds)</option>`:''}
@@ -698,7 +996,7 @@ function buildForm(type,idx){
         <div class="mfl"><label>PRECIO VENTA</label><input id="mf-pventa" type="number" min="0" value="" oninput="updateVentaGeneral()"/></div>
       </div>
       <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">—</strong></div>
-      <hr class="divider"/>${buildPagoSection()}`;
+      <hr class="divider"/>${buildPagoSection(true)}`;
   }
   if(type==='venta-edit'){
     const v=ventas[idx];
@@ -727,7 +1025,7 @@ function buildForm(type,idx){
         <div class="mfl"><label>CLAVE iCLOUD</label><input id="st-icloud" type="text" placeholder="correo@icloud.com" value="${it?it.icloud:''}"/></div>
         <div class="mfl"><label>CÓDIGO DESBLOQUEO</label><input id="st-codigo" type="text" placeholder="••••" value="${it?it.codigo:''}"/></div>
       </div>
-      <div class="mfl"><label>DETALLE DEL PROBLEMA</label><textarea id="st-detalle" placeholder="Describí el problema o servicio solicitado…">${it?it.detalle:''}</textarea></div>
+      <div class="mfl"><label>DETALLE DEL PROBLEMA</label><textarea id="st-detalle" placeholder="Describí el problema…">${it?it.detalle:''}</textarea></div>
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3">
         <div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div>
@@ -746,12 +1044,17 @@ function recalcTotal(tipo,idx){
   if(t){t.textContent=(tipo==='eq'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');updateResumen();}
 }
 function recalcEdit(idx){
-  const v=ventas[idx];const c=parseInt(document.getElementById('mf-cant')?.value)||0;const p=parseFloat(document.getElementById('mf-pventa')?.value)||0;
-  const t=document.getElementById('vtotal');if(t)t.textContent=(v.moneda==='USD'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');
+  const v=ventas[idx];
+  const c=parseInt(document.getElementById('mf-cant')?.value)||0;
+  const p=parseFloat(document.getElementById('mf-pventa')?.value)||0;
+  const t=document.getElementById('vtotal');
+  if(t)t.textContent=(v.moneda==='USD'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');
 }
 function updateVentaGeneral(){
-  const sel=document.getElementById('mf-prod')?.value;const c=parseInt(document.getElementById('mf-cant')?.value)||1;
-  const pvEl=document.getElementById('mf-pventa');const t=document.getElementById('vtotal');
+  const sel=document.getElementById('mf-prod')?.value;
+  const c=parseInt(document.getElementById('mf-cant')?.value)||1;
+  const pvEl=document.getElementById('mf-pventa');
+  const t=document.getElementById('vtotal');
   if(!sel||!t)return;
   const [tipo,i]=sel.split('-');const idx=parseInt(i);
   const item=tipo==='eq'?equipos[idx]:accesorios[idx];
@@ -768,14 +1071,16 @@ function saveModal(){
     if(bat<1||bat>100){alert('Batería entre 1 y 100');return;}
     const imei=document.getElementById('mf-imei').value.trim();
     if(!imei){alert('Ingresá el IMEI');return;}
-    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,stock:parseInt(document.getElementById('mf-stock').value)||0};
+    const costEl=document.getElementById('mf-costo');
+    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0};
     if(editIdx!==null)equipos[editIdx]=obj;else equipos.push(obj);
     renderEq();closeModal();return;
   }
   if(modalType==='ac-edit'){
     const nombre=document.getElementById('mf-nombre').value.trim();
     if(!nombre){alert('Ingresá el nombre');return;}
-    const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0};
+    const costEl=document.getElementById('mf-costo');
+    const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?accesorios[editIdx].costo:0),stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0};
     if(editIdx!==null)accesorios[editIdx]=obj;else accesorios.push(obj);
     renderAc();closeModal();return;
   }
@@ -783,13 +1088,19 @@ function saveModal(){
     ventas.push({ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx:tipo==='equipo'?prodIdx:null,acIdx:tipo==='accesorio'?prodIdx:null,pagos:getPagos()});
   };
   if(modalType==='venta-eq'){
-    const e=equipos[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;const sv=document.getElementById('mf-suc-venta').value;
+    const e=equipos[editIdx];
+    const c=parseInt(document.getElementById('mf-cant').value)||1;
+    const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;
+    const sv=document.getElementById('mf-suc-venta').value;
     if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
-    equipos[editIdx].stock-=c;regVenta('equipo',editIdx,c,p,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal);
+    equipos[editIdx].stock-=c;
+    regVenta('equipo',editIdx,c,p,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal);
     renderEq();renderVentas();closeModal();return;
   }
   if(modalType==='venta-ac'){
-    const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;
+    const a=accesorios[editIdx];
+    const c=parseInt(document.getElementById('mf-cant').value)||1;
+    const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;
     const sv=document.getElementById('mf-suc-venta').value;
     const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
     if(c>maxSt){alert(`Stock insuficiente en ${sv}. Disponible: ${maxSt}`);return;}
@@ -798,23 +1109,28 @@ function saveModal(){
     renderAc();renderVentas();closeModal();return;
   }
   if(modalType==='venta'){
-    const sel=document.getElementById('mf-prod').value;const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||0;const sv=document.getElementById('mf-suc-venta').value;
+    const sel=document.getElementById('mf-prod').value;
+    const c=parseInt(document.getElementById('mf-cant').value)||1;
+    const p=parseFloat(document.getElementById('mf-pventa').value)||0;
+    const sv=document.getElementById('mf-suc-venta').value;
     if(!sel){alert('Seleccioná un producto');return;}
     const [tipo,i]=sel.split('-');const idx=parseInt(i);
     if(tipo==='eq'){
       const e=equipos[idx];if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
       equipos[idx].stock-=c;regVenta('equipo',idx,c,p||e.precio,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal);renderEq();
     } else {
-      const a=accesorios[idx];if(c>totalAc(a)){alert(`Stock insuficiente. Disponible: ${totalAc(a)}`);return;}
-      // descontar del mayor stock disponible
+      const a=accesorios[idx];if(c>totalAc(a)){alert(`Stock insuficiente.`);return;}
       if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
       regVenta('accesorio',idx,c,p||a.precio,sv,'ARS',a.nombre,sv);renderAc();
     }
     renderVentas();closeModal();return;
   }
   if(modalType==='venta-edit'){
-    const v=ventas[editIdx];const cN=parseInt(document.getElementById('mf-cant').value)||1;const pN=parseFloat(document.getElementById('mf-pventa').value)||v.precioUnit;const svN=document.getElementById('mf-suc-venta').value;
-    if(v.tipo==='equipo'&&v.eqIdx!=null){equipos[v.eqIdx].stock+=v.cantidad;if(cN>equipos[v.eqIdx].stock){alert(`Stock insuficiente`);equipos[v.eqIdx].stock-=v.cantidad;return;}equipos[v.eqIdx].stock-=cN;}
+    const v=ventas[editIdx];
+    const cN=parseInt(document.getElementById('mf-cant').value)||1;
+    const pN=parseFloat(document.getElementById('mf-pventa').value)||v.precioUnit;
+    const svN=document.getElementById('mf-suc-venta').value;
+    if(v.tipo==='equipo'&&v.eqIdx!=null){equipos[v.eqIdx].stock+=v.cantidad;if(cN>equipos[v.eqIdx].stock){alert('Stock insuficiente');equipos[v.eqIdx].stock-=v.cantidad;return;}equipos[v.eqIdx].stock-=cN;}
     ventas[editIdx]={...v,cantidad:cN,precioUnit:pN,total:cN*pN,sucursal:svN};
     renderEq();renderAc();renderVentas();closeModal();return;
   }
@@ -824,19 +1140,7 @@ function saveModal(){
     const modelo=document.getElementById('st-modelo').value.trim();
     if(!modelo){alert('Ingresá el modelo del equipo');return;}
     const fechaVal=document.getElementById('st-fecha').value;
-    const obj={
-      nombre,
-      telefono:document.getElementById('st-tel').value.trim(),
-      correo:document.getElementById('st-correo').value.trim(),
-      modelo,
-      icloud:document.getElementById('st-icloud').value.trim(),
-      codigo:document.getElementById('st-codigo').value.trim(),
-      detalle:document.getElementById('st-detalle').value.trim(),
-      precio:parseInt(document.getElementById('st-precio').value)||0,
-      estado:document.getElementById('st-estado').value,
-      sucursal:document.getElementById('st-suc').value,
-      fechaIngreso:fechaVal?new Date(fechaVal+'T00:00:00').getTime():Date.now(),
-    };
+    const obj={nombre,telefono:document.getElementById('st-tel').value.trim(),correo:document.getElementById('st-correo').value.trim(),modelo,icloud:document.getElementById('st-icloud').value.trim(),codigo:document.getElementById('st-codigo').value.trim(),detalle:document.getElementById('st-detalle').value.trim(),precio:parseInt(document.getElementById('st-precio').value)||0,estado:document.getElementById('st-estado').value,sucursal:document.getElementById('st-suc').value,fechaIngreso:fechaVal?new Date(fechaVal+'T00:00:00').getTime():Date.now()};
     if(editIdx!==null)servicios[editIdx]=obj;else servicios.push(obj);
     renderST();closeModal();return;
   }
