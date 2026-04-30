@@ -1,2 +1,863 @@
-# istock-pro
-control de stock
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>iStock Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F7;min-height:100vh;font-size:14px;color:#1D1D1F;}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
+.login-card{background:#fff;border:1px solid #E0E0E5;border-radius:16px;padding:2rem;width:100%;max-width:370px;box-shadow:0 2px 16px rgba(0,0,0,0.07);}
+.login-logo{text-align:center;margin-bottom:1.5rem;}
+.logo-icon{font-size:32px;display:block;margin-bottom:6px;}
+.login-logo h2{font-size:18px;font-weight:600;color:#1D1D1F;}
+.login-logo p{font-size:12px;color:#6E6E73;margin-top:3px;}
+.fl{margin-bottom:0.85rem;}
+.fl label{display:block;font-size:11px;color:#6E6E73;letter-spacing:0.05em;margin-bottom:4px;font-weight:500;}
+.fl select,.fl input{width:100%;padding:9px 11px;font-size:13px;border:1px solid #D2D2D7;border-radius:10px;background:#fff;color:#1D1D1F;}
+.btn-login{width:100%;padding:10px;background:#0071E3;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;margin-top:0.4rem;}
+.btn-login:hover{background:#0058B0;}
+.login-hint{margin-top:1rem;font-size:11px;color:#6E6E73;text-align:center;line-height:2;border-top:1px solid #F0F0F5;padding-top:0.75rem;}
+.rchip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-left:3px;}
+.chip-a{background:#E3F0FF;color:#0058B0;}
+.chip-g{background:#FFF3E0;color:#8A4D00;}
+.chip-e{background:#E8F5E9;color:#1B5E20;}
+
+.header{background:#fff;border-bottom:1px solid #E8E8ED;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:10;}
+.hdr-l{display:flex;align-items:center;gap:10px;}
+.hdr-title{font-size:15px;font-weight:600;color:#1D1D1F;}
+.badge-role{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600;}
+.suc-pill{font-size:11px;padding:2px 10px;border-radius:12px;background:#F5F5F7;border:1px solid #E0E0E5;color:#6E6E73;}
+.btn-out{font-size:12px;color:#6E6E73;background:none;border:none;cursor:pointer;padding:4px 8px;}
+.btn-out:hover{color:#1D1D1F;}
+
+.tabs{display:flex;border-bottom:1px solid #E8E8ED;background:#fff;padding:0 1.5rem;overflow-x:auto;}
+.tab{padding:11px 14px;font-size:12px;color:#6E6E73;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
+.tab.active{color:#0071E3;border-bottom-color:#0071E3;font-weight:500;}
+.tab:hover:not(.active){color:#1D1D1F;}
+
+.content{padding:1.25rem 1.5rem;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:1.1rem;}
+.sc{background:#F5F5F7;border-radius:12px;padding:0.75rem 1rem;}
+.sc-label{font-size:10px;color:#6E6E73;letter-spacing:0.04em;margin-bottom:3px;font-weight:500;}
+.sc-val{font-size:19px;font-weight:600;color:#1D1D1F;}
+.sc-sub{font-size:10px;color:#6E6E73;margin-top:1px;}
+
+/* Stock por sucursal en accesorios */
+.suc-stock-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
+.suc-stock-card{background:#fff;border:1px solid #E8E8ED;border-radius:12px;padding:10px 16px;flex:1;min-width:140px;}
+.suc-stock-card h4{font-size:11px;color:#6E6E73;font-weight:500;margin-bottom:6px;letter-spacing:0.03em;}
+.suc-stock-item{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid #F5F5F7;}
+.suc-stock-item:last-child{border-bottom:none;}
+.suc-stock-item span:last-child{font-weight:600;color:#1D1D1F;}
+
+.search-wrap{position:relative;margin-bottom:0.85rem;}
+.search-wrap input{width:100%;padding:9px 36px 9px 36px;font-size:13px;border:1px solid #D2D2D7;border-radius:10px;background:#fff;color:#1D1D1F;}
+.search-wrap input:focus{outline:none;border-color:#0071E3;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;opacity:0.45;}
+.search-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:13px;color:#6E6E73;padding:2px 5px;display:none;}
+.search-count{font-size:11px;color:#6E6E73;margin-bottom:0.6rem;}
+.search-count span{font-weight:600;color:#1D1D1F;}
+
+.toolbar{display:flex;gap:7px;margin-bottom:0.9rem;flex-wrap:wrap;align-items:center;}
+.toolbar select{padding:7px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;}
+.btn-add{padding:7px 15px;background:#0071E3;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;margin-left:auto;}
+.btn-add:hover{background:#0058B0;}
+.btn-readonly{padding:7px 13px;background:#F5F5F7;color:#6E6E73;border:1px solid #D2D2D7;border-radius:9px;font-size:12px;cursor:not-allowed;margin-left:auto;}
+
+.twrap{background:#fff;border:1px solid #E8E8ED;border-radius:14px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+th{padding:9px 11px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;letter-spacing:0.04em;border-bottom:1px solid #E8E8ED;background:#F5F5F7;}
+td{padding:9px 11px;color:#1D1D1F;border-bottom:1px solid #F0F0F5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#FAFAFA;}
+
+.sbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;}
+.s-ok{background:#E8F5E9;color:#1B5E20;}
+.s-low{background:#FFF3E0;color:#8A4D00;}
+.s-out{background:#FFEBEE;color:#7F0000;}
+.hl{background:#FFF176;border-radius:2px;padding:0 1px;}
+.bat-wrap{display:flex;align-items:center;gap:5px;}
+.bat-bar{width:36px;height:7px;background:#E8E8ED;border-radius:4px;overflow:hidden;}
+.bat-fill{height:100%;border-radius:4px;}
+.imei-tag{font-size:10px;font-family:monospace;background:#F5F5F7;padding:2px 6px;border-radius:5px;color:#6E6E73;}
+
+.btn-e{padding:3px 8px;font-size:11px;border:1px solid #D2D2D7;border-radius:8px;background:none;color:#1D1D1F;cursor:pointer;}
+.btn-e:hover{background:#F5F5F7;}
+.btn-e:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-d{padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;}
+.btn-d:hover{background:#FFEBEE;}
+.btn-d:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-sell{padding:3px 8px;font-size:11px;border:1px solid #A5D6A7;border-radius:8px;background:none;color:#1B5E20;cursor:pointer;}
+.btn-sell:hover{background:#E8F5E9;}
+.btn-sell:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-anular{padding:3px 8px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;}
+.btn-anular:hover{background:#FFEBEE;}
+
+.vtag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;}
+.vtag-eq{background:#E3F0FF;color:#0058B0;}
+.vtag-ac{background:#FFF3E0;color:#8A4D00;}
+.vtag-an{background:#F5F5F7;color:#9E9E9E;}
+.pago-tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;background:#F5F5F7;color:#6E6E73;margin-right:2px;margin-bottom:2px;}
+
+/* SERVICIO TECNICO */
+.st-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600;}
+.st-pend{background:#FFF3E0;color:#8A4D00;}
+.st-prog{background:#E3F0FF;color:#0058B0;}
+.st-list{background:#E8F5E9;color:#1B5E20;}
+.st-ent{background:#F3E5F5;color:#6A1B9A;}
+
+/* PAGOS */
+.pago-section{background:#F5F5F7;border-radius:12px;padding:13px;margin-bottom:10px;}
+.pago-section-title{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:11px;}
+.pago-metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pago-item{display:flex;flex-direction:column;gap:5px;}
+.pago-item label{font-size:12px;color:#1D1D1F;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.pago-item label input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#0071E3;}
+.pago-amount{width:100%;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#fff;color:#1D1D1F;}
+.pago-amount:disabled{opacity:0.35;background:#F5F5F7;}
+.pago-resumen{background:#fff;border:1px solid #E8E8ED;border-radius:10px;padding:9px 11px;margin-top:9px;font-size:12px;}
+.pago-resumen-row{display:flex;justify-content:space-between;margin-bottom:4px;color:#6E6E73;}
+.pago-resumen-row strong{color:#1D1D1F;}
+.pago-resumen-total{display:flex;justify-content:space-between;font-weight:600;font-size:13px;border-top:1px solid #F0F0F5;padding-top:7px;margin-top:5px;}
+.pago-ok{color:#1B5E20;font-size:11px;margin-top:5px;text-align:center;font-weight:500;}
+.pago-err{color:#C62828;font-size:11px;margin-top:5px;text-align:center;font-weight:500;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:200;}
+.modal{background:#fff;border:1px solid #E8E8ED;border-radius:16px;padding:1.5rem;width:100%;max-width:500px;max-height:93vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:1rem;}
+.mfl label{display:block;font-size:11px;color:#6E6E73;margin-bottom:4px;letter-spacing:0.04em;font-weight:500;}
+.mfl input,.mfl select,.mfl textarea{width:100%;padding:8px 10px;font-size:13px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;margin-bottom:10px;font-family:inherit;}
+.mfl textarea{resize:vertical;min-height:70px;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.mgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.mac{display:flex;gap:9px;justify-content:flex-end;margin-top:0.6rem;}
+.btn-cancel{padding:8px 15px;background:none;border:1px solid #D2D2D7;border-radius:9px;font-size:13px;cursor:pointer;color:#1D1D1F;}
+.btn-save{padding:8px 15px;background:#0071E3;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;}
+.btn-save-green{padding:8px 15px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;}
+.sell-info{background:#F5F5F7;border-radius:10px;padding:11px 13px;font-size:12px;color:#6E6E73;margin-bottom:11px;line-height:1.75;}
+.sell-info strong{color:#1D1D1F;font-weight:500;}
+.divider{border:none;border-top:1px solid #E8E8ED;margin:11px 0;}
+.section-label{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;margin-top:2px;}
+.empty-state{text-align:center;padding:2rem;color:#6E6E73;font-size:13px;}
+.anulada-row td{opacity:0.4;}
+.detail-cell{white-space:normal;line-height:1.4;max-height:36px;overflow:hidden;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-icon">📱</span>
+      <h2>iStock Pro</h2>
+      <p>Tunuyán &amp; La Consulta</p>
+    </div>
+    <div class="fl"><label>ROL</label>
+      <select id="sel-rol" onchange="onRolChange()">
+        <option value="empleado">Empleado</option>
+        <option value="gerente">Gerente</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div class="fl"><label>SUCURSAL</label>
+      <select id="sel-suc">
+        <option value="Tunuyán">📍 Tunuyán</option>
+        <option value="La Consulta">📍 La Consulta</option>
+      </select>
+    </div>
+    <div class="fl" id="pin-wrap" style="display:none"><label>PIN</label>
+      <input type="password" id="inp-pin" maxlength="4" placeholder="••••"/>
+    </div>
+    <button class="btn-login" onclick="login()">Ingresar</button>
+    <div class="login-hint">
+      Administrador <span class="rchip chip-a">PIN 1234</span><br>
+      Gerente <span class="rchip chip-g">PIN 5678</span><br>
+      Empleado <span class="rchip chip-e">sin PIN</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-app" style="display:none">
+  <div class="header">
+    <div class="hdr-l">
+      <span class="hdr-title">📱 iStock Pro</span>
+      <span class="badge-role" id="badge-role"></span>
+      <span class="suc-pill" id="badge-suc"></span>
+    </div>
+    <button class="btn-out" onclick="logout()">Salir</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos (USD)</button>
+    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios (ARS)</button>
+    <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
+    <button class="tab" onclick="switchTab('st',this)">🔧 Servicio Técnico</button>
+  </div>
+
+  <!-- EQUIPOS -->
+  <div class="content" id="tab-eq">
+    <div class="stats-row" id="stats-eq"></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria, batería…" oninput="onSearch('eq',this)"/>
+      <button class="search-clear" id="clear-eq" onclick="clearSearch('eq')">✕</button>
+    </div>
+    <div class="search-count" id="count-eq"></div>
+    <div class="toolbar" id="toolbar-eq"></div>
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:21%">Modelo</th><th style="width:8%">Mem.</th>
+          <th style="width:10%">Batería</th><th style="width:13%">IMEI</th>
+          <th style="width:11%">Sucursal</th><th style="width:10%">Precio USD</th>
+          <th style="width:6%">Stock</th><th style="width:7%">Estado</th>
+          <th style="width:14%">Acciones</th>
+        </tr></thead>
+        <tbody id="tbody-eq"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ACCESORIOS -->
+  <div class="content" id="tab-ac" style="display:none">
+    <div class="stats-row" id="stats-ac"></div>
+    <!-- Stock por sucursal -->
+    <div class="suc-stock-row" id="suc-stock-ac"></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-ac" placeholder="Buscar por nombre, categoría…" oninput="onSearch('ac',this)"/>
+      <button class="search-clear" id="clear-ac" onclick="clearSearch('ac')">✕</button>
+    </div>
+    <div class="search-count" id="count-ac"></div>
+    <div class="toolbar" id="toolbar-ac"></div>
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:26%">Producto</th><th style="width:16%">Categoría</th>
+          <th style="width:12%">Precio ARS</th>
+          <th style="width:8%">Tunuyán</th><th style="width:10%">La Consulta</th>
+          <th style="width:7%">Total</th><th style="width:8%">Estado</th>
+          <th style="width:13%">Acciones</th>
+        </tr></thead>
+        <tbody id="tbody-ac"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VENTAS -->
+  <div class="content" id="tab-ventas" style="display:none">
+    <div class="stats-row" id="stats-ventas"></div>
+    <div class="toolbar">
+      <select id="f-suc-v" onchange="renderVentas()">
+        <option value="">Ambas sucursales</option>
+        <option>Tunuyán</option><option>La Consulta</option>
+      </select>
+      <select id="f-tipo-v" onchange="renderVentas()">
+        <option value="">Equipos y accesorios</option>
+        <option value="equipo">Solo equipos</option>
+        <option value="accesorio">Solo accesorios</option>
+      </select>
+      <select id="f-estado-v" onchange="renderVentas()">
+        <option value="">Todas</option>
+        <option value="activa">Activas</option>
+        <option value="anulada">Anuladas</option>
+      </select>
+      <button class="btn-add" onclick="openModal('venta',null)">+ Registrar venta</button>
+    </div>
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:11%">Fecha</th><th style="width:6%">Tipo</th>
+          <th style="width:20%">Producto</th><th style="width:10%">Sucursal</th>
+          <th style="width:5%">Cant.</th><th style="width:9%">Total</th>
+          <th style="width:15%">Pagos</th><th style="width:6%">Por</th>
+          <th style="width:18%">Acciones</th>
+        </tr></thead>
+        <tbody id="tbody-ventas"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SERVICIO TECNICO -->
+  <div class="content" id="tab-st" style="display:none">
+    <div class="stats-row" id="stats-st"></div>
+    <div class="toolbar">
+      <select id="f-st-estado" onchange="renderST()">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="En progreso">En progreso</option>
+        <option value="Listo para entregar">Listo para entregar</option>
+        <option value="Entregado">Entregado</option>
+      </select>
+      <select id="f-st-suc" onchange="renderST()">
+        <option value="">Ambas sucursales</option>
+        <option>Tunuyán</option><option>La Consulta</option>
+      </select>
+      <button class="btn-add" onclick="openModal('st-edit',null)">+ Nuevo servicio</button>
+    </div>
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:8%">Fecha</th>
+          <th style="width:13%">Cliente</th>
+          <th style="width:10%">Teléfono</th>
+          <th style="width:13%">Modelo</th>
+          <th style="width:14%">Detalle</th>
+          <th style="width:9%">Precio</th>
+          <th style="width:11%">Estado</th>
+          <th style="width:10%">Sucursal</th>
+          <th style="width:12%">Acciones</th>
+        </tr></thead>
+        <tbody id="tbody-st"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3 id="modal-ttl"></h3>
+      <div id="modal-body"></div>
+      <div class="mac" id="modal-actions"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let rol='', sucursal='', modalType='', editIdx=null;
+let searchEq='', searchAc='';
+const SUCS=['Tunuyán','La Consulta'];
+const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
+const MEMS=['64GB','128GB','256GB','512GB','1TB'];
+const ST_ESTADOS=['Pendiente','En progreso','Listo para entregar','Entregado'];
+const METODOS=[
+  {id:'efectivo',    label:'💵 Efectivo (ARS)',    prefix:'$'},
+  {id:'transferencia',label:'📲 Transferencia',   prefix:'$'},
+  {id:'dolares',     label:'💲 Dólares billete',  prefix:'USD'},
+  {id:'dolares_dig', label:'💻 Dólares digitales',prefix:'USD'},
+];
+
+// Accesorios ahora tienen stock por sucursal
+let equipos=[
+  {modelo:'iPhone 16 Pro Max',memoria:'256GB',bateria:92,imei:'354621087432100',sucursal:'Tunuyán',precio:1299,stock:3},
+  {modelo:'iPhone 16 Pro Max',memoria:'512GB',bateria:98,imei:'354621087432101',sucursal:'La Consulta',precio:1449,stock:1},
+  {modelo:'iPhone 16 Pro',    memoria:'128GB',bateria:85,imei:'354621087432102',sucursal:'Tunuyán',precio:1199,stock:5},
+  {modelo:'iPhone 16',        memoria:'128GB',bateria:100,imei:'354621087432103',sucursal:'La Consulta',precio:899,stock:4},
+  {modelo:'iPhone 15 Pro Max',memoria:'512GB',bateria:78,imei:'354621087432104',sucursal:'Tunuyán',precio:1099,stock:2},
+  {modelo:'iPhone 15',        memoria:'128GB',bateria:91,imei:'354621087432105',sucursal:'Tunuyán',precio:749,stock:6},
+  {modelo:'iPhone 14 Pro Max',memoria:'256GB',bateria:72,imei:'354621087432106',sucursal:'La Consulta',precio:799,stock:3},
+  {modelo:'iPhone 14',        memoria:'128GB',bateria:65,imei:'354621087432107',sucursal:'La Consulta',precio:649,stock:0},
+  {modelo:'iPhone 13',        memoria:'128GB',bateria:88,imei:'354621087432108',sucursal:'La Consulta',precio:449,stock:4},
+  {modelo:'iPhone 12',        memoria:'64GB', bateria:61,imei:'354621087432109',sucursal:'Tunuyán',precio:349,stock:1},
+];
+
+// stockT = Tunuyán, stockC = La Consulta
+let accesorios=[
+  {nombre:'Funda MagSafe iPhone 16 Pro',cat:'Fundas / Cases',precio:18500,stockT:5,stockC:3},
+  {nombre:'Funda silicona iPhone 15',   cat:'Fundas / Cases',precio:12000,stockT:2,stockC:3},
+  {nombre:'Cable USB-C 1m original',    cat:'Cargadores / Cables',precio:9500,stockT:8,stockC:4},
+  {nombre:'Cargador 20W original',      cat:'Cargadores / Cables',precio:22000,stockT:1,stockC:3},
+  {nombre:'AirPods Pro 2da gen',        cat:'AirPods / Auriculares',precio:178000,stockT:2,stockC:0},
+  {nombre:'AirPods 3ra generación',     cat:'AirPods / Auriculares',precio:115000,stockT:0,stockC:1},
+  {nombre:'Vidrio templado iPhone 16',  cat:'Vidrios templados',precio:6500,stockT:0,stockC:0},
+  {nombre:'Vidrio templado iPhone 15',  cat:'Vidrios templados',precio:5500,stockT:4,stockC:2},
+];
+
+let ventas=[];
+let servicios=[];
+
+function opt(v,cur){return`<option ${cur===v?'selected':''}>${v}</option>`;}
+function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function fmtDatetime(ts){const d=new Date(ts);return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});}
+function batColor(b){return b>=80?'#2E7D32':b>=50?'#E65100':'#C62828';}
+function batBadge(b){const c=batColor(b);return`<div class="bat-wrap"><div class="bat-bar"><div class="bat-fill" style="width:${b}%;background:${c}"></div></div><span style="font-size:11px;color:${c};font-weight:600">${b}%</span></div>`;}
+function stockBadge(s){return s===0?'<span class="sbadge s-out">Sin stock</span>':s<=2?'<span class="sbadge s-low">Bajo</span>':'<span class="sbadge s-ok">OK</span>';}
+function totalAc(a){return(a.stockT||0)+(a.stockC||0);}
+function stBadge(e){const m={Pendiente:'st-pend','En progreso':'st-prog','Listo para entregar':'st-list',Entregado:'st-ent'};return`<span class="st-badge ${m[e]||'st-pend'}">${e}</span>`;}
+function canEdit(){return rol==='admin'||rol==='gerente';}
+function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empleado';}
+function shortImei(i){return i?'···'+i.slice(-4):'-';}
+function hl(text,q){if(!q)return text;const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');return String(text).replace(re,'<mark class="hl">$1</mark>');}
+function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria)].some(v=>v&&v.toLowerCase().includes(q));}
+function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio)].some(v=>v&&v.toLowerCase().includes(q));}
+
+function renderToolbar(){
+  const ce=canEdit();
+  document.getElementById('toolbar-eq').innerHTML=ce
+    ?`<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button>`
+    :`<span class="btn-readonly">🔒 Solo lectura</span>`;
+  const cats=`<select id="f-cat" onchange="renderAc()"><option value="">Todas las categorías</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>`;
+  document.getElementById('toolbar-ac').innerHTML=ce
+    ?`${cats}<button class="btn-add" onclick="openModal('ac-edit',null)">+ Agregar accesorio</button>`
+    :`${cats}<span class="btn-readonly">🔒 Solo lectura</span>`;
+}
+
+function onRolChange(){
+  document.getElementById('pin-wrap').style.display=document.getElementById('sel-rol').value!=='empleado'?'block':'none';
+}
+function login(){
+  const r=document.getElementById('sel-rol').value;
+  const s=document.getElementById('sel-suc').value;
+  const pin=document.getElementById('inp-pin').value;
+  if(r==='admin'&&pin!=='1234'){alert('PIN incorrecto');return;}
+  if(r==='gerente'&&pin!=='5678'){alert('PIN incorrecto');return;}
+  rol=r;sucursal=s;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  const labels={admin:'Administrador',gerente:'Gerente',empleado:'Empleado'};
+  const cls={admin:'chip-a',gerente:'chip-g',empleado:'chip-e'};
+  const br=document.getElementById('badge-role');
+  br.textContent=labels[rol];br.className='badge-role rchip '+cls[rol];
+  document.getElementById('badge-suc').textContent='📍 '+sucursal;
+  renderToolbar();renderEq();renderAc();renderVentas();renderST();
+}
+function logout(){
+  rol='';sucursal='';searchEq='';searchAc='';
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-pin').value='';
+  document.getElementById('sel-rol').value='empleado';
+  document.getElementById('search-eq').value='';
+  document.getElementById('search-ac').value='';
+  onRolChange();switchTabByName('eq');
+}
+
+function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');['eq','ac','ventas','st'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');}
+function switchTabByName(tab){document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st'][i]===tab));['eq','ac','ventas','st'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');}
+
+function onSearch(tipo,inp){
+  const q=inp.value.trim().toLowerCase();
+  if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
+  else{searchAc=q;document.getElementById('clear-ac').style.display=q?'block':'none';renderAc();}
+}
+function clearSearch(tipo){
+  if(tipo==='eq'){searchEq='';document.getElementById('search-eq').value='';document.getElementById('clear-eq').style.display='none';renderEq();}
+  else{searchAc='';document.getElementById('search-ac').value='';document.getElementById('clear-ac').style.display='none';renderAc();}
+}
+
+/* ---- EQUIPOS ---- */
+function renderEq(){
+  const q=searchEq;
+  const data=equipos.filter(e=>matchEq(e,q));
+  const ce=canEdit();
+  document.getElementById('count-eq').innerHTML=q?`Se encontraron <span>${data.length}</span> resultado${data.length!==1?'s':''} para "<span>${q}</span>"`:'';
+  document.getElementById('tbody-eq').innerHTML=data.length===0
+    ?`<tr><td colspan="9" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
+    :data.map(e=>{const ri=equipos.indexOf(e);return`<tr>
+      <td title="${e.modelo}">${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
+      <td>${batBadge(e.bateria)}</td>
+      <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
+      <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
+      <td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
+      <td>
+        <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
+        <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('eq-edit',${ri})">Editar</button>
+        <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('eq',${ri})">✕</button>
+      </td>
+    </tr>`;}).join('');
+  const tot=equipos.reduce((a,e)=>a+e.stock,0);
+  const val=equipos.reduce((a,e)=>a+e.precio*e.stock,0);
+  const out=equipos.filter(e=>e.stock===0).length;
+  document.getElementById('stats-eq').innerHTML=`
+    <div class="sc"><div class="sc-label">UNIDADES</div><div class="sc-val">${tot}</div></div>
+    <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:14px;padding-top:3px">USD ${val.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div><div class="sc-sub">modelos</div></div>
+    <div class="sc"><div class="sc-label">PRODUCTOS</div><div class="sc-val">${equipos.length}</div></div>`;
+}
+
+/* ---- ACCESORIOS ---- */
+function renderAc(){
+  const q=searchAc;
+  const fCel=document.getElementById('f-cat');
+  const fC=fCel?fCel.value:'';
+  const data=accesorios.filter(a=>(!fC||a.cat===fC)&&matchAc(a,q));
+  const ce=canEdit();
+
+  // Stock por sucursal card
+  const totT=accesorios.reduce((s,a)=>s+(a.stockT||0),0);
+  const totC=accesorios.reduce((s,a)=>s+(a.stockC||0),0);
+  // por categoria
+  const byCatT={},byCatC={};
+  CATS.forEach(c=>{byCatT[c]=accesorios.filter(a=>a.cat===c).reduce((s,a)=>s+(a.stockT||0),0);byCatC[c]=accesorios.filter(a=>a.cat===c).reduce((s,a)=>s+(a.stockC||0),0);});
+  document.getElementById('suc-stock-ac').innerHTML=`
+    <div class="suc-stock-card">
+      <h4>📍 Tunuyán — ${totT} uds</h4>
+      ${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatT[c]}</span></div>`).join('')}
+    </div>
+    <div class="suc-stock-card">
+      <h4>📍 La Consulta — ${totC} uds</h4>
+      ${CATS.map(c=>`<div class="suc-stock-item"><span>${c}</span><span>${byCatC[c]}</span></div>`).join('')}
+    </div>`;
+
+  document.getElementById('count-ac').innerHTML=q?`Se encontraron <span>${data.length}</span> resultado${data.length!==1?'s':''} para "<span>${q}</span>"`:'';
+  document.getElementById('tbody-ac').innerHTML=data.length===0
+    ?`<tr><td colspan="8" class="empty-state">${q?`Sin resultados para "${q}"`:' Sin resultados'}</td></tr>`
+    :data.map(a=>{const ri=accesorios.indexOf(a);const tot=totalAc(a);return`<tr>
+      <td title="${a.nombre}">${hl(a.nombre,q)}</td>
+      <td>${hl(a.cat,q)}</td>
+      <td>$ ${a.precio.toLocaleString('es-AR')}</td>
+      <td style="text-align:center;font-weight:600">${a.stockT||0}</td>
+      <td style="text-align:center;font-weight:600">${a.stockC||0}</td>
+      <td style="text-align:center">${tot}</td>
+      <td>${stockBadge(tot)}</td>
+      <td>
+        <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
+        <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('ac-edit',${ri})">Editar</button>
+        <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('ac',${ri})">✕</button>
+      </td>
+    </tr>`;}).join('');
+
+  const totAll=accesorios.reduce((s,a)=>s+totalAc(a),0);
+  const val=accesorios.reduce((s,a)=>s+a.precio*totalAc(a),0);
+  const out=accesorios.filter(a=>totalAc(a)===0).length;
+  document.getElementById('stats-ac').innerHTML=`
+    <div class="sc"><div class="sc-label">TOTAL UNIDADES</div><div class="sc-val">${totAll}</div></div>
+    <div class="sc"><div class="sc-label">TUNUYÁN</div><div class="sc-val">${totT}</div><div class="sc-sub">unidades</div></div>
+    <div class="sc"><div class="sc-label">LA CONSULTA</div><div class="sc-val">${totC}</div><div class="sc-sub">unidades</div></div>
+    <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">$ ${val.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div><div class="sc-sub">productos</div></div>`;
+}
+
+/* ---- VENTAS ---- */
+function renderVentas(){
+  const fS=document.getElementById('f-suc-v').value;
+  const fT=document.getElementById('f-tipo-v').value;
+  const fE=document.getElementById('f-estado-v').value;
+  const data=[...ventas].reverse().filter(v=>(!fS||v.sucursal===fS)&&(!fT||v.tipo===fT)&&(!fE||v.estado===fE));
+  const activas=ventas.filter(v=>v.estado==='activa');
+  const usd=activas.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+  const ars=activas.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+  const hoy=activas.filter(v=>new Date(v.ts).toDateString()===new Date().toDateString()).length;
+  document.getElementById('stats-ventas').innerHTML=`
+    <div class="sc"><div class="sc-label">VENTAS HOY</div><div class="sc-val">${hoy}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL EQUIPOS</div><div class="sc-val" style="font-size:14px;padding-top:3px">USD ${usd.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL ACCES.</div><div class="sc-val" style="font-size:14px;padding-top:3px">$ ${ars.toLocaleString('es-AR')}</div></div>
+    <div class="sc"><div class="sc-label">TOTAL VENTAS</div><div class="sc-val">${activas.length}</div></div>`;
+  document.getElementById('tbody-ventas').innerHTML=data.length===0
+    ?'<tr><td colspan="9" class="empty-state">Sin ventas registradas</td></tr>'
+    :data.map(v=>{
+      const ri=ventas.indexOf(v);const an=v.estado==='anulada';
+      const ph=(v.pagos||[]).map(p=>`<span class="pago-tag">${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}</span>`).join('');
+      return`<tr class="${an?'anulada-row':''}">
+        <td style="font-size:10px">${fmtDatetime(v.ts)}</td>
+        <td><span class="vtag ${an?'vtag-an':v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${an?'Anul.':v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
+        <td title="${v.producto}">${v.producto}</td>
+        <td>${v.sucursal}</td><td>${v.cantidad}</td>
+        <td style="font-weight:600;font-size:11px">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
+        <td style="white-space:normal;line-height:1.6">${ph||'—'}</td>
+        <td style="font-size:10px;color:#6E6E73">${v.por}</td>
+        <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button>`:'<span style="font-size:10px;color:#aaa">—</span>'}</td>
+      </tr>`;}).join('');
+}
+
+/* ---- SERVICIO TECNICO ---- */
+function renderST(){
+  const fE=document.getElementById('f-st-estado').value;
+  const fS=document.getElementById('f-st-suc').value;
+  const data=[...servicios].reverse().filter(s=>(!fE||s.estado===fE)&&(!fS||s.sucursal===fS));
+  const pend=servicios.filter(s=>s.estado==='Pendiente').length;
+  const prog=servicios.filter(s=>s.estado==='En progreso').length;
+  const list=servicios.filter(s=>s.estado==='Listo para entregar').length;
+  const total=servicios.length;
+  document.getElementById('stats-st').innerHTML=`
+    <div class="sc"><div class="sc-label">TOTAL</div><div class="sc-val">${total}</div></div>
+    <div class="sc"><div class="sc-label">PENDIENTES</div><div class="sc-val">${pend}</div></div>
+    <div class="sc"><div class="sc-label">EN PROGRESO</div><div class="sc-val">${prog}</div></div>
+    <div class="sc"><div class="sc-label">LISTOS</div><div class="sc-val">${list}</div></div>`;
+  document.getElementById('tbody-st').innerHTML=data.length===0
+    ?'<tr><td colspan="9" class="empty-state">Sin servicios registrados</td></tr>'
+    :data.map(s=>{
+      const ri=servicios.indexOf(s);
+      return`<tr>
+        <td style="font-size:10px">${fmtDate(s.fechaIngreso)}</td>
+        <td title="${s.nombre}">${s.nombre}</td>
+        <td>${s.telefono}</td>
+        <td title="${s.modelo}">${s.modelo}</td>
+        <td class="detail-cell" title="${s.detalle}">${s.detalle}</td>
+        <td>$ ${Number(s.precio||0).toLocaleString('es-AR')}</td>
+        <td>${stBadge(s.estado)}</td>
+        <td>${s.sucursal}</td>
+        <td>
+          <button class="btn-e" onclick="openModal('st-edit',${ri})">Editar</button>
+          <button class="btn-d" onclick="delItem('st',${ri})">✕</button>
+        </td>
+      </tr>`;}).join('');
+}
+
+/* ---- PAGOS ---- */
+function buildPagoSection(){
+  return`<div class="pago-section">
+    <div class="pago-section-title">MÉTODO DE PAGO</div>
+    <div class="pago-metodos">
+      ${METODOS.map(m=>`<div class="pago-item">
+        <label><input type="checkbox" id="chk-${m.id}" onchange="togglePago('${m.id}')"> ${m.label}</label>
+        <input class="pago-amount" type="number" id="amt-${m.id}" placeholder="0" disabled oninput="updateResumen()"/>
+      </div>`).join('')}
+    </div>
+    <div id="pago-resumen" style="display:none"></div>
+    <div id="pago-msg"></div>
+  </div>`;
+}
+function togglePago(id){const chk=document.getElementById('chk-'+id);const inp=document.getElementById('amt-'+id);inp.disabled=!chk.checked;if(!chk.checked)inp.value='';updateResumen();}
+function updateResumen(){
+  const t=document.getElementById('vtotal');if(!t)return;
+  const ts=t.textContent||'0';const tn=parseFloat(ts.replace(/[^0-9.]/g,''))||0;
+  const mon=ts.includes('USD')?'USD':'ARS';
+  let pag=0;const act=[];
+  METODOS.forEach(m=>{const chk=document.getElementById('chk-'+m.id);const amt=document.getElementById('amt-'+m.id);if(chk&&chk.checked&&amt){const v=parseFloat(amt.value)||0;pag+=v;if(v>0)act.push({...m,monto:v});}});
+  const rEl=document.getElementById('pago-resumen');const mEl=document.getElementById('pago-msg');
+  if(!act.length){rEl.style.display='none';mEl.innerHTML='';return;}
+  rEl.style.display='block';const sym=mon==='USD'?'USD':'$';
+  rEl.innerHTML=`<div class="pago-resumen">${act.map(a=>`<div class="pago-resumen-row"><span>${a.label}</span><strong>${a.prefix} ${Number(a.monto).toLocaleString('es-AR')}</strong></div>`).join('')}<div class="pago-resumen-total"><span>Total pagado</span><span>${sym} ${pag.toLocaleString('es-AR')}</span></div></div>`;
+  const d=pag-tn;mEl.innerHTML=Math.abs(d)<0.01?`<div class="pago-ok">✓ Pago completo</div>`:d>0?`<div class="pago-ok">✓ Vuelto: ${sym} ${d.toLocaleString('es-AR')}</div>`:`<div class="pago-err">Falta cubrir: ${sym} ${Math.abs(d).toLocaleString('es-AR')}</div>`;
+}
+function getPagos(){return METODOS.filter(m=>{const c=document.getElementById('chk-'+m.id);const a=document.getElementById('amt-'+m.id);return c&&c.checked&&a&&parseFloat(a.value)>0;}).map(m=>({id:m.id,label:m.label.replace(/^.\s/,''),prefix:m.prefix,monto:parseFloat(document.getElementById('amt-'+m.id).value)||0}));}
+
+/* ---- MODAL ---- */
+function openModal(type,idx){
+  modalType=type;editIdx=idx;
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico'};
+  document.getElementById('modal-ttl').textContent=ttls[type]||'';
+  document.getElementById('modal-body').innerHTML=buildForm(type,idx);
+  const mac=document.getElementById('modal-actions');
+  if(type.startsWith('venta')&&type!=='venta-edit'){
+    mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Confirmar venta</button>`;
+  } else {
+    mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;
+  }
+  if(type==='venta')setTimeout(updateVentaGeneral,50);
+  document.getElementById('modal').style.display='flex';
+}
+
+function buildForm(type,idx){
+  if(type==='eq-edit'){
+    const it=idx!==null?equipos[idx]:null;
+    return`
+      <div class="mfl"><label>MODELO</label><input id="mf-modelo" type="text" placeholder="ej: iPhone 16 Pro Max" value="${it?it.modelo:''}"/></div>
+      <div class="mgrid">
+        <div class="mfl"><label>MEMORIA</label><select id="mf-mem">${MEMS.map(m=>opt(m,it?it.memoria:'')).join('')}</select></div>
+        <div class="mfl"><label>BATERÍA (%)</label><input id="mf-bat" type="number" min="1" max="100" placeholder="92" value="${it?it.bateria:''}"/></div>
+      </div>
+      <div class="mfl"><label>IMEI</label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
+      <div class="mgrid">
+        <div class="mfl"><label>PRECIO (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
+        <div class="mfl"><label>SUCURSAL</label><select id="mf-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div>
+      </div>
+      <div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>`;
+  }
+  if(type==='ac-edit'){
+    const it=idx!==null?accesorios[idx]:null;
+    return`
+      <div class="mfl"><label>NOMBRE</label><input id="mf-nombre" type="text" placeholder="ej: Funda MagSafe" value="${it?it.nombre:''}"/></div>
+      <div class="mfl"><label>CATEGORÍA</label><select id="mf-cat-ac">${CATS.map(c=>opt(c,it?it.cat:'')).join('')}</select></div>
+      <div class="mfl"><label>PRECIO (ARS $)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
+      <div class="mgrid">
+        <div class="mfl"><label>STOCK TUNUYÁN</label><input id="mf-stockT" type="number" min="0" value="${it!=null?(it.stockT||0):''}"/></div>
+        <div class="mfl"><label>STOCK LA CONSULTA</label><input id="mf-stockC" type="number" min="0" value="${it!=null?(it.stockC||0):''}"/></div>
+      </div>`;
+  }
+  if(type==='venta-eq'){
+    const e=equipos[idx];
+    return`
+      <div class="sell-info"><strong>${e.modelo} ${e.memoria}</strong><br>Batería: ${e.bateria}% · IMEI: ${e.imei}<br>Sucursal: ${e.sucursal} · Disponible: <strong>${e.stock}</strong></div>
+      <div class="mfl"><label>SUCURSAL DE VENTA</label><select id="mf-suc-venta">${SUCS.map(s=>opt(s,sucursal)).join('')}</select></div>
+      <div class="mgrid">
+        <div class="mfl"><label>CANTIDAD</label><input id="mf-cant" type="number" min="1" max="${e.stock}" value="1" oninput="recalcTotal('eq',${idx})"/></div>
+        <div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-pventa" type="number" min="0" value="${e.precio}" oninput="recalcTotal('eq',${idx})"/></div>
+      </div>
+      <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">USD ${e.precio.toLocaleString('es-AR')}</strong></div>
+      <hr class="divider"/>${buildPagoSection()}`;
+  }
+  if(type==='venta-ac'){
+    const a=accesorios[idx];const tot=totalAc(a);
+    return`
+      <div class="sell-info"><strong>${a.nombre}</strong><br>
+        Stock Tunuyán: <strong>${a.stockT||0}</strong> · La Consulta: <strong>${a.stockC||0}</strong> · Total: <strong>${tot}</strong></div>
+      <div class="mfl"><label>DESCONTAR DE SUCURSAL</label><select id="mf-suc-venta">
+        ${a.stockT>0?`<option value="Tunuyán">Tunuyán (${a.stockT||0} uds)</option>`:''}
+        ${a.stockC>0?`<option value="La Consulta">La Consulta (${a.stockC||0} uds)</option>`:''}
+      </select></div>
+      <div class="mgrid">
+        <div class="mfl"><label>CANTIDAD</label><input id="mf-cant" type="number" min="1" value="1" oninput="recalcTotal('ac',${idx})"/></div>
+        <div class="mfl"><label>PRECIO VENTA (ARS $)</label><input id="mf-pventa" type="number" min="0" value="${a.precio}" oninput="recalcTotal('ac',${idx})"/></div>
+      </div>
+      <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">$ ${a.precio.toLocaleString('es-AR')}</strong></div>
+      <hr class="divider"/>${buildPagoSection()}`;
+  }
+  if(type==='venta'){
+    const eqO=equipos.filter(e=>e.stock>0).map(e=>{const ri=equipos.indexOf(e);return`<option value="eq-${ri}">${e.modelo} ${e.memoria} · ${e.sucursal} (${e.stock}) — USD ${e.precio.toLocaleString('es-AR')}</option>`;}).join('');
+    const acO=accesorios.filter(a=>totalAc(a)>0).map(a=>{const ri=accesorios.indexOf(a);return`<option value="ac-${ri}">${a.nombre} (${totalAc(a)}) — $ ${a.precio.toLocaleString('es-AR')}</option>`;}).join('');
+    return`
+      <div class="mfl"><label>PRODUCTO</label><select id="mf-prod" onchange="updateVentaGeneral()"><optgroup label="📱 Equipos">${eqO||'<option disabled>Sin stock</option>'}</optgroup><optgroup label="🎧 Accesorios">${acO||'<option disabled>Sin stock</option>'}</optgroup></select></div>
+      <div class="mfl"><label>SUCURSAL DE VENTA</label><select id="mf-suc-venta">${SUCS.map(s=>opt(s,sucursal)).join('')}</select></div>
+      <div class="mgrid">
+        <div class="mfl"><label>CANTIDAD</label><input id="mf-cant" type="number" min="1" value="1" oninput="updateVentaGeneral()"/></div>
+        <div class="mfl"><label>PRECIO VENTA</label><input id="mf-pventa" type="number" min="0" value="" oninput="updateVentaGeneral()"/></div>
+      </div>
+      <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">—</strong></div>
+      <hr class="divider"/>${buildPagoSection()}`;
+  }
+  if(type==='venta-edit'){
+    const v=ventas[idx];
+    return`
+      <div class="sell-info"><strong>${v.producto}</strong><br>Sucursal: ${v.sucursal} · Cantidad: ${v.cantidad}</div>
+      <div class="mfl"><label>SUCURSAL DE VENTA</label><select id="mf-suc-venta">${SUCS.map(s=>opt(s,v.sucursal)).join('')}</select></div>
+      <div class="mgrid">
+        <div class="mfl"><label>CANTIDAD</label><input id="mf-cant" type="number" min="1" value="${v.cantidad}" oninput="recalcEdit(${idx})"/></div>
+        <div class="mfl"><label>PRECIO UNIT.</label><input id="mf-pventa" type="number" min="0" value="${v.precioUnit}" oninput="recalcEdit(${idx})"/></div>
+      </div>
+      <div class="sell-info">Total: <strong id="vtotal">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</strong></div>`;
+  }
+  if(type==='st-edit'){
+    const it=idx!==null?servicios[idx]:null;
+    const hoy=new Date().toISOString().split('T')[0];
+    return`
+      <div class="section-label">DATOS DEL CLIENTE</div>
+      <div class="mgrid">
+        <div class="mfl"><label>NOMBRE</label><input id="st-nombre" type="text" placeholder="Nombre completo" value="${it?it.nombre:''}"/></div>
+        <div class="mfl"><label>TELÉFONO</label><input id="st-tel" type="tel" placeholder="2622 000000" value="${it?it.telefono:''}"/></div>
+      </div>
+      <div class="mfl"><label>CORREO ELECTRÓNICO</label><input id="st-correo" type="email" placeholder="correo@ejemplo.com" value="${it?it.correo:''}"/></div>
+      <div class="section-label">DATOS DEL EQUIPO</div>
+      <div class="mfl"><label>MODELO</label><input id="st-modelo" type="text" placeholder="ej: iPhone 14 Pro" value="${it?it.modelo:''}"/></div>
+      <div class="mgrid">
+        <div class="mfl"><label>CLAVE iCLOUD</label><input id="st-icloud" type="text" placeholder="correo@icloud.com" value="${it?it.icloud:''}"/></div>
+        <div class="mfl"><label>CÓDIGO DESBLOQUEO</label><input id="st-codigo" type="text" placeholder="••••" value="${it?it.codigo:''}"/></div>
+      </div>
+      <div class="mfl"><label>DETALLE DEL PROBLEMA</label><textarea id="st-detalle" placeholder="Describí el problema o servicio solicitado…">${it?it.detalle:''}</textarea></div>
+      <div class="section-label">SERVICIO</div>
+      <div class="mgrid3">
+        <div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div>
+        <div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div>
+        <div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div>
+      </div>
+      <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  return '';
+}
+
+function recalcTotal(tipo,idx){
+  const c=parseInt(document.getElementById('mf-cant')?.value)||0;
+  const p=parseFloat(document.getElementById('mf-pventa')?.value)||0;
+  const t=document.getElementById('vtotal');
+  if(t){t.textContent=(tipo==='eq'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');updateResumen();}
+}
+function recalcEdit(idx){
+  const v=ventas[idx];const c=parseInt(document.getElementById('mf-cant')?.value)||0;const p=parseFloat(document.getElementById('mf-pventa')?.value)||0;
+  const t=document.getElementById('vtotal');if(t)t.textContent=(v.moneda==='USD'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');
+}
+function updateVentaGeneral(){
+  const sel=document.getElementById('mf-prod')?.value;const c=parseInt(document.getElementById('mf-cant')?.value)||1;
+  const pvEl=document.getElementById('mf-pventa');const t=document.getElementById('vtotal');
+  if(!sel||!t)return;
+  const [tipo,i]=sel.split('-');const idx=parseInt(i);
+  const item=tipo==='eq'?equipos[idx]:accesorios[idx];
+  if(pvEl&&!pvEl.value)pvEl.value=item.precio;
+  const p=parseFloat(pvEl?.value)||item.precio;
+  t.textContent=(tipo==='eq'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');updateResumen();
+}
+
+function saveModal(){
+  if(modalType==='eq-edit'){
+    const modelo=document.getElementById('mf-modelo').value.trim();
+    if(!modelo){alert('Ingresá el modelo');return;}
+    const bat=parseInt(document.getElementById('mf-bat').value)||0;
+    if(bat<1||bat>100){alert('Batería entre 1 y 100');return;}
+    const imei=document.getElementById('mf-imei').value.trim();
+    if(!imei){alert('Ingresá el IMEI');return;}
+    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,stock:parseInt(document.getElementById('mf-stock').value)||0};
+    if(editIdx!==null)equipos[editIdx]=obj;else equipos.push(obj);
+    renderEq();closeModal();return;
+  }
+  if(modalType==='ac-edit'){
+    const nombre=document.getElementById('mf-nombre').value.trim();
+    if(!nombre){alert('Ingresá el nombre');return;}
+    const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0};
+    if(editIdx!==null)accesorios[editIdx]=obj;else accesorios.push(obj);
+    renderAc();closeModal();return;
+  }
+  const regVenta=(tipo,prodIdx,c,p,sv,moneda,producto,sStock)=>{
+    ventas.push({ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx:tipo==='equipo'?prodIdx:null,acIdx:tipo==='accesorio'?prodIdx:null,pagos:getPagos()});
+  };
+  if(modalType==='venta-eq'){
+    const e=equipos[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;const sv=document.getElementById('mf-suc-venta').value;
+    if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
+    equipos[editIdx].stock-=c;regVenta('equipo',editIdx,c,p,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal);
+    renderEq();renderVentas();closeModal();return;
+  }
+  if(modalType==='venta-ac'){
+    const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;
+    const sv=document.getElementById('mf-suc-venta').value;
+    const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
+    if(c>maxSt){alert(`Stock insuficiente en ${sv}. Disponible: ${maxSt}`);return;}
+    if(sv==='Tunuyán')accesorios[editIdx].stockT-=c;else accesorios[editIdx].stockC-=c;
+    regVenta('accesorio',editIdx,c,p,sv,'ARS',a.nombre,sv);
+    renderAc();renderVentas();closeModal();return;
+  }
+  if(modalType==='venta'){
+    const sel=document.getElementById('mf-prod').value;const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||0;const sv=document.getElementById('mf-suc-venta').value;
+    if(!sel){alert('Seleccioná un producto');return;}
+    const [tipo,i]=sel.split('-');const idx=parseInt(i);
+    if(tipo==='eq'){
+      const e=equipos[idx];if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
+      equipos[idx].stock-=c;regVenta('equipo',idx,c,p||e.precio,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal);renderEq();
+    } else {
+      const a=accesorios[idx];if(c>totalAc(a)){alert(`Stock insuficiente. Disponible: ${totalAc(a)}`);return;}
+      // descontar del mayor stock disponible
+      if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
+      regVenta('accesorio',idx,c,p||a.precio,sv,'ARS',a.nombre,sv);renderAc();
+    }
+    renderVentas();closeModal();return;
+  }
+  if(modalType==='venta-edit'){
+    const v=ventas[editIdx];const cN=parseInt(document.getElementById('mf-cant').value)||1;const pN=parseFloat(document.getElementById('mf-pventa').value)||v.precioUnit;const svN=document.getElementById('mf-suc-venta').value;
+    if(v.tipo==='equipo'&&v.eqIdx!=null){equipos[v.eqIdx].stock+=v.cantidad;if(cN>equipos[v.eqIdx].stock){alert(`Stock insuficiente`);equipos[v.eqIdx].stock-=v.cantidad;return;}equipos[v.eqIdx].stock-=cN;}
+    ventas[editIdx]={...v,cantidad:cN,precioUnit:pN,total:cN*pN,sucursal:svN};
+    renderEq();renderAc();renderVentas();closeModal();return;
+  }
+  if(modalType==='st-edit'){
+    const nombre=document.getElementById('st-nombre').value.trim();
+    if(!nombre){alert('Ingresá el nombre del cliente');return;}
+    const modelo=document.getElementById('st-modelo').value.trim();
+    if(!modelo){alert('Ingresá el modelo del equipo');return;}
+    const fechaVal=document.getElementById('st-fecha').value;
+    const obj={
+      nombre,
+      telefono:document.getElementById('st-tel').value.trim(),
+      correo:document.getElementById('st-correo').value.trim(),
+      modelo,
+      icloud:document.getElementById('st-icloud').value.trim(),
+      codigo:document.getElementById('st-codigo').value.trim(),
+      detalle:document.getElementById('st-detalle').value.trim(),
+      precio:parseInt(document.getElementById('st-precio').value)||0,
+      estado:document.getElementById('st-estado').value,
+      sucursal:document.getElementById('st-suc').value,
+      fechaIngreso:fechaVal?new Date(fechaVal+'T00:00:00').getTime():Date.now(),
+    };
+    if(editIdx!==null)servicios[editIdx]=obj;else servicios.push(obj);
+    renderST();closeModal();return;
+  }
+}
+
+function anularVenta(idx){
+  if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
+  const v=ventas[idx];
+  if(v.tipo==='equipo'&&v.eqIdx!=null)equipos[v.eqIdx].stock+=v.cantidad;
+  if(v.tipo==='accesorio'&&v.acIdx!=null){const a=accesorios[v.acIdx];if(v.sucursal==='Tunuyán')a.stockT+=v.cantidad;else a.stockC+=v.cantidad;}
+  ventas[idx]={...v,estado:'anulada'};
+  renderEq();renderAc();renderVentas();
+}
+function delItem(type,idx){
+  if(!confirm('¿Eliminar?'))return;
+  if(type==='eq'){equipos.splice(idx,1);renderEq();}
+  else if(type==='ac'){accesorios.splice(idx,1);renderAc();}
+  else{servicios.splice(idx,1);renderST();}
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+onRolChange();
+</script>
+</body>
+</html>
