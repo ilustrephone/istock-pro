@@ -1061,10 +1061,13 @@ async function saveModal(){
     const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;const sv=document.getElementById('mf-suc-venta').value;
     const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
     if(c>maxSt){alert(`Stock insuficiente en ${sv}. Disponible: ${maxSt}`);return;}
+    const pagosGuardados=getPagos();
     if(sv==='Tunuyán')accesorios[editIdx].stockT-=c;else accesorios[editIdx].stockC-=c;
     closeModal();renderAc();
     await saveItem('accesorios', accesorios[editIdx]);
-    await regVenta('accesorio',editIdx,c,p,sv,'ARS',a.nombre,sv,null,editIdx);
+    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,acIdx:editIdx,pagos:pagosGuardados,canje:null};
+    ventas.push(venta);
+    await saveItem('ventas',venta);
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
   }
   if(modalType==='venta'){
@@ -1073,15 +1076,21 @@ async function saveModal(){
     const [tipo,i]=sel.split('-');const idx=parseInt(i);
     if(tipo==='eq'){
       const e=equipos[idx];if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
+      const pagosGuardados=getPagos();
       equipos[idx].stock-=c;closeModal();renderEq();
       await saveItem('equipos',equipos[idx]);
-      await regVenta('equipo',idx,c,p||e.precio,sv,'USD',`${e.modelo} ${e.memoria}`,e.sucursal,idx,null);
+      const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,acIdx:null,pagos:pagosGuardados,canje:null};
+      ventas.push(venta);
+      await saveItem('ventas',venta);
     } else {
       const a=accesorios[idx];if(c>totalAc(a)){alert(`Stock insuficiente.`);return;}
+      const pagosGuardados=getPagos();
       if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
       closeModal();renderAc();
       await saveItem('accesorios',accesorios[idx]);
-      await regVenta('accesorio',idx,c,p||a.precio,sv,'ARS',a.nombre,sv,null,idx);
+      const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,acIdx:idx,pagos:pagosGuardados,canje:null};
+      ventas.push(venta);
+      await saveItem('ventas',venta);
     }
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
   }
