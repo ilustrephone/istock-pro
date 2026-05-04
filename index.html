@@ -203,9 +203,7 @@ tr:hover td{background:#FAFAFA;}
     </div>
     <button class="btn-login" onclick="login()">Ingresar</button>
     <div class="login-hint">
-      Administrador <span class="rchip chip-a">PIN 1234</span><br>
-      Gerente <span class="rchip chip-g">PIN 5678</span><br>
-      Empleado <span class="rchip chip-e">sin PIN</span>
+      Seleccioná tu rol e ingresá tu PIN si corresponde
     </div>
   </div>
 </div>
@@ -421,7 +419,10 @@ tr:hover td{background:#FAFAFA;}
 </div>
 
 <script>
-// ===================== SUPABASE CONFIG =====================
+// ===================== CONFIGURACIÓN DE ACCESO =====================
+// ⚙️ Cambiá los PINs acá — solo vos ves este archivo
+const PIN_ADMIN   = '1234';   // ← PIN del Administrador
+const PIN_GERENTE = '5678';   // ← PIN del Gerente
 const SUPA_URL = 'https://rvnvixiuigluutbzftxq.supabase.co';
 const SUPA_KEY = 'sb_publishable_y3TIT6mATrqkoaki2zZSew__HDhxZCm';
 
@@ -561,7 +562,7 @@ function batBadge(b){const c=batColor(b);return`<div class="bat-wrap"><div class
 function stockBadge(s){return s===0?'<span class="sbadge s-out">Sin stock</span>':s<=2?'<span class="sbadge s-low">Bajo</span>':'<span class="sbadge s-ok">OK</span>';}
 function totalAc(a){return(a.stockT||0)+(a.stockC||0);}
 function stBadge(e){const m={Pendiente:'st-pend','En progreso':'st-prog','Listo para entregar':'st-list',Entregado:'st-ent'};return`<span class="st-badge ${m[e]||'st-pend'}">${e}</span>`;}
-function canEdit(){return rol==='admin'||rol==='gerente';}
+function canEdit(){return true;} // todos los roles pueden cargar/editar stock
 function isAdmin(){return rol==='admin';}
 function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empleado';}
 function shortImei(i){return i?'···'+i.slice(-4):'-';}
@@ -590,8 +591,8 @@ async function login(){
   const r=document.getElementById('sel-rol').value;
   const s=document.getElementById('sel-suc').value;
   const pin=document.getElementById('inp-pin').value;
-  if(r==='admin'&&pin!=='1234'){alert('PIN incorrecto');return;}
-  if(r==='gerente'&&pin!=='5678'){alert('PIN incorrecto');return;}
+  if(r==='admin'&&pin!==PIN_ADMIN){alert('PIN incorrecto');return;}
+  if(r==='gerente'&&pin!==PIN_GERENTE){alert('PIN incorrecto');return;}
   rol=r; sucursal=s;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
@@ -1116,7 +1117,6 @@ async function saveModal(){
   if(modalType==='venta-eq'){
     const e=equipos[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;const sv=document.getElementById('mf-suc-venta').value;
     if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
-    // Canje
     const chkCanje=document.getElementById('chk-canje');
     const tieneCanje=chkCanje&&chkCanje.checked;
     const canjeValor=tieneCanje?parseFloat(document.getElementById('canje-valor')?.value)||0:0;
@@ -1124,10 +1124,11 @@ async function saveModal(){
     const canjeImei=tieneCanje?document.getElementById('canje-imei')?.value.trim():'';
     const canjeEstado=tieneCanje?document.getElementById('canje-estado')?.value:'';
     const totalFinal=Math.max(0,c*p-canjeValor);
+    const pagosGuardados=getPagos();
     equipos[editIdx].stock-=c;
     closeModal();renderEq();
     await saveItem('equipos', equipos[editIdx]);
-    const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,acIdx:null,pagos:getPagos(),canje:tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado}:null};
+    const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado}:null};
     ventas.push(venta);
     await saveItem('ventas',venta);
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
@@ -1140,7 +1141,7 @@ async function saveModal(){
     if(sv==='Tunuyán')accesorios[editIdx].stockT-=c;else accesorios[editIdx].stockC-=c;
     closeModal();renderAc();
     await saveItem('accesorios', accesorios[editIdx]);
-    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,acIdx:editIdx,pagos:pagosGuardados,canje:null};
+    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:editIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
     ventas.push(venta);
     await saveItem('ventas',venta);
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
@@ -1154,7 +1155,7 @@ async function saveModal(){
       const pagosGuardados=getPagos();
       equipos[idx].stock-=c;closeModal();renderEq();
       await saveItem('equipos',equipos[idx]);
-      const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,acIdx:null,pagos:pagosGuardados,canje:null};
+      const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     } else {
@@ -1163,7 +1164,7 @@ async function saveModal(){
       if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
       closeModal();renderAc();
       await saveItem('accesorios',accesorios[idx]);
-      const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,acIdx:idx,pagos:pagosGuardados,canje:null};
+      const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:idx,acId:a._id||null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     }
@@ -1192,12 +1193,41 @@ async function saveModal(){
 async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
   const v=ventas[idx];
-  if(v.tipo==='equipo'&&v.eqIdx!=null){equipos[v.eqIdx].stock+=v.cantidad;await saveItem('equipos',equipos[v.eqIdx]);}
-  if(v.tipo==='accesorio'&&v.acIdx!=null){const a=accesorios[v.acIdx];if(v.sucursal==='Tunuyán')a.stockT+=v.cantidad;else a.stockC+=v.cantidad;await saveItem('accesorios',a);}
-  ventas[idx]={...v,estado:'anulada'};
-  renderEq();renderAc();renderVentas();
+  if(!v){alert('No se encontró la venta.');return;}
+
+  if(v.tipo==='equipo'){
+    // Buscar por eqId (ID de Supabase guardado en la venta) o por nombre como fallback
+    const eq = equipos.find(e=>
+      (v.eqId && e._id===v.eqId) ||
+      `${e.modelo} ${e.memoria}`===v.producto
+    );
+    if(eq){
+      eq.stock=(eq.stock||0)+v.cantidad;
+      await saveItem('equipos',eq);
+    } else {
+      alert('No se encontró el equipo en stock. El stock no fue actualizado.');
+    }
+  }
+
+  if(v.tipo==='accesorio'){
+    // Buscar por acId o por nombre como fallback
+    const ac = accesorios.find(a=>
+      (v.acId && a._id===v.acId) ||
+      a.nombre===v.producto
+    );
+    if(ac){
+      if(v.sucursal==='Tunuyán') ac.stockT=(ac.stockT||0)+v.cantidad;
+      else ac.stockC=(ac.stockC||0)+v.cantidad;
+      await saveItem('accesorios',ac);
+    } else {
+      alert('No se encontró el accesorio en stock. El stock no fue actualizado.');
+    }
+  }
+
+  ventas[idx]={...v,estado:'anulada',anuladoPor:rolLabel(),anuladoEn:Date.now()};
   await saveItem('ventas',ventas[idx]);
-  showSyncBar('✓ Venta anulada','ok');
+  renderEq();renderAc();renderVentas();
+  showSyncBar('✓ Venta anulada y stock devuelto','ok');
 }
 
 async function delItem(type,idx){
