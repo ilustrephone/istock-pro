@@ -1493,6 +1493,10 @@ function imprimirCaja(){
   <script>window.onload=()=>window.print()<\/script></body></html>`);
   win.document.close();
 }
+function closeModal(){
+  document.getElementById('modal').style.display='none';
+  modalType=''; editIdx=null;
+}
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 
 // ===================== INICIO =====================
