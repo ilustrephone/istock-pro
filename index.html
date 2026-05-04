@@ -230,6 +230,7 @@ tr:hover td{background:#FAFAFA;}
     <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
     <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
     <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
+    <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
   </div>
 
   <div class="content" id="tab-eq">
@@ -338,6 +339,78 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
 
+  <!-- CIERRE DE CAJA -->
+  <div class="content" id="tab-caja" style="display:none">
+
+    <!-- VISTA: LISTA DE FECHAS (carpetas) -->
+    <div id="caja-vista-fechas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#1D1D1F">🏦 Cierre de Caja</div>
+          <div style="font-size:12px;color:#6E6E73;margin-top:2px">Seleccioná un día para ver sus ventas</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="caja-suc-filtro" style="padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" onchange="renderCarpetas()">
+            <option value="">Ambas sucursales</option>
+            <option>Tunuyán</option>
+            <option>La Consulta</option>
+          </select>
+        </div>
+      </div>
+      <div id="lista-carpetas"></div>
+    </div>
+
+    <!-- VISTA: DETALLE DE UN DÍA -->
+    <div id="caja-vista-dia" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="volverCarpetas()" style="padding:6px 12px;background:#F5F5F7;border:1px solid #D2D2D7;border-radius:9px;font-size:12px;cursor:pointer;color:#1D1D1F;">← Volver</button>
+          <div>
+            <div style="font-size:15px;font-weight:600;color:#1D1D1F" id="caja-dia-titulo"></div>
+            <div style="font-size:12px;color:#6E6E73;margin-top:2px" id="caja-dia-sub"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="cerrarCaja()" id="btn-cerrar-caja" style="padding:7px 15px;background:#1B5E20;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">✅ Cerrar caja</button>
+          <button onclick="imprimirCaja()" style="padding:7px 15px;background:#0071E3;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🖨️ Imprimir</button>
+        </div>
+      </div>
+
+      <div id="caja-cerrada-banner" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:12px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#1B5E20;font-weight:500;"></div>
+
+      <div class="stats-row" id="caja-stats"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;">
+          <div style="font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;">💰 Ingresos por método de pago</div>
+          <div id="caja-pagos"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;">
+          <div style="font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;">🏪 Por sucursal</div>
+          <div id="caja-suc-resumen"></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;">🧾 Ventas del día</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#F5F5F7;">
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Hora</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Tipo</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Producto</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Sucursal</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Total</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Forma de pago</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#6E6E73;border-bottom:1px solid #E8E8ED;">Por</th>
+            </tr></thead>
+            <tbody id="caja-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <h3 id="modal-ttl"></h3>
@@ -433,6 +506,7 @@ async function loadAll(){
       sbGetAll('equipos'), sbGetAll('accesorios'),
       sbGetAll('ventas'), sbGetAll('servicios')
     ]);
+    await loadCierres();
     setSyncDot('ok');
   } catch(e) {
     setSyncDot('error');
@@ -551,12 +625,13 @@ function logout(){
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  ['eq','ac','ventas','st','rep'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  ['eq','ac','ventas','st','rep','caja'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
   if(tab==='rep') renderReporte();
+  if(tab==='caja') renderCaja();
 }
 function switchTabByName(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep'][i]===tab));
-  ['eq','ac','ventas','st','rep'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja'][i]===tab));
+  ['eq','ac','ventas','st','rep','caja'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();}
 
@@ -1142,7 +1217,252 @@ function exportarDatos(){
   a.click();URL.revokeObjectURL(url);
 }
 
-function closeModal(){document.getElementById('modal').style.display='none';}
+// ===================== CIERRE DE CAJA =====================
+let cierres=[];
+let cajaFechaActual=null; // fecha seleccionada en vista detalle
+
+async function loadCierres(){
+  try{
+    const rows=await sbFetch('cierres?select=id,data&order=updated_at.desc');
+    cierres=rows.map(r=>({...r.data,_id:r.id}));
+  }catch(e){cierres=[];}
+}
+
+function tsToFechaStr(ts){
+  const d=new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getVentasPorFecha(fechaStr, sucFiltro){
+  return ventas.filter(v=>{
+    if(v.estado!=='activa') return false;
+    if(tsToFechaStr(v.ts)!==fechaStr) return false;
+    if(sucFiltro&&v.sucursal!==sucFiltro) return false;
+    return true;
+  });
+}
+
+function getFechasConVentas(){
+  const suc=document.getElementById('caja-suc-filtro')?.value||'';
+  const fechas={};
+  ventas.filter(v=>v.estado==='activa').forEach(v=>{
+    if(suc&&v.sucursal!==suc) return;
+    const f=tsToFechaStr(v.ts);
+    if(!fechas[f]) fechas[f]={fecha:f,cant:0,usd:0,ars:0};
+    fechas[f].cant++;
+    if(v.moneda==='USD') fechas[f].usd+=v.total;
+    else fechas[f].ars+=v.total;
+  });
+  return Object.values(fechas).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+}
+
+function renderCaja(){
+  renderCarpetas();
+}
+
+function renderCarpetas(){
+  document.getElementById('caja-vista-fechas').style.display='block';
+  document.getElementById('caja-vista-dia').style.display='none';
+  const fechas=getFechasConVentas();
+  const el=document.getElementById('lista-carpetas');
+  if(fechas.length===0){
+    el.innerHTML=`<div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:3rem;text-align:center;color:#6E6E73;font-size:13px">
+      📂 No hay ventas registradas todavía
+    </div>`;
+    return;
+  }
+  el.innerHTML=fechas.map(f=>{
+    const cierre=cierres.find(c=>c.fecha===f.fecha);
+    const d=new Date(f.fecha+'T12:00:00');
+    const nombreDia=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    const hoy=tsToFechaStr(Date.now());
+    const esHoy=f.fecha===hoy;
+    return`<div onclick="abrirDia('${f.fecha}')" style="background:#fff;border:1px solid ${cierre?'#A5D6A7':esHoy?'#90CAF9':'#E8E8ED'};border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px">${cierre?'✅':esHoy?'📂':'📁'}</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#1D1D1F;text-transform:capitalize">${nombreDia}</div>
+          <div style="font-size:11px;color:#6E6E73;margin-top:2px">${f.cant} venta${f.cant!==1?'s':''} · ${cierre?`<span style="color:#1B5E20;font-weight:500">Caja cerrada</span>`:`<span style="color:${esHoy?'#0058B0':'#6E6E73'}">${esHoy?'Hoy — sin cerrar':'Sin cerrar'}</span>`}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+        ${f.usd>0?`<div style="text-align:right"><div style="font-size:10px;color:#6E6E73;font-weight:500">EQUIPOS</div><div style="font-size:13px;font-weight:600;color:#0058B0">${fmtUSD(f.usd)}</div></div>`:''}
+        ${f.ars>0?`<div style="text-align:right"><div style="font-size:10px;color:#6E6E73;font-weight:500">ACCESORIOS</div><div style="font-size:13px;font-weight:600;color:#1D1D1F">${fmtARS(f.ars)}</div></div>`:''}
+        <span style="color:#D2D2D7;font-size:18px">›</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirDia(fechaStr){
+  cajaFechaActual=fechaStr;
+  document.getElementById('caja-vista-fechas').style.display='none';
+  document.getElementById('caja-vista-dia').style.display='block';
+  renderDetalleDia(fechaStr);
+}
+
+function volverCarpetas(){
+  cajaFechaActual=null;
+  document.getElementById('caja-vista-fechas').style.display='block';
+  document.getElementById('caja-vista-dia').style.display='none';
+}
+
+function renderDetalleDia(fechaStr){
+  const suc=document.getElementById('caja-suc-filtro')?.value||'';
+  const data=getVentasPorFecha(fechaStr,suc);
+  const d=new Date(fechaStr+'T12:00:00');
+  const nombreDia=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const hoy=tsToFechaStr(Date.now());
+
+  document.getElementById('caja-dia-titulo').textContent='📂 '+nombreDia.charAt(0).toUpperCase()+nombreDia.slice(1);
+  document.getElementById('caja-dia-sub').textContent=`${data.length} venta${data.length!==1?'s':''} · ${suc||'Ambas sucursales'}`;
+
+  // Banner cierre
+  const banner=document.getElementById('caja-cerrada-banner');
+  const cierre=cierres.find(c=>c.fecha===fechaStr&&(!suc||c.sucursal===suc||c.sucursal==='Ambas'));
+  if(cierre){
+    banner.style.display='block';
+    banner.innerHTML=`✅ Caja cerrada el <strong>${fmtDatetime(cierre.cerradoEn)}</strong> por <strong>${cierre.cerradoPor}</strong> · ${cierre.sucursal}`;
+    document.getElementById('btn-cerrar-caja').style.display='none';
+  } else {
+    banner.style.display='none';
+    document.getElementById('btn-cerrar-caja').style.display='inline-block';
+    // Solo mostrar botón cerrar para el día de hoy o si es admin/gerente
+    if(fechaStr!==hoy&&!canEdit()){
+      document.getElementById('btn-cerrar-caja').style.display='none';
+    }
+  }
+
+  // Stats
+  const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+  const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+  const canjes=data.filter(v=>v.canje&&v.canje.valor>0);
+  const totalCanjes=canjes.reduce((a,v)=>a+(v.canje.valor||0),0);
+  document.getElementById('caja-stats').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-label">VENTAS</div><div class="sc-val">${data.length}</div></div>
+    <div class="sc"><div class="sc-label">EQUIPOS (USD)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
+    <div class="sc"><div class="sc-label">ACCESORIOS (ARS)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
+    <div class="sc" style="background:#FFF3E0"><div class="sc-label">CANJES</div><div class="sc-val" style="font-size:13px;padding-top:3px;color:#8A4D00">${canjes.length>0?'USD '+totalCanjes.toLocaleString('es-AR'):'—'}</div></div>`;
+
+  // Pagos
+  const pagoTotals={};
+  METODOS.forEach(m=>pagoTotals[m.id]={label:m.label,prefix:m.prefix,total:0});
+  data.forEach(v=>(v.pagos||[]).forEach(p=>{if(pagoTotals[p.id])pagoTotals[p.id].total+=p.monto;}));
+  const activos=Object.values(pagoTotals).filter(p=>p.total>0);
+  document.getElementById('caja-pagos').innerHTML=activos.length===0
+    ?'<div style="color:#6E6E73;font-size:12px">Sin pagos registrados</div>'
+    :activos.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F5F5F7;font-size:12px;"><span style="color:#6E6E73">${p.label}</span><strong>${p.prefix} ${p.total.toLocaleString('es-AR')}</strong></div>`).join('');
+
+  // Por sucursal
+  const bySuc={};
+  SUCS.forEach(s=>bySuc[s]={usd:0,ars:0,cant:0});
+  data.forEach(v=>{if(bySuc[v.sucursal]){bySuc[v.sucursal].cant++;if(v.moneda==='USD')bySuc[v.sucursal].usd+=v.total;else bySuc[v.sucursal].ars+=v.total;}});
+  document.getElementById('caja-suc-resumen').innerHTML=SUCS.map(s=>`
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:600;color:#6E6E73;margin-bottom:5px;">📍 ${s} — ${bySuc[s].cant} ventas</div>
+      ${bySuc[s].usd>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#6E6E73">Equipos</span><strong>${fmtUSD(bySuc[s].usd)}</strong></div>`:''}
+      ${bySuc[s].ars>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#6E6E73">Accesorios</span><strong>${fmtARS(bySuc[s].ars)}</strong></div>`:''}
+      ${bySuc[s].usd===0&&bySuc[s].ars===0?`<div style="font-size:12px;color:#6E6E73">Sin ventas</div>`:''}
+    </div>`).join('<hr style="border:none;border-top:1px solid #F0F0F5;margin:4px 0"/>');
+
+  // Tabla ventas
+  document.getElementById('caja-tabla').innerHTML=data.length===0
+    ?`<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#6E6E73;font-size:13px">Sin ventas en este día</td></tr>`
+    :[...data].reverse().map(v=>{
+      const hora=new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      const ph=(v.pagos||[]).map(p=>`<span class="pago-tag">${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}</span>`).join('');
+      const canjeTag=v.canje&&v.canje.modelo?`<span class="pago-tag" style="background:#FFF3E0;color:#8A4D00">🔄 ${v.canje.modelo} − USD ${Number(v.canje.valor).toLocaleString('es-AR')}</span>`:'';
+      return`<tr style="border-bottom:1px solid #F0F0F5;">
+        <td style="padding:8px 10px;font-size:11px;color:#6E6E73">${hora}</td>
+        <td style="padding:8px 10px"><span class="vtag ${v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
+        <td style="padding:8px 10px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.producto}">${v.producto}</td>
+        <td style="padding:8px 10px;font-size:12px">${v.sucursal}</td>
+        <td style="padding:8px 10px;font-size:12px;font-weight:600">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
+        <td style="padding:8px 10px;font-size:12px;white-space:normal;line-height:1.5">${canjeTag}${ph||(!canjeTag?'—':'')}</td>
+        <td style="padding:8px 10px;font-size:11px;color:#6E6E73">${v.por}</td>
+      </tr>`;
+    }).join('');
+}
+
+async function cerrarCaja(){
+  if(!cajaFechaActual){return;}
+  const suc=document.getElementById('caja-suc-filtro')?.value||'';
+  const data=getVentasPorFecha(cajaFechaActual,suc);
+  if(data.length===0){alert('No hay ventas para cerrar en este día.');return;}
+  const d=new Date(cajaFechaActual+'T12:00:00');
+  const fechaLabel=d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const sucLabel=suc||'Ambas';
+  if(!confirm(`¿Cerrar caja del ${fechaLabel} — ${sucLabel}?\n${data.length} venta(s) registrada(s).`))return;
+  const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+  const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+  const pagoTotals={};
+  METODOS.forEach(m=>pagoTotals[m.id]=0);
+  data.forEach(v=>(v.pagos||[]).forEach(p=>{pagoTotals[p.id]=(pagoTotals[p.id]||0)+p.monto;}));
+  const cierre={fecha:cajaFechaActual,sucursal:sucLabel,cantVentas:data.length,totalUSD:usd,totalARS:ars,pagos:pagoTotals,cerradoPor:rolLabel(),cerradoEn:Date.now()};
+  cierres.unshift(cierre);
+  try{
+    setSyncDot('syncing');
+    const row=await sbInsert('cierres',cierre);
+    cierre._id=row.id;
+    setSyncDot('ok');
+    showSyncBar('✅ Caja cerrada y guardada en la nube','ok');
+  }catch(e){setSyncDot('error');showSyncBar('⚠️ Error al guardar el cierre','error');}
+  renderDetalleDia(cajaFechaActual);
+  // Actualizar también la lista de carpetas en segundo plano
+}
+
+function imprimirCaja(){
+  if(!cajaFechaActual) return;
+  const suc=document.getElementById('caja-suc-filtro')?.value||'';
+  const data=getVentasPorFecha(cajaFechaActual,suc);
+  const d=new Date(cajaFechaActual+'T12:00:00');
+  const fechaLabel=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+  const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+  const pagoTotals={};
+  METODOS.forEach(m=>pagoTotals[m.id]={label:m.label,prefix:m.prefix,total:0});
+  data.forEach(v=>(v.pagos||[]).forEach(p=>{if(pagoTotals[p.id])pagoTotals[p.id].total+=p.monto;}));
+  const cierre=cierres.find(c=>c.fecha===cajaFechaActual);
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Cierre de Caja</title>
+  <style>body{font-family:-apple-system,sans-serif;padding:2rem;color:#1D1D1F;max-width:650px;margin:0 auto;}
+  h1{font-size:20px;margin-bottom:2px;}h2{font-size:13px;font-weight:400;color:#6E6E73;margin-bottom:1.5rem;text-transform:capitalize;}
+  .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F0F5;font-size:13px;}
+  .row strong{font-weight:600;}.section{margin-bottom:1.5rem;}
+  .section-title{font-size:10px;font-weight:600;color:#6E6E73;letter-spacing:0.06em;margin-bottom:8px;text-transform:uppercase;}
+  table{width:100%;border-collapse:collapse;font-size:11px;}
+  th{padding:6px 8px;text-align:left;background:#F5F5F7;border-bottom:1px solid #E8E8ED;font-size:10px;color:#6E6E73;font-weight:600;}
+  td{padding:6px 8px;border-bottom:1px solid #F5F5F7;}
+  .cierre-ok{background:#E8F5E9;border-radius:8px;padding:8px 12px;font-size:12px;color:#1B5E20;margin-bottom:1rem;}
+  footer{margin-top:2rem;font-size:10px;color:#9E9E9E;text-align:center;border-top:1px solid #F0F0F5;padding-top:1rem;}
+  @media print{button{display:none!important;}}</style></head><body>
+  <h1>📱 iStock Pro — Cierre de Caja</h1>
+  <h2>${fechaLabel}</h2>
+  ${cierre?`<div class="cierre-ok">✅ Caja cerrada el ${fmtDatetime(cierre.cerradoEn)} por ${cierre.cerradoPor}</div>`:''}
+  <div class="section">
+    <div class="section-title">Resumen del día</div>
+    <div class="row"><span>Total ventas</span><strong>${data.length}</strong></div>
+    ${usd>0?`<div class="row"><span>Equipos</span><strong>${fmtUSD(usd)}</strong></div>`:''}
+    ${ars>0?`<div class="row"><span>Accesorios</span><strong>${fmtARS(ars)}</strong></div>`:''}
+  </div>
+  <div class="section">
+    <div class="section-title">Ingresos por método de pago</div>
+    ${Object.values(pagoTotals).filter(p=>p.total>0).map(p=>`<div class="row"><span>${p.label}</span><strong>${p.prefix} ${p.total.toLocaleString('es-AR')}</strong></div>`).join('')||'<div style="font-size:12px;color:#6E6E73">Sin pagos registrados</div>'}
+  </div>
+  <div class="section">
+    <div class="section-title">Detalle de ventas</div>
+    <table><thead><tr><th>Hora</th><th>Producto</th><th>Sucursal</th><th>Total</th><th>Forma de pago</th><th>Por</th></tr></thead>
+    <tbody>${[...data].reverse().map(v=>{
+      const hora=new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      const ph=(v.pagos||[]).map(p=>`${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}`).join(' / ');
+      const canje=v.canje&&v.canje.modelo?` (🔄 ${v.canje.modelo} USD ${v.canje.valor})`:'';
+      return`<tr><td>${hora}</td><td>${v.producto}${canje}</td><td>${v.sucursal}</td><td><strong>${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</strong></td><td>${ph||'—'}</td><td>${v.por}</td></tr>`;
+    }).join('')}</tbody></table>
+  </div>
+  <footer>Generado el ${new Date().toLocaleString('es-AR')} · iStock Pro</footer>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+  win.document.close();
+}
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 
 // ===================== INICIO =====================
