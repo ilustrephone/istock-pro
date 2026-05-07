@@ -1749,7 +1749,7 @@ function renderIngresos(){
       </div>
       <!-- Eliminar -->
       <div style="flex-shrink:0;">
-        <button onclick="eliminarIngreso('${i._id}',${ingresos.indexOf(i)})" style="padding:5px 10px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;" onmouseover="this.style.background='#FFEBEE'" onmouseout="this.style.background='none'">✕ Eliminar</button>
+        <button onclick="eliminarIngreso('${i._id}',${ingresos.indexOf(i)})" style="padding:5px 10px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;">✕ Eliminar</button>
       </div>
     </div>`;
   }).join('');
@@ -2043,10 +2043,7 @@ async function confirmarVentaCarrito(){
   limpiarCarrito();
   renderEq();renderAc();renderVentas();renderCarritoProductos();
   document.getElementById('btn-confirmar-venta').textContent='✅ Confirmar venta';
-  showSyncBar(`✓ Venta de ${carrito.length===0?'varios productos':carrito.length+' producto(s)'} guardada`,'ok');
-}
-  document.getElementById('modal').style.display='none';
-  modalType=''; editIdx=null;
+  showSyncBar(`✓ Venta guardada`,'ok');
 }
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 
