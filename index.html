@@ -1278,7 +1278,24 @@ async function anularVenta(idx){
 
   ventas[idx]={...v,estado:'anulada',anuladoPor:rolLabel(),anuladoEn:Date.now()};
   await saveItem('ventas',ventas[idx]);
+
+  // Si la venta tenía canje, eliminar el ingreso correspondiente
+  if(v.canje && v.canje.modelo){
+    // Buscar el ingreso que coincida con esta venta (mismo timestamp aprox o mismo producto/cliente)
+    const ingresoIdx = ingresos.findIndex(i=>
+      i.modelo===v.canje.modelo &&
+      i.ventaProducto===v.producto &&
+      Math.abs(i.ts - v.ts) < 60000 // dentro del mismo minuto
+    );
+    if(ingresoIdx!==-1){
+      const ingId=ingresos[ingresoIdx]._id;
+      ingresos.splice(ingresoIdx,1);
+      if(ingId) await deleteItem('ingresos',ingId);
+    }
+  }
+
   renderEq();renderAc();renderVentas();
+  if(document.getElementById('tab-ingresos').style.display!=='none') renderIngresos();
   showSyncBar('✓ Venta anulada y stock devuelto','ok');
 }
 
