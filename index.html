@@ -207,6 +207,55 @@ tr:hover td{background:#FAFAFA;}
 .btn-confirmar-venta:disabled{opacity:0.4;cursor:not-allowed;}
 .carrito-suc-sel{width:100%;padding:8px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;margin-bottom:8px;}
 @media(max-width:900px){.carrito-layout{grid-template-columns:1fr;}}
+
+/* DRAWER CARRITO */
+.carrito-drawer{
+  position:fixed;top:0;right:0;bottom:0;
+  width:380px;max-width:95vw;
+  background:#fff;
+  border-left:1px solid #E8E8ED;
+  box-shadow:-4px 0 24px rgba(0,0,0,0.10);
+  z-index:300;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden;
+}
+.carrito-drawer.open{transform:translateX(0);}
+.carrito-drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid #E8E8ED;
+  flex-shrink:0;
+}
+.carrito-drawer-header h3{font-size:14px;font-weight:600;color:#1D1D1F;}
+.carrito-drawer-close{background:none;border:none;font-size:18px;cursor:pointer;color:#6E6E73;padding:2px 6px;}
+.carrito-drawer-body{flex:1;overflow-y:auto;padding:12px 14px;}
+.carrito-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.25);
+  z-index:299;display:none;
+}
+.carrito-overlay.open{display:block;}
+/* Botón flotante carrito */
+.btn-carrito-float{
+  position:fixed;bottom:1.5rem;right:1.5rem;
+  z-index:250;
+  background:#0071E3;color:#fff;
+  border:none;border-radius:50px;
+  padding:10px 18px;
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 16px rgba(0,113,227,0.4);
+  transition:transform 0.2s,opacity 0.2s;
+}
+.btn-carrito-float:hover{transform:scale(1.05);}
+.btn-carrito-float .badge{
+  background:#fff;color:#0071E3;
+  border-radius:50%;width:20px;height:20px;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:12px;}
 .loading-spinner{width:36px;height:36px;border:3px solid #E8E8ED;border-top-color:#0071E3;border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -315,66 +364,7 @@ tr:hover td{background:#FAFAFA;}
 
   <div class="content" id="tab-ventas" style="display:none">
     <div class="stats-row" id="stats-ventas"></div>
-
-    <!-- CARRITO -->
-    <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin-bottom:0.8rem;">🛒 Nueva venta</div>
-    <div class="carrito-layout">
-      <!-- Panel izquierdo: búsqueda de productos -->
-      <div class="carrito-productos">
-        <div style="font-size:12px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;">SELECCIONAR PRODUCTOS</div>
-        <input type="text" class="prod-search" id="carrito-search" placeholder="Buscar equipo o accesorio..." oninput="renderCarritoProductos()"/>
-        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-          <button class="filter-btn active" onclick="carritoFiltro('todos',this)" style="padding:5px 12px;font-size:11px;">Todos</button>
-          <button class="filter-btn" onclick="carritoFiltro('equipo',this)" style="padding:5px 12px;font-size:11px;">📱 Equipos</button>
-          <button class="filter-btn" onclick="carritoFiltro('accesorio',this)" style="padding:5px 12px;font-size:11px;">🎧 Accesorios</button>
-        </div>
-        <div class="prod-list" id="carrito-prod-list"></div>
-      </div>
-
-      <!-- Panel derecho: carrito -->
-      <div class="carrito-panel">
-        <div class="carrito-panel-title">
-          <span>Carrito <span id="carrito-count" style="background:#E3F0FF;color:#0058B0;padding:1px 8px;border-radius:10px;font-size:11px;">0</span></span>
-          <button onclick="limpiarCarrito()" style="font-size:11px;color:#C62828;background:none;border:none;cursor:pointer;">Limpiar</button>
-        </div>
-
-        <!-- Sucursal -->
-        <select class="carrito-suc-sel" id="carrito-suc">
-          <option value="Tunuyán">📍 Tunuyán</option>
-          <option value="La Consulta">📍 La Consulta</option>
-        </select>
-
-        <!-- Items del carrito -->
-        <div id="carrito-items"><div class="carrito-empty">📦 Agregá productos al carrito</div></div>
-
-        <!-- Descuento -->
-        <div style="margin-top:10px;margin-bottom:6px;">
-          <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">DESCUENTO</div>
-          <div class="descuento-row">
-            <input type="number" class="descuento-inp" id="carrito-desc-val" placeholder="0" min="0" oninput="actualizarCarritoTotales()"/>
-            <select class="descuento-tipo" id="carrito-desc-tipo" onchange="actualizarCarritoTotales()">
-              <option value="$">$ ARS</option>
-              <option value="USD">USD</option>
-              <option value="%">%</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Totales -->
-        <div class="carrito-subtotal" id="carrito-totales"></div>
-
-        <!-- Pagos -->
-        <div style="margin-top:10px;">
-          <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;">FORMA DE PAGO</div>
-          <div id="carrito-pagos-section"></div>
-        </div>
-
-        <button class="btn-confirmar-venta" id="btn-confirmar-venta" onclick="confirmarVentaCarrito()" disabled>✅ Confirmar venta</button>
-      </div>
-    </div>
-
-    <!-- HISTORIAL -->
-    <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin:1.5rem 0 0.8rem;">📋 Historial de ventas</div>
+    <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin-bottom:0.8rem;">📋 Historial de ventas</div>
     <div class="toolbar">
       <select id="f-suc-v" onchange="renderVentas()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
       <select id="f-tipo-v" onchange="renderVentas()"><option value="">Equipos y accesorios</option><option value="equipo">Solo equipos</option><option value="accesorio">Solo accesorios</option></select>
@@ -541,6 +531,63 @@ tr:hover td{background:#FAFAFA;}
       <div class="mac" id="modal-actions"></div>
     </div>
   </div>
+
+  <!-- OVERLAY CARRITO -->
+  <div class="carrito-overlay" id="carrito-overlay" onclick="cerrarCarrito()"></div>
+
+  <!-- DRAWER CARRITO -->
+  <div class="carrito-drawer" id="carrito-drawer">
+    <div class="carrito-drawer-header">
+      <h3>🛒 Carrito <span id="carrito-count" style="background:#E3F0FF;color:#0058B0;padding:1px 8px;border-radius:10px;font-size:11px;margin-left:4px;">0</span></h3>
+      <button class="carrito-drawer-close" onclick="cerrarCarrito()">✕</button>
+    </div>
+    <div class="carrito-drawer-body">
+      <!-- Sucursal -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">SUCURSAL</div>
+        <select class="carrito-suc-sel" id="carrito-suc">
+          <option value="Tunuyán">📍 Tunuyán</option>
+          <option value="La Consulta">📍 La Consulta</option>
+        </select>
+      </div>
+
+      <!-- Items -->
+      <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:6px;">PRODUCTOS</div>
+      <div id="carrito-items"><div class="carrito-empty">📦 Agregá productos desde Equipos o Accesorios</div></div>
+
+      <!-- Descuento -->
+      <div style="margin-top:12px;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">DESCUENTO</div>
+        <div class="descuento-row">
+          <input type="number" class="descuento-inp" id="carrito-desc-val" placeholder="0" min="0" oninput="actualizarCarritoTotales()"/>
+          <select class="descuento-tipo" id="carrito-desc-tipo" onchange="actualizarCarritoTotales()">
+            <option value="$">$ ARS</option>
+            <option value="USD">USD</option>
+            <option value="%">%</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Totales -->
+      <div class="carrito-subtotal" id="carrito-totales"></div>
+
+      <!-- Pagos -->
+      <div style="margin-top:12px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;">FORMA DE PAGO</div>
+        <div id="carrito-pagos-section"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="limpiarCarrito()" style="flex:0;padding:10px 14px;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;">Limpiar</button>
+        <button class="btn-confirmar-venta" id="btn-confirmar-venta" onclick="confirmarVentaCarrito()" disabled style="flex:1;">✅ Confirmar venta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTÓN FLOTANTE -->
+  <button class="btn-carrito-float" id="btn-carrito-float" onclick="abrirCarrito()" style="display:none;">
+    🛒 Carrito <span class="badge" id="carrito-badge">0</span>
+  </button>
 
 </div><!-- /main-app -->
 
@@ -712,14 +759,14 @@ function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
 
 function renderToolbar(){
   const ce=canEdit();
-  // Equipos: todos los roles pueden agregar
   document.getElementById('toolbar-eq').innerHTML=
-    `<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button>`;
-  // Accesorios: solo admin y gerente pueden agregar
+    `<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button>
+     <button onclick="abrirCarrito()" style="padding:7px 13px;background:#E3F0FF;color:#0058B0;border:1px solid #90CAF9;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🛒 Carrito <span id="carrito-count-eq" style="background:#0071E3;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;">0</span></button>`;
   const cats=`<select id="f-cat" onchange="renderAc()"><option value="">Todas las categorías</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>`;
   document.getElementById('toolbar-ac').innerHTML=ce
-    ?`${cats}<button class="btn-add" onclick="openModal('ac-edit',null)">+ Agregar accesorio</button>`
-    :`${cats}`;
+    ?`${cats}<button class="btn-add" onclick="openModal('ac-edit',null)">+ Agregar accesorio</button>
+      <button onclick="abrirCarrito()" style="padding:7px 13px;background:#E3F0FF;color:#0058B0;border:1px solid #90CAF9;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🛒 Carrito <span id="carrito-count-ac" style="background:#0071E3;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;">0</span></button>`
+    :`${cats}<button onclick="abrirCarrito()" style="padding:7px 13px;background:#E3F0FF;color:#0058B0;border:1px solid #90CAF9;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🛒 Carrito <span id="carrito-count-ac" style="background:#0071E3;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;">0</span></button>`;
   document.getElementById('th-costo-eq').style.display=isAdmin()?'':'none';
   document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
@@ -812,6 +859,7 @@ function renderEq(){
         ${costoCell}<td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
         <td>
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
+          <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${e.stock===0?'disabled':''} onclick="agregarEqAlCarrito(${ri})">🛒</button>
           <button class="btn-e" onclick="openModal('eq-edit',${ri})">Editar</button>
           <button class="btn-d" onclick="delItem('eq',${ri})">✕</button>
         </td>
@@ -854,6 +902,7 @@ function renderAc(){
         <td style="text-align:center">${tot}</td><td>${stockBadge(tot)}</td>
         <td>
           <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
+          <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${tot===0?'disabled':''} onclick="agregarAcAlCarrito(${ri})">🛒</button>
           ${ce?`<button class="btn-e" onclick="openModal('ac-edit',${ri})">Editar</button>`:''}
           ${ce?`<button class="btn-d" onclick="delItem('ac',${ri})">✕</button>`:''}
         </td>
@@ -1772,6 +1821,48 @@ async function eliminarIngreso(id, idx){
 let carrito=[];
 let carritoFiltroActual='todos';
 
+function agregarEqAlCarrito(ri){
+  const e=equipos[ri];
+  if(!e||e.stock===0) return;
+  const nombre=`${e.modelo} ${e.memoria}`;
+  const existe=carrito.find(c=>c.nombre===nombre&&c.tipo==='equipo');
+  if(existe){
+    if(existe.qty<e.stock){existe.qty++;showSyncBar('✓ Cantidad actualizada en carrito','ok');}
+    else{showSyncBar('⚠️ Sin más stock disponible','error');return;}
+  } else {
+    carrito.push({tipo:'equipo',nombre,sub:`📍 ${e.sucursal} · 🔋 ${e.bateria}%`,precio:e.precio,moneda:'USD',stock:e.stock,ref:e,qty:1,precioUnit:e.precio});
+    showSyncBar(`✓ ${nombre} agregado al carrito`,'ok');
+  }
+  actualizarCarritoUI();
+  abrirCarrito();
+}
+
+function agregarAcAlCarrito(ri){
+  const a=accesorios[ri];
+  if(!a||totalAc(a)===0) return;
+  const nombre=a.nombre;
+  const existe=carrito.find(c=>c.nombre===nombre&&c.tipo==='accesorio');
+  if(existe){
+    if(existe.qty<totalAc(a)){existe.qty++;showSyncBar('✓ Cantidad actualizada en carrito','ok');}
+    else{showSyncBar('⚠️ Sin más stock disponible','error');return;}
+  } else {
+    carrito.push({tipo:'accesorio',nombre,sub:a.cat,precio:a.precio,moneda:'ARS',stock:totalAc(a),ref:a,qty:1,precioUnit:a.precio});
+    showSyncBar(`✓ ${nombre} agregado al carrito`,'ok');
+  }
+  actualizarCarritoUI();
+  abrirCarrito();
+}
+
+function abrirCarrito(){
+  document.getElementById('carrito-drawer').classList.add('open');
+  document.getElementById('carrito-overlay').classList.add('open');
+  actualizarCarritoUI();
+}
+function cerrarCarrito(){
+  document.getElementById('carrito-drawer').classList.remove('open');
+  document.getElementById('carrito-overlay').classList.remove('open');
+}
+
 function carritoFiltro(f, btn){
   carritoFiltroActual=f;
   document.querySelectorAll('#tab-ventas .filter-btn').forEach(b=>b.classList.remove('active'));
@@ -1850,10 +1941,20 @@ function limpiarCarrito(){
 }
 
 function actualizarCarritoUI(){
-  document.getElementById('carrito-count').textContent=carrito.length;
+  const n=carrito.length;
+  // Actualizar todos los badges
+  ['carrito-count','carrito-badge','carrito-count-eq','carrito-count-ac'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=n;
+  });
+  // Mostrar/ocultar botón flotante
+  const btnFloat=document.getElementById('btn-carrito-float');
+  if(btnFloat) btnFloat.style.display=n>0?'flex':'none';
+
   const el=document.getElementById('carrito-items');
-  if(carrito.length===0){
-    el.innerHTML=`<div class="carrito-empty">📦 Agregá productos al carrito</div>`;
+  if(!el) return;
+  if(n===0){
+    el.innerHTML=`<div class="carrito-empty">📦 Agregá productos desde Equipos o Accesorios</div>`;
   } else {
     el.innerHTML=carrito.map((c,i)=>`
       <div class="carrito-item">
