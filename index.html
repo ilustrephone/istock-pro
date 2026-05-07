@@ -223,13 +223,13 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos</button>
-    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios</button>
-    <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
+    <button class="tab active" onclick="switchTab('ac',this)">🎧 Accesorios</button>
+    <button class="tab" onclick="switchTab('eq',this)">📱 Equipos</button>
     <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
-    <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
-    <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
     <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
+    <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
+    <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
+    <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
   </div>
 
   <div class="content" id="tab-eq">
@@ -659,7 +659,7 @@ function logout(){
   document.getElementById('sel-rol').value='empleado';
   document.getElementById('search-eq').value='';
   document.getElementById('search-ac').value='';
-  onRolChange(); switchTabByName('eq');
+  onRolChange(); switchTabByName('ac');
 }
 
 function switchTab(tab,el){
@@ -671,7 +671,7 @@ function switchTab(tab,el){
   if(tab==='ingresos') renderIngresos();
 }
 function switchTabByName(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos'][i]===tab));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['ac','eq','st','ingresos','ventas','caja','rep'][i]===tab));
   ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();}
@@ -1640,8 +1640,20 @@ function renderIngresos(){
         <div style="font-size:15px;font-weight:700;color:#1D1D1F;">USD ${(i.valor||0).toLocaleString('es-AR')}</div>
         <div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${i.sucursal||'—'}</div>
       </div>
+      <!-- Eliminar -->
+      <div style="flex-shrink:0;">
+        <button onclick="eliminarIngreso('${i._id}',${ingresos.indexOf(i)})" style="padding:5px 10px;font-size:11px;border:1px solid #FFCDD2;border-radius:8px;background:none;color:#C62828;cursor:pointer;" onmouseover="this.style.background='#FFEBEE'" onmouseout="this.style.background='none'">✕ Eliminar</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+async function eliminarIngreso(id, idx){
+  if(!confirm('¿Eliminar este ingreso del registro?')) return;
+  ingresos.splice(idx, 1);
+  renderIngresos();
+  if(id) await deleteItem('ingresos', id);
+  showSyncBar('✓ Ingreso eliminado', 'ok');
 }
 
 function closeModal(){
