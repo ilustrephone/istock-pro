@@ -168,6 +168,45 @@ tr:hover td{background:#FAFAFA;}
 .empty-state{text-align:center;padding:2rem;color:#6E6E73;font-size:13px;}
 .anulada-row td{opacity:0.4;}
 .detail-cell{white-space:normal;line-height:1.4;max-height:36px;overflow:hidden;}
+
+/* CARRITO */
+.carrito-layout{display:grid;grid-template-columns:1fr 360px;gap:1rem;align-items:start;}
+.carrito-productos{background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem;}
+.carrito-panel{background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem;position:sticky;top:60px;}
+.carrito-panel-title{font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;display:flex;align-items:center;justify-content:space-between;}
+.carrito-empty{text-align:center;padding:2rem;color:#6E6E73;font-size:13px;}
+.carrito-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F5F5F7;}
+.carrito-item:last-child{border-bottom:none;}
+.carrito-item-name{flex:1;font-size:12px;font-weight:500;color:#1D1D1F;line-height:1.3;}
+.carrito-item-sub{font-size:11px;color:#6E6E73;}
+.carrito-item-precio{font-size:12px;font-weight:600;color:#1D1D1F;white-space:nowrap;}
+.carrito-item-remove{background:none;border:none;color:#C62828;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px;}
+.carrito-item-remove:hover{background:#FFEBEE;}
+.carrito-qty{display:flex;align-items:center;gap:4px;}
+.carrito-qty-btn{width:22px;height:22px;border:1px solid #D2D2D7;border-radius:6px;background:#F5F5F7;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;}
+.carrito-qty-btn:hover{background:#E0E0E5;}
+.carrito-qty-num{font-size:12px;font-weight:600;min-width:18px;text-align:center;}
+.carrito-subtotal{border-top:1px solid #E8E8ED;padding-top:10px;margin-top:4px;}
+.carrito-subtotal-row{display:flex;justify-content:space-between;font-size:12px;color:#6E6E73;margin-bottom:5px;}
+.carrito-subtotal-row.total{font-size:14px;font-weight:700;color:#1D1D1F;margin-top:5px;padding-top:5px;border-top:1px solid #E8E8ED;}
+.descuento-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.descuento-inp{flex:1;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#fff;}
+.descuento-tipo{padding:6px 8px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#fff;}
+.prod-search{width:100%;padding:8px 12px;font-size:13px;border:1px solid #D2D2D7;border-radius:10px;margin-bottom:10px;font-family:inherit;}
+.prod-search:focus{outline:none;border-color:#0071E3;}
+.prod-list{max-height:320px;overflow-y:auto;}
+.prod-list-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background 0.15s;}
+.prod-list-item:hover{background:#F5F5F7;}
+.prod-list-name{font-size:12px;font-weight:500;color:#1D1D1F;}
+.prod-list-sub{font-size:11px;color:#6E6E73;}
+.prod-list-precio{font-size:12px;font-weight:600;color:#1D1D1F;white-space:nowrap;}
+.prod-list-add{padding:4px 10px;background:#0071E3;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;}
+.prod-list-add:hover{background:#0058B0;}
+.btn-confirmar-venta{width:100%;padding:12px;background:#1B5E20;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;}
+.btn-confirmar-venta:hover{background:#145214;}
+.btn-confirmar-venta:disabled{opacity:0.4;cursor:not-allowed;}
+.carrito-suc-sel{width:100%;padding:8px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;margin-bottom:8px;}
+@media(max-width:900px){.carrito-layout{grid-template-columns:1fr;}}
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:12px;}
 .loading-spinner{width:36px;height:36px;border:3px solid #E8E8ED;border-top-color:#0071E3;border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -276,11 +315,70 @@ tr:hover td{background:#FAFAFA;}
 
   <div class="content" id="tab-ventas" style="display:none">
     <div class="stats-row" id="stats-ventas"></div>
+
+    <!-- CARRITO -->
+    <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin-bottom:0.8rem;">🛒 Nueva venta</div>
+    <div class="carrito-layout">
+      <!-- Panel izquierdo: búsqueda de productos -->
+      <div class="carrito-productos">
+        <div style="font-size:12px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;">SELECCIONAR PRODUCTOS</div>
+        <input type="text" class="prod-search" id="carrito-search" placeholder="Buscar equipo o accesorio..." oninput="renderCarritoProductos()"/>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+          <button class="filter-btn active" onclick="carritoFiltro('todos',this)" style="padding:5px 12px;font-size:11px;">Todos</button>
+          <button class="filter-btn" onclick="carritoFiltro('equipo',this)" style="padding:5px 12px;font-size:11px;">📱 Equipos</button>
+          <button class="filter-btn" onclick="carritoFiltro('accesorio',this)" style="padding:5px 12px;font-size:11px;">🎧 Accesorios</button>
+        </div>
+        <div class="prod-list" id="carrito-prod-list"></div>
+      </div>
+
+      <!-- Panel derecho: carrito -->
+      <div class="carrito-panel">
+        <div class="carrito-panel-title">
+          <span>Carrito <span id="carrito-count" style="background:#E3F0FF;color:#0058B0;padding:1px 8px;border-radius:10px;font-size:11px;">0</span></span>
+          <button onclick="limpiarCarrito()" style="font-size:11px;color:#C62828;background:none;border:none;cursor:pointer;">Limpiar</button>
+        </div>
+
+        <!-- Sucursal -->
+        <select class="carrito-suc-sel" id="carrito-suc">
+          <option value="Tunuyán">📍 Tunuyán</option>
+          <option value="La Consulta">📍 La Consulta</option>
+        </select>
+
+        <!-- Items del carrito -->
+        <div id="carrito-items"><div class="carrito-empty">📦 Agregá productos al carrito</div></div>
+
+        <!-- Descuento -->
+        <div style="margin-top:10px;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">DESCUENTO</div>
+          <div class="descuento-row">
+            <input type="number" class="descuento-inp" id="carrito-desc-val" placeholder="0" min="0" oninput="actualizarCarritoTotales()"/>
+            <select class="descuento-tipo" id="carrito-desc-tipo" onchange="actualizarCarritoTotales()">
+              <option value="$">$ ARS</option>
+              <option value="USD">USD</option>
+              <option value="%">%</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Totales -->
+        <div class="carrito-subtotal" id="carrito-totales"></div>
+
+        <!-- Pagos -->
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;">FORMA DE PAGO</div>
+          <div id="carrito-pagos-section"></div>
+        </div>
+
+        <button class="btn-confirmar-venta" id="btn-confirmar-venta" onclick="confirmarVentaCarrito()" disabled>✅ Confirmar venta</button>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin:1.5rem 0 0.8rem;">📋 Historial de ventas</div>
     <div class="toolbar">
       <select id="f-suc-v" onchange="renderVentas()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
       <select id="f-tipo-v" onchange="renderVentas()"><option value="">Equipos y accesorios</option><option value="equipo">Solo equipos</option><option value="accesorio">Solo accesorios</option></select>
       <select id="f-estado-v" onchange="renderVentas()"><option value="">Todas</option><option value="activa">Activas</option><option value="anulada">Anuladas</option></select>
-      <button class="btn-add" onclick="openModal('venta',null)">+ Registrar venta</button>
     </div>
     <div class="twrap"><table>
       <thead><tr>
@@ -677,6 +775,7 @@ function switchTab(tab,el){
   if(tab==='rep') renderReporte();
   if(tab==='caja') renderCaja();
   if(tab==='ingresos') renderIngresos();
+  if(tab==='ventas') renderCarritoProductos();
 }
 function switchTabByName(tab){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['ac','eq','st','ingresos','ventas','caja','rep'][i]===tab));
@@ -1655,6 +1754,11 @@ function renderIngresos(){
     </div>`;
   }).join('');
 }
+function closeModal(){
+  document.getElementById('modal').style.display='none';
+  modalType=''; editIdx=null;
+}
+
 
 async function eliminarIngreso(id, idx){
   if(!confirm('¿Eliminar este ingreso del registro?')) return;
@@ -1664,7 +1768,283 @@ async function eliminarIngreso(id, idx){
   showSyncBar('✓ Ingreso eliminado', 'ok');
 }
 
-function closeModal(){
+// ===================== CARRITO =====================
+let carrito=[];
+let carritoFiltroActual='todos';
+
+function carritoFiltro(f, btn){
+  carritoFiltroActual=f;
+  document.querySelectorAll('#tab-ventas .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCarritoProductos();
+}
+
+function renderCarritoProductos(){
+  const q=(document.getElementById('carrito-search')?.value||'').toLowerCase();
+  const el=document.getElementById('carrito-prod-list');
+  let items=[];
+
+  if(carritoFiltroActual!=='accesorio'){
+    equipos.filter(e=>e.stock>0&&(!q||(e.modelo+' '+e.memoria).toLowerCase().includes(q))).forEach(e=>{
+      items.push({tipo:'equipo',nombre:`${e.modelo} ${e.memoria}`,sub:`📍 ${e.sucursal} · 🔋 ${e.bateria}%`,precio:e.precio,moneda:'USD',stock:e.stock,ref:e});
+    });
+  }
+  if(carritoFiltroActual!=='equipo'){
+    accesorios.filter(a=>totalAc(a)>0&&(!q||a.nombre.toLowerCase().includes(q))).forEach(a=>{
+      items.push({tipo:'accesorio',nombre:a.nombre,sub:`${a.cat} · T:${a.stockT||0} LC:${a.stockC||0}`,precio:a.precio,moneda:'ARS',stock:totalAc(a),ref:a});
+    });
+  }
+
+  if(items.length===0){
+    el.innerHTML=`<div class="empty-state" style="padding:1.5rem">Sin productos disponibles</div>`;
+    return;
+  }
+  el.innerHTML=items.map((it,i)=>`
+    <div class="prod-list-item">
+      <div>
+        <div class="prod-list-name">${it.nombre}</div>
+        <div class="prod-list-sub">${it.sub}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="prod-list-precio">${it.moneda==='USD'?'USD':'$'} ${it.precio.toLocaleString('es-AR')}</span>
+        <button class="prod-list-add" onclick="agregarAlCarrito(${i})">+ Agregar</button>
+      </div>
+    </div>`).join('');
+  // Guardar referencia global temporal
+  window._carritoItems=items;
+}
+
+function agregarAlCarrito(i){
+  const it=window._carritoItems[i];
+  if(!it) return;
+  // Ver si ya está en el carrito
+  const existe=carrito.find(c=>c.nombre===it.nombre&&c.tipo===it.tipo);
+  if(existe){
+    if(existe.qty<it.stock){existe.qty++;actualizarCarritoUI();}
+    else{showSyncBar('⚠️ Sin más stock disponible','error');}
+  } else {
+    carrito.push({...it,qty:1,precioUnit:it.precio});
+    actualizarCarritoUI();
+  }
+}
+
+function cambiarQtyCarrito(idx, delta){
+  const item=carrito[idx];
+  if(!item) return;
+  const newQty=item.qty+delta;
+  if(newQty<1){quitarDelCarrito(idx);return;}
+  if(newQty>item.stock){showSyncBar('⚠️ Sin más stock disponible','error');return;}
+  item.qty=newQty;
+  actualizarCarritoUI();
+}
+
+function quitarDelCarrito(idx){
+  carrito.splice(idx,1);
+  actualizarCarritoUI();
+}
+
+function limpiarCarrito(){
+  carrito=[];
+  document.getElementById('carrito-desc-val').value='';
+  actualizarCarritoUI();
+}
+
+function actualizarCarritoUI(){
+  document.getElementById('carrito-count').textContent=carrito.length;
+  const el=document.getElementById('carrito-items');
+  if(carrito.length===0){
+    el.innerHTML=`<div class="carrito-empty">📦 Agregá productos al carrito</div>`;
+  } else {
+    el.innerHTML=carrito.map((c,i)=>`
+      <div class="carrito-item">
+        <div style="flex:1">
+          <div class="carrito-item-name">${c.nombre}</div>
+          <div class="carrito-item-sub">${c.moneda==='USD'?'USD':'$'} ${c.precioUnit.toLocaleString('es-AR')} c/u</div>
+        </div>
+        <div class="carrito-qty">
+          <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},-1)">−</button>
+          <span class="carrito-qty-num">${c.qty}</span>
+          <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},1)">+</button>
+        </div>
+        <div class="carrito-item-precio">${c.moneda==='USD'?'USD':'$'} ${(c.precioUnit*c.qty).toLocaleString('es-AR')}</div>
+        <button class="carrito-item-remove" onclick="quitarDelCarrito(${i})">✕</button>
+      </div>`).join('');
+  }
+  actualizarCarritoTotales();
+}
+
+function actualizarCarritoTotales(){
+  const el=document.getElementById('carrito-totales');
+  const descVal=parseFloat(document.getElementById('carrito-desc-val')?.value)||0;
+  const descTipo=document.getElementById('carrito-desc-tipo')?.value||'%';
+
+  const subtotalUSD=carrito.filter(c=>c.moneda==='USD').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+  const subtotalARS=carrito.filter(c=>c.moneda==='ARS').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+
+  let descUSD=0,descARS=0;
+  if(descVal>0){
+    if(descTipo==='%'){
+      descUSD=subtotalUSD*descVal/100;
+      descARS=subtotalARS*descVal/100;
+    } else if(descTipo==='USD'){
+      descUSD=Math.min(descVal,subtotalUSD);
+    } else {
+      descARS=Math.min(descVal,subtotalARS);
+    }
+  }
+
+  const totalUSD=Math.max(0,subtotalUSD-descUSD);
+  const totalARS=Math.max(0,subtotalARS-descARS);
+
+  el.innerHTML=`
+    ${subtotalUSD>0?`<div class="carrito-subtotal-row"><span>Subtotal equipos</span><span>USD ${subtotalUSD.toLocaleString('es-AR')}</span></div>`:''}
+    ${subtotalARS>0?`<div class="carrito-subtotal-row"><span>Subtotal accesorios</span><span>$ ${subtotalARS.toLocaleString('es-AR')}</span></div>`:''}
+    ${descVal>0&&descUSD>0?`<div class="carrito-subtotal-row" style="color:#C62828"><span>Descuento</span><span>−USD ${descUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
+    ${descVal>0&&descARS>0?`<div class="carrito-subtotal-row" style="color:#C62828"><span>Descuento</span><span>−$ ${descARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
+    ${totalUSD>0?`<div class="carrito-subtotal-row total"><span>Total USD</span><span>USD ${totalUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
+    ${totalARS>0?`<div class="carrito-subtotal-row total"><span>Total ARS</span><span>$ ${totalARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
+    ${carrito.length===0?'<div style="color:#6E6E73;font-size:12px;text-align:center;padding:8px">Carrito vacío</div>':''}`;
+
+  // Pagos
+  renderCarritoPagos(totalUSD, totalARS);
+
+  // Habilitar botón
+  document.getElementById('btn-confirmar-venta').disabled=carrito.length===0;
+}
+
+function renderCarritoPagos(totalUSD, totalARS){
+  const el=document.getElementById('carrito-pagos-section');
+  if(carrito.length===0){el.innerHTML='';return;}
+  el.innerHTML=METODOS.map(m=>`
+    <div style="margin-bottom:8px;">
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;margin-bottom:4px;">
+        <input type="checkbox" id="cp-chk-${m.id}" onchange="toggleCarritoPago('${m.id}')" style="accent-color:#0071E3;width:14px;height:14px;"/>
+        ${m.label}
+      </label>
+      <input type="number" id="cp-amt-${m.id}" placeholder="0" disabled
+        style="width:100%;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#F5F5F7;display:none;"
+        oninput="updateCarritoPagoResumen(${totalUSD},${totalARS})"/>
+    </div>`).join('')+
+    `<div id="cp-resumen" style="font-size:12px;margin-top:6px;"></div>`;
+}
+
+function toggleCarritoPago(id){
+  const chk=document.getElementById('cp-chk-'+id);
+  const inp=document.getElementById('cp-amt-'+id);
+  inp.disabled=!chk.checked;
+  inp.style.display=chk.checked?'block':'none';
+  inp.style.background=chk.checked?'#fff':'#F5F5F7';
+  if(!chk.checked) inp.value='';
+  // recalcular totales actuales
+  const descVal=parseFloat(document.getElementById('carrito-desc-val')?.value)||0;
+  const descTipo=document.getElementById('carrito-desc-tipo')?.value||'%';
+  const subtotalUSD=carrito.filter(c=>c.moneda==='USD').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+  const subtotalARS=carrito.filter(c=>c.moneda==='ARS').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+  let descUSD=0,descARS=0;
+  if(descVal>0){if(descTipo==='%'){descUSD=subtotalUSD*descVal/100;descARS=subtotalARS*descVal/100;}else if(descTipo==='USD'){descUSD=Math.min(descVal,subtotalUSD);}else{descARS=Math.min(descVal,subtotalARS);}}
+  updateCarritoPagoResumen(Math.max(0,subtotalUSD-descUSD),Math.max(0,subtotalARS-descARS));
+}
+
+function updateCarritoPagoResumen(totalUSD, totalARS){
+  const el=document.getElementById('cp-resumen');
+  if(!el) return;
+  let pagUSD=0,pagARS=0;
+  METODOS.forEach(m=>{
+    const chk=document.getElementById('cp-chk-'+m.id);
+    const amt=document.getElementById('cp-amt-'+m.id);
+    if(chk&&chk.checked&&amt){
+      const v=parseFloat(amt.value)||0;
+      if(m.prefix==='USD') pagUSD+=v;
+      else pagARS+=v;
+    }
+  });
+  const difUSD=totalUSD-(pagUSD);
+  const difARS=totalARS-(pagARS);
+  let msg='';
+  if(totalUSD>0){
+    if(Math.abs(difUSD)<0.01) msg+=`<span style="color:#1B5E20">✓ USD cubierto</span> `;
+    else if(difUSD>0) msg+=`<span style="color:#C62828">Falta USD ${difUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span> `;
+    else msg+=`<span style="color:#1B5E20">Vuelto USD ${Math.abs(difUSD).toLocaleString('es-AR',{maximumFractionDigits:2})}</span> `;
+  }
+  if(totalARS>0){
+    if(Math.abs(difARS)<0.01) msg+=`<span style="color:#1B5E20">✓ ARS cubierto</span>`;
+    else if(difARS>0) msg+=`<span style="color:#C62828">Falta $ ${difARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span>`;
+    else msg+=`<span style="color:#1B5E20">Vuelto $ ${Math.abs(difARS).toLocaleString('es-AR',{maximumFractionDigits:2})}</span>`;
+  }
+  el.innerHTML=msg;
+}
+
+function getCarritoPagos(){
+  return METODOS.filter(m=>{
+    const c=document.getElementById('cp-chk-'+m.id);
+    const a=document.getElementById('cp-amt-'+m.id);
+    return c&&c.checked&&a&&parseFloat(a.value)>0;
+  }).map(m=>({
+    id:m.id,
+    label:m.label.replace(/^.\s/,''),
+    prefix:m.prefix,
+    monto:parseFloat(document.getElementById('cp-amt-'+m.id).value)||0
+  }));
+}
+
+async function confirmarVentaCarrito(){
+  if(carrito.length===0) return;
+  const sv=document.getElementById('carrito-suc').value;
+  const descVal=parseFloat(document.getElementById('carrito-desc-val')?.value)||0;
+  const descTipo=document.getElementById('carrito-desc-tipo')?.value||'%';
+  const pagos=getCarritoPagos();
+  const ts=Date.now();
+
+  // Calcular descuentos
+  const subtotalUSD=carrito.filter(c=>c.moneda==='USD').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+  const subtotalARS=carrito.filter(c=>c.moneda==='ARS').reduce((a,c)=>a+c.precioUnit*c.qty,0);
+  let descUSD=0,descARS=0;
+  if(descVal>0){if(descTipo==='%'){descUSD=subtotalUSD*descVal/100;descARS=subtotalARS*descVal/100;}else if(descTipo==='USD'){descUSD=Math.min(descVal,subtotalUSD);}else{descARS=Math.min(descVal,subtotalARS);}}
+
+  if(!confirm(`Confirmar venta de ${carrito.length} producto(s) en ${sv}?`)) return;
+
+  document.getElementById('btn-confirmar-venta').disabled=true;
+  document.getElementById('btn-confirmar-venta').textContent='Guardando...';
+
+  // Registrar cada item como venta individual y descontar stock
+  for(const item of carrito){
+    // Calcular descuento proporcional para este item
+    const itemSubtotal=item.precioUnit*item.qty;
+    let itemDesc=0;
+    if(descVal>0){
+      if(descTipo==='%') itemDesc=itemSubtotal*descVal/100;
+      else if(descTipo==='USD'&&item.moneda==='USD') itemDesc=item.qty*(descUSD/carrito.filter(c=>c.moneda==='USD').length||1);
+      else if(descTipo==='$'&&item.moneda==='ARS') itemDesc=item.qty*(descARS/carrito.filter(c=>c.moneda==='ARS').length||1);
+    }
+    const totalItem=Math.max(0,itemSubtotal-itemDesc);
+
+    if(item.tipo==='equipo'){
+      const eq=equipos.find(e=>`${e.modelo} ${e.memoria}`===item.nombre&&e.stock>=item.qty);
+      if(eq){
+        eq.stock-=item.qty;
+        await saveItem('equipos',eq);
+        const venta={ts,tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:eq.sucursal,cantidad:item.qty,precioUnit:item.precioUnit,total:totalItem,descuento:itemDesc,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq._id||null,acIdx:null,acId:null,pagos,canje:null};
+        ventas.push(venta);
+        await saveItem('ventas',venta);
+      }
+    } else {
+      const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
+      if(ac){
+        if((ac.stockT||0)>=(ac.stockC||0)) ac.stockT=Math.max(0,(ac.stockT||0)-item.qty);
+        else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
+        await saveItem('accesorios',ac);
+        const venta={ts,tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:totalItem,descuento:itemDesc,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac._id||null,pagos,canje:null};
+        ventas.push(venta);
+        await saveItem('ventas',venta);
+      }
+    }
+  }
+
+  limpiarCarrito();
+  renderEq();renderAc();renderVentas();renderCarritoProductos();
+  document.getElementById('btn-confirmar-venta').textContent='✅ Confirmar venta';
+  showSyncBar(`✓ Venta de ${carrito.length===0?'varios productos':carrito.length+' producto(s)'} guardada`,'ok');
+}
   document.getElementById('modal').style.display='none';
   modalType=''; editIdx=null;
 }
