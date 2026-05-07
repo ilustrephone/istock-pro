@@ -582,8 +582,10 @@ async function deleteItem(tabla, id){
 }
 
 // Refresca datos cada 30 segundos automáticamente
+let autoRefreshInterval = null;
 function startAutoRefresh(){
-  setInterval(async ()=>{
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(async ()=>{
     if(!rol) return;
     await loadAll();
     renderAll();
@@ -633,6 +635,12 @@ async function login(){
   if(r==='admin'&&pin!==PIN_ADMIN){alert('PIN incorrecto');return;}
   if(r==='gerente'&&pin!==PIN_GERENTE){alert('PIN incorrecto');return;}
   rol=r; sucursal=s;
+  sessionStorage.setItem('istock_rol', rol);
+  sessionStorage.setItem('istock_suc', sucursal);
+  await iniciarSesion();
+}
+
+async function iniciarSesion(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
   const labels={admin:'Administrador',gerente:'Gerente',empleado:'Empleado'};
@@ -641,18 +649,18 @@ async function login(){
   br.textContent=labels[rol]; br.className='badge-role rchip '+cls[rol];
   document.getElementById('badge-suc').textContent='📍 '+sucursal;
   document.getElementById('btn-export').style.display=isAdmin()?'inline-block':'none';
-
-  // Cargar datos frescos de la nube al entrar
   showSyncBar('☁️ Cargando datos...', 'info');
   await loadAll();
   showSyncBar('✓ Datos sincronizados', 'ok');
-
   renderToolbar(); renderAll();
   startAutoRefresh();
 }
 
 function logout(){
   rol=''; sucursal=''; searchEq=''; searchAc='';
+  sessionStorage.removeItem('istock_rol');
+  sessionStorage.removeItem('istock_suc');
+  if(autoRefreshInterval){ clearInterval(autoRefreshInterval); autoRefreshInterval=null; }
   document.getElementById('main-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('inp-pin').value='';
@@ -1667,11 +1675,19 @@ async function init(){
   try {
     await sbFetch('equipos?select=id&limit=1');
     document.getElementById('loading-overlay').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
+    // Restaurar sesión si existe
+    const sesRol=sessionStorage.getItem('istock_rol');
+    const sesSuc=sessionStorage.getItem('istock_suc');
+    if(sesRol && sesSuc){
+      rol=sesRol; sucursal=sesSuc;
+      await iniciarSesion();
+    } else {
+      document.getElementById('login-screen').style.display='flex';
+    }
   } catch(e) {
     console.error('Init error:', e.message);
-    const msg = e.message.includes('internet') 
-      ? '⚠️ Sin conexión a internet' 
+    const msg = e.message.includes('internet')
+      ? '⚠️ Sin conexión a internet'
       : `⚠️ Error de conexión: ${e.message.slice(0,80)}`;
     document.querySelector('.loading-text').textContent = msg;
   }
