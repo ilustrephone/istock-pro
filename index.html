@@ -229,6 +229,7 @@ tr:hover td{background:#FAFAFA;}
     <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
     <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
     <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
+    <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
   </div>
 
   <div class="content" id="tab-eq">
@@ -409,7 +410,47 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
 
-  <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <!-- REGISTRO DE INGRESOS (CANJES) -->
+  <div class="content" id="tab-ingresos" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:#1D1D1F">📋 Registro de Ingresos</div>
+        <div style="font-size:12px;color:#6E6E73;margin-top:2px">Equipos recibidos por plan canje</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="f-ing-suc" style="padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" onchange="renderIngresos()">
+          <option value="">Ambas sucursales</option>
+          <option>Tunuyán</option>
+          <option>La Consulta</option>
+        </select>
+        <select id="f-ing-estado" style="padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" onchange="renderIngresos()">
+          <option value="">Todos los estados</option>
+          <option value="Bueno">Bueno</option>
+          <option value="Regular">Regular</option>
+          <option value="Malo">Malo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-row" id="stats-ingresos"></div>
+
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:10%">Fecha</th>
+          <th style="width:16%">Cliente</th>
+          <th style="width:18%">Equipo recibido</th>
+          <th style="width:13%">IMEI</th>
+          <th style="width:9%">Condición</th>
+          <th style="width:9%">Valor</th>
+          <th style="width:16%">Se llevó</th>
+          <th style="width:10%">Sucursal</th>
+          <th style="width:9%">Por</th>
+        </tr></thead>
+        <tbody id="tbody-ingresos"></tbody>
+      </table>
+    </div>
+  </div>
     <div class="modal">
       <h3 id="modal-ttl"></h3>
       <div id="modal-body"></div>
@@ -471,7 +512,7 @@ async function sbDelete(tabla, id){
 // ===================== ESTADO LOCAL =====================
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
-let equipos=[], accesorios=[], ventas=[], servicios=[];
+let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
 
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
@@ -508,6 +549,8 @@ async function loadAll(){
       sbGetAll('ventas'), sbGetAll('servicios')
     ]);
     await loadCierres();
+    // Cargar ingresos (canjes)
+    try{ ingresos=await sbGetAll('ingresos'); }catch(e){ ingresos=[]; }
     setSyncDot('ok');
   } catch(e) {
     setSyncDot('error');
@@ -562,7 +605,8 @@ function batBadge(b){const c=batColor(b);return`<div class="bat-wrap"><div class
 function stockBadge(s){return s===0?'<span class="sbadge s-out">Sin stock</span>':s<=2?'<span class="sbadge s-low">Bajo</span>':'<span class="sbadge s-ok">OK</span>';}
 function totalAc(a){return(a.stockT||0)+(a.stockC||0);}
 function stBadge(e){const m={Pendiente:'st-pend','En progreso':'st-prog','Listo para entregar':'st-list',Entregado:'st-ent'};return`<span class="st-badge ${m[e]||'st-pend'}">${e}</span>`;}
-function canEdit(){return true;} // todos los roles pueden cargar/editar stock
+function canEdit(){return rol==='admin'||rol==='gerente';}
+function canCargarEq(){return true;} // todos pueden cargar equipos
 function isAdmin(){return rol==='admin';}
 function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empleado';}
 function shortImei(i){return i?'···'+i.slice(-4):'-';}
@@ -574,13 +618,14 @@ function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
 
 function renderToolbar(){
   const ce=canEdit();
-  document.getElementById('toolbar-eq').innerHTML=ce
-    ?`<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button>`
-    :`<span class="btn-readonly">🔒 Solo lectura</span>`;
+  // Equipos: todos los roles pueden agregar
+  document.getElementById('toolbar-eq').innerHTML=
+    `<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button>`;
+  // Accesorios: solo admin y gerente pueden agregar
   const cats=`<select id="f-cat" onchange="renderAc()"><option value="">Todas las categorías</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>`;
   document.getElementById('toolbar-ac').innerHTML=ce
     ?`${cats}<button class="btn-add" onclick="openModal('ac-edit',null)">+ Agregar accesorio</button>`
-    :`${cats}<span class="btn-readonly">🔒 Solo lectura</span>`;
+    :`${cats}`;
   document.getElementById('th-costo-eq').style.display=isAdmin()?'':'none';
   document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
@@ -626,13 +671,14 @@ function logout(){
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  ['eq','ac','ventas','st','rep','caja'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
   if(tab==='rep') renderReporte();
   if(tab==='caja') renderCaja();
+  if(tab==='ingresos') renderIngresos();
 }
 function switchTabByName(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja'][i]===tab));
-  ['eq','ac','ventas','st','rep','caja'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos'][i]===tab));
+  ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();}
 
@@ -665,8 +711,8 @@ function renderEq(){
         ${costoCell}<td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
         <td>
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
-          <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('eq-edit',${ri})">Editar</button>
-          <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('eq',${ri})">✕</button>
+          <button class="btn-e" onclick="openModal('eq-edit',${ri})">Editar</button>
+          <button class="btn-d" onclick="delItem('eq',${ri})">✕</button>
         </td>
       </tr>`;
     }).join('');
@@ -707,8 +753,8 @@ function renderAc(){
         <td style="text-align:center">${tot}</td><td>${stockBadge(tot)}</td>
         <td>
           <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
-          <button class="btn-e" ${!ce?'disabled':''} onclick="openModal('ac-edit',${ri})">Editar</button>
-          <button class="btn-d" ${!ce?'disabled':''} onclick="delItem('ac',${ri})">✕</button>
+          ${ce?`<button class="btn-e" onclick="openModal('ac-edit',${ri})">Editar</button>`:''}
+          ${ce?`<button class="btn-d" onclick="delItem('ac',${ri})">✕</button>`:''}
         </td>
       </tr>`;
     }).join('');
@@ -955,6 +1001,7 @@ function buildForm(type,idx){
           <label for="chk-canje" style="font-size:12px;font-weight:600;color:#8A4D00;cursor:pointer;">🔄 Plan Canje — el cliente entrega un equipo</label>
         </div>
         <div id="canje-form" style="display:none">
+          <div class="mfl"><label>NOMBRE DEL CLIENTE</label><input id="canje-cliente" type="text" placeholder="ej: Juan Pérez" style="margin-bottom:8px"/></div>
           <div class="mgrid">
             <div class="mfl"><label>MODELO QUE ENTREGA</label><input id="canje-modelo" type="text" placeholder="ej: iPhone 13 128GB" style="margin-bottom:8px"/></div>
             <div class="mfl"><label>IMEI DEL CANJE</label><input id="canje-imei" type="text" placeholder="354621..." style="margin-bottom:8px"/></div>
@@ -1123,14 +1170,22 @@ async function saveModal(){
     const canjeModelo=tieneCanje?document.getElementById('canje-modelo')?.value.trim():'';
     const canjeImei=tieneCanje?document.getElementById('canje-imei')?.value.trim():'';
     const canjeEstado=tieneCanje?document.getElementById('canje-estado')?.value:'';
+    const canjeCliente=tieneCanje?document.getElementById('canje-cliente')?.value.trim():'';
     const totalFinal=Math.max(0,c*p-canjeValor);
     const pagosGuardados=getPagos();
     equipos[editIdx].stock-=c;
     closeModal();renderEq();
     await saveItem('equipos', equipos[editIdx]);
-    const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado}:null};
+    const canjeObj=tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado,cliente:canjeCliente}:null;
+    const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
     ventas.push(venta);
     await saveItem('ventas',venta);
+    // Si hay canje, registrar también en ingresos
+    if(tieneCanje&&canjeModelo){
+      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
+      ingresos.push(ingreso);
+      await saveItem('ingresos',ingreso);
+    }
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
   }
   if(modalType==='venta-ac'){
@@ -1493,6 +1548,49 @@ function imprimirCaja(){
   <script>window.onload=()=>window.print()<\/script></body></html>`);
   win.document.close();
 }
+// ===================== REGISTRO DE INGRESOS =====================
+function renderIngresos(){
+  const fSuc=document.getElementById('f-ing-suc')?.value||'';
+  const fEst=document.getElementById('f-ing-estado')?.value||'';
+  const data=[...ingresos].reverse().filter(i=>
+    (!fSuc||i.sucursal===fSuc)&&
+    (!fEst||i.estado===fEst)
+  );
+
+  // Stats
+  const total=ingresos.length;
+  const buenos=ingresos.filter(i=>i.estado==='Bueno').length;
+  const regulares=ingresos.filter(i=>i.estado==='Regular').length;
+  const malos=ingresos.filter(i=>i.estado==='Malo').length;
+  const valTotal=ingresos.reduce((a,i)=>a+(i.valor||0),0);
+  document.getElementById('stats-ingresos').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-label">TOTAL INGRESOS</div><div class="sc-val">${total}</div></div>
+    <div class="sc sc-green"><div class="sc-label">BUENOS</div><div class="sc-val">${buenos}</div></div>
+    <div class="sc"><div class="sc-label">REGULARES</div><div class="sc-val">${regulares}</div></div>
+    <div class="sc sc-red"><div class="sc-label">MALOS</div><div class="sc-val">${malos}</div></div>
+    <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${valTotal.toLocaleString('es-AR')}</div></div>`;
+
+  const condBadge={
+    'Bueno':'<span class="sbadge s-ok">Bueno</span>',
+    'Regular':'<span class="sbadge s-low">Regular</span>',
+    'Malo':'<span class="sbadge s-out">Malo</span>'
+  };
+
+  document.getElementById('tbody-ingresos').innerHTML=data.length===0
+    ?`<tr><td colspan="9" class="empty-state">Sin ingresos registrados</td></tr>`
+    :data.map(i=>`<tr>
+        <td style="font-size:10px">${fmtDatetime(i.ts)}</td>
+        <td style="font-weight:500">${i.cliente||'—'}</td>
+        <td title="${i.modelo}">${i.modelo||'—'}</td>
+        <td><span class="imei-tag" title="${i.imei}">${i.imei?'···'+i.imei.slice(-4):'—'}</span></td>
+        <td>${condBadge[i.estado]||i.estado||'—'}</td>
+        <td style="font-weight:600">USD ${(i.valor||0).toLocaleString('es-AR')}</td>
+        <td style="font-size:11px;color:#6E6E73" title="${i.ventaProducto}">${i.ventaProducto||'—'}</td>
+        <td>${i.sucursal||'—'}</td>
+        <td style="font-size:11px;color:#6E6E73">${i.por||'—'}</td>
+      </tr>`).join('');
+}
+
 function closeModal(){
   document.getElementById('modal').style.display='none';
   modalType=''; editIdx=null;
