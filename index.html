@@ -433,23 +433,7 @@ tr:hover td{background:#FAFAFA;}
     </div>
 
     <div class="stats-row" id="stats-ingresos"></div>
-
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:10%">Fecha</th>
-          <th style="width:16%">Cliente</th>
-          <th style="width:18%">Equipo recibido</th>
-          <th style="width:13%">IMEI</th>
-          <th style="width:9%">Condición</th>
-          <th style="width:9%">Valor</th>
-          <th style="width:16%">Se llevó</th>
-          <th style="width:10%">Sucursal</th>
-          <th style="width:9%">Por</th>
-        </tr></thead>
-        <tbody id="tbody-ingresos"></tbody>
-      </table>
-    </div>
+    <div id="lista-ingresos"></div>
   </div>
 
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
@@ -459,6 +443,8 @@ tr:hover td{background:#FAFAFA;}
       <div class="mac" id="modal-actions"></div>
     </div>
   </div>
+
+</div><!-- /main-app -->
 
 <script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
@@ -1009,6 +995,8 @@ function buildForm(type,idx){
           </div>
           <div class="mgrid">
             <div class="mfl"><label>VALOR CANJE (USD)</label><input id="canje-valor" type="number" min="0" placeholder="0" oninput="recalcTotal('eq',${idx})" style="margin-bottom:8px"/></div>
+            <div class="mfl"><label>BATERÍA (%)</label><input id="canje-bateria" type="number" min="1" max="100" placeholder="ej: 85" style="margin-bottom:8px"/></div>
+          </div>
             <div class="mfl"><label>ESTADO DEL CANJE</label>
               <select id="canje-estado" style="margin-bottom:8px">
                 <option value="Bueno">Bueno</option>
@@ -1172,6 +1160,7 @@ async function saveModal(){
     const canjeImei=tieneCanje?document.getElementById('canje-imei')?.value.trim():'';
     const canjeEstado=tieneCanje?document.getElementById('canje-estado')?.value:'';
     const canjeCliente=tieneCanje?document.getElementById('canje-cliente')?.value.trim():'';
+    const canjeBateria=tieneCanje?parseInt(document.getElementById('canje-bateria')?.value)||0:0;
     const totalFinal=Math.max(0,c*p-canjeValor);
     const pagosGuardados=getPagos();
     equipos[editIdx].stock-=c;
@@ -1183,7 +1172,7 @@ async function saveModal(){
     await saveItem('ventas',venta);
     // Si hay canje, registrar también en ingresos
     if(tieneCanje&&canjeModelo){
-      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
+      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,bateria:canjeBateria,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
       ingresos.push(ingreso);
       await saveItem('ingresos',ingreso);
     }
@@ -1558,7 +1547,6 @@ function renderIngresos(){
     (!fEst||i.estado===fEst)
   );
 
-  // Stats
   const total=ingresos.length;
   const buenos=ingresos.filter(i=>i.estado==='Bueno').length;
   const regulares=ingresos.filter(i=>i.estado==='Regular').length;
@@ -1571,25 +1559,65 @@ function renderIngresos(){
     <div class="sc sc-red"><div class="sc-label">MALOS</div><div class="sc-val">${malos}</div></div>
     <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${valTotal.toLocaleString('es-AR')}</div></div>`;
 
-  const condBadge={
-    'Bueno':'<span class="sbadge s-ok">Bueno</span>',
-    'Regular':'<span class="sbadge s-low">Regular</span>',
-    'Malo':'<span class="sbadge s-out">Malo</span>'
-  };
+  const condColor={'Bueno':'#E8F5E9','Regular':'#FFF3E0','Malo':'#FFEBEE'};
+  const condText={'Bueno':'#1B5E20','Regular':'#8A4D00','Malo':'#C62828'};
+  const condIcon={'Bueno':'✅','Regular':'⚠️','Malo':'❌'};
 
-  document.getElementById('tbody-ingresos').innerHTML=data.length===0
-    ?`<tr><td colspan="9" class="empty-state">Sin ingresos registrados</td></tr>`
-    :data.map(i=>`<tr>
-        <td style="font-size:10px">${fmtDatetime(i.ts)}</td>
-        <td style="font-weight:500">${i.cliente||'—'}</td>
-        <td title="${i.modelo}">${i.modelo||'—'}</td>
-        <td><span class="imei-tag" title="${i.imei}">${i.imei?'···'+i.imei.slice(-4):'—'}</span></td>
-        <td>${condBadge[i.estado]||i.estado||'—'}</td>
-        <td style="font-weight:600">USD ${(i.valor||0).toLocaleString('es-AR')}</td>
-        <td style="font-size:11px;color:#6E6E73" title="${i.ventaProducto}">${i.ventaProducto||'—'}</td>
-        <td>${i.sucursal||'—'}</td>
-        <td style="font-size:11px;color:#6E6E73">${i.por||'—'}</td>
-      </tr>`).join('');
+  const el=document.getElementById('lista-ingresos');
+  if(data.length===0){
+    el.innerHTML=`<div class="empty-state" style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:3rem">
+      <div style="font-size:32px;margin-bottom:0.75rem">📋</div>
+      <div>Sin ingresos registrados</div>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML=data.map(i=>{
+    const batColor=i.bateria>=80?'#2E7D32':i.bateria>=50?'#E65100':'#C62828';
+    return`<div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <!-- Ícono condición -->
+      <div style="width:44px;height:44px;border-radius:12px;background:${condColor[i.estado]||'#F5F5F7'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
+        ${condIcon[i.estado]||'📱'}
+      </div>
+      <!-- Info principal -->
+      <div style="flex:1;min-width:180px;">
+        <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin-bottom:3px;">
+          ${i.modelo||'—'}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#6E6E73;">👤 ${i.cliente||'Sin nombre'}</span>
+          <span style="font-size:11px;color:#9E9E9E;">·</span>
+          <span style="font-size:11px;color:#6E6E73;">${fmtDate(i.ts)}</span>
+        </div>
+      </div>
+      <!-- Batería -->
+      <div style="text-align:center;min-width:70px;">
+        <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">BATERÍA</div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="width:36px;height:6px;background:#E8E8ED;border-radius:3px;overflow:hidden;">
+            <div style="width:${i.bateria||0}%;height:100%;background:${batColor};border-radius:3px;"></div>
+          </div>
+          <span style="font-size:12px;font-weight:600;color:${batColor}">${i.bateria||'—'}${i.bateria?'%':''}</span>
+        </div>
+      </div>
+      <!-- IMEI -->
+      <div style="text-align:center;min-width:80px;">
+        <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">IMEI</div>
+        <span style="font-size:11px;font-family:monospace;background:#F5F5F7;padding:3px 8px;border-radius:6px;color:#6E6E73;">${i.imei?'···'+i.imei.slice(-4):'—'}</span>
+      </div>
+      <!-- Condición -->
+      <div style="text-align:center;min-width:75px;">
+        <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">CONDICIÓN</div>
+        <span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:${condColor[i.estado]||'#F5F5F7'};color:${condText[i.estado]||'#6E6E73'}">${i.estado||'—'}</span>
+      </div>
+      <!-- Valor -->
+      <div style="text-align:right;min-width:90px;">
+        <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">VALOR CANJE</div>
+        <div style="font-size:15px;font-weight:700;color:#1D1D1F;">USD ${(i.valor||0).toLocaleString('es-AR')}</div>
+        <div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${i.sucursal||'—'}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function closeModal(){
