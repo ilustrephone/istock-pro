@@ -455,43 +455,47 @@ const SUPA_URL = 'https://rvnvixiuigluutbzftxq.supabase.co';
 const SUPA_KEY = 'sb_publishable_y3TIT6mATrqkoaki2zZSew__HDhxZCm';
 
 async function sbFetch(path, method='GET', body=null){
-  const opts = {
-    method,
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method==='POST' ? 'return=representation' : ''
-    }
+  const headers = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json',
   };
+  if(method==='POST') headers['Prefer'] = 'return=representation';
+  if(method==='PATCH') headers['Prefer'] = 'return=minimal';
+
+  const opts = {method, headers};
   if(body) opts.body = JSON.stringify(body);
-  const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
-  if(!res.ok){
-    const err = await res.text();
-    throw new Error(err);
+
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
+    const txt = await res.text();
+    if(!res.ok){
+      console.error('Supabase error:', res.status, txt);
+      throw new Error(`Error ${res.status}: ${txt}`);
+    }
+    return txt ? JSON.parse(txt) : [];
+  } catch(e) {
+    if(e.message.includes('fetch')) throw new Error('Sin conexión a internet');
+    throw e;
   }
-  const txt = await res.text();
-  return txt ? JSON.parse(txt) : [];
 }
 
-// Carga todos los registros de una tabla y devuelve array de data
 async function sbGetAll(tabla){
   const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc`);
   return rows.map(r => ({...r.data, _id: r.id}));
 }
 
-// Inserta un registro nuevo
 async function sbInsert(tabla, data){
-  const rows = await sbFetch(tabla, 'POST', {data});
+  const {_id, ...cleanData} = data;
+  const rows = await sbFetch(tabla, 'POST', {data: cleanData});
   return rows[0];
 }
 
-// Actualiza un registro por id
 async function sbUpdate(tabla, id, data){
-  await sbFetch(`${tabla}?id=eq.${id}`, 'PATCH', {data, updated_at: new Date().toISOString()});
+  const {_id, ...cleanData} = data;
+  await sbFetch(`${tabla}?id=eq.${id}`, 'PATCH', {data: cleanData, updated_at: new Date().toISOString()});
 }
 
-// Elimina un registro por id
 async function sbDelete(tabla, id){
   await sbFetch(`${tabla}?id=eq.${id}`, 'DELETE');
 }
@@ -554,12 +558,15 @@ async function saveItem(tabla, item){
       await sbUpdate(tabla, _id, data);
     } else {
       const row = await sbInsert(tabla, data);
-      item._id = row.id;
+      if(row && row.id) item._id = row.id;
     }
     setSyncDot('ok');
+    return true;
   } catch(e) {
+    console.error('saveItem error:', tabla, e.message);
     setSyncDot('error');
-    showSyncBar('⚠️ Error al guardar. Verificá tu conexión.', 'error');
+    showSyncBar(`⚠️ Error al guardar (${tabla}): ${e.message}`, 'error');
+    return false;
   }
 }
 
@@ -1629,12 +1636,15 @@ function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelector
 // ===================== INICIO =====================
 async function init(){
   try {
-    // Test de conexión rápido
     await sbFetch('equipos?select=id&limit=1');
     document.getElementById('loading-overlay').style.display='none';
     document.getElementById('login-screen').style.display='flex';
   } catch(e) {
-    document.querySelector('.loading-text').textContent='⚠️ Sin conexión. Verificá el internet.';
+    console.error('Init error:', e.message);
+    const msg = e.message.includes('internet') 
+      ? '⚠️ Sin conexión a internet' 
+      : `⚠️ Error de conexión: ${e.message.slice(0,80)}`;
+    document.querySelector('.loading-text').textContent = msg;
   }
 }
 
