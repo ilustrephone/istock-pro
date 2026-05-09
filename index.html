@@ -101,7 +101,7 @@ tr:hover td{background:#FAFAFA;}
 .vtag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;}
 .vtag-eq{background:#E3F0FF;color:#0058B0;}
 .vtag-ac{background:#FFF3E0;color:#8A4D00;}
-.vtag-an{background:#F5F5F7;color:#9E9E9E;}
+.vtag-car{background:#E8F5E9;color:#1B5E20;}
 .pago-tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;background:#F5F5F7;color:#6E6E73;margin-right:2px;margin-bottom:2px;}
 .st-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600;}
 .st-pend{background:#FFF3E0;color:#8A4D00;}
@@ -227,13 +227,24 @@ tr:hover td{background:#FAFAFA;}
   padding:14px 16px;
   border-bottom:1px solid #E8E8ED;
   flex-shrink:0;
+  background:#F5F5F7;
 }
 .carrito-drawer-header h3{font-size:14px;font-weight:600;color:#1D1D1F;}
-.carrito-drawer-close{background:none;border:none;font-size:18px;cursor:pointer;color:#6E6E73;padding:2px 6px;}
+.carrito-drawer-close{
+  background:#1D1D1F;border:none;
+  width:32px;height:32px;border-radius:50%;
+  font-size:16px;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s,transform 0.15s;
+  flex-shrink:0;
+}
+.carrito-drawer-close:hover{background:#C62828;transform:scale(1.1);}
 .carrito-drawer-body{flex:1;overflow-y:auto;padding:12px 14px;}
 .carrito-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.25);
-  z-index:299;display:none;
+  position:fixed;inset:0;background:rgba(0,0,0,0.4);
+  z-index:299;display:none;cursor:pointer;
+  backdrop-filter:blur(2px);
+  transition:opacity 0.3s;
 }
 .carrito-overlay.open{display:block;}
 /* Botón flotante carrito */
@@ -539,7 +550,13 @@ tr:hover td{background:#FAFAFA;}
   <div class="carrito-drawer" id="carrito-drawer">
     <div class="carrito-drawer-header">
       <h3>🛒 Carrito <span id="carrito-count" style="background:#E3F0FF;color:#0058B0;padding:1px 8px;border-radius:10px;font-size:11px;margin-left:4px;">0</span></h3>
-      <button class="carrito-drawer-close" onclick="cerrarCarrito()">✕</button>
+      <button class="carrito-drawer-close" onclick="cerrarCarrito()" title="Cerrar (Esc)">✕</button>
+    </div>
+    <!-- Búsqueda rápida dentro del drawer -->
+    <div style="padding:10px 14px;border-bottom:1px solid #E8E8ED;background:#FAFAFA;">
+      <input type="text" id="drawer-search" placeholder="🔍 Agregar producto al carrito..." oninput="renderDrawerSearch()"
+        style="width:100%;padding:7px 11px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;font-family:inherit;outline:none;"/>
+      <div id="drawer-search-results" style="margin-top:6px;max-height:160px;overflow-y:auto;"></div>
     </div>
     <div class="carrito-drawer-body">
       <!-- Sucursal -->
@@ -941,10 +958,10 @@ function renderVentas(){
       const canjeTag=v.canje&&v.canje.modelo?`<span class="pago-tag" style="background:#FFF3E0;color:#8A4D00">🔄 Canje: ${v.canje.modelo} − USD ${Number(v.canje.valor).toLocaleString('es-AR')}</span>`:'';
       return`<tr class="${an?'anulada-row':''}">
         <td style="font-size:10px">${fmtDatetime(v.ts)}</td>
-        <td><span class="vtag ${an?'vtag-an':v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${an?'Anul.':v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
-        <td title="${v.producto}">${v.producto}</td>
+        <td><span class="vtag ${an?'vtag-an':v.tipo==='equipo'?'vtag-eq':v.tipo==='carrito'?'vtag-car':'vtag-ac'}">${an?'Anul.':v.tipo==='equipo'?'Equipo':v.tipo==='carrito'?'🛒 Carrito':'Acces.'}</span></td>
+        <td title="${v.resumen||v.producto}">${v.resumen?v.resumen.slice(0,40)+(v.resumen.length>40?'…':''):v.producto}</td>
         <td>${v.sucursal}</td><td>${v.cantidad}</td>
-        <td style="font-weight:600;font-size:11px">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
+        <td style="font-weight:600;font-size:11px">${v.tipo==='carrito'?`${v.totalUSD>0?'USD '+v.totalUSD.toLocaleString('es-AR'):''}${v.totalUSD>0&&v.totalARS>0?' + ':''}${v.totalARS>0?'$ '+v.totalARS.toLocaleString('es-AR'):''}`:v.moneda==='USD'?'USD '+v.total.toLocaleString('es-AR'):'$ '+v.total.toLocaleString('es-AR')}</td>
         <td style="white-space:normal;line-height:1.6">${canjeTag}${ph||(!canjeTag?'—':'')}</td>
         <td style="font-size:10px;color:#6E6E73">${v.por}</td>
         <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button>`:'<span style="font-size:10px;color:#aaa">—</span>'}</td>
@@ -1333,13 +1350,33 @@ async function saveModal(){
     const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
     ventas.push(venta);
     await saveItem('ventas',venta);
-    // Si hay canje, registrar también en ingresos
+    // Si hay canje, registrar en ingresos Y agregar al stock de equipos
     if(tieneCanje&&canjeModelo){
       const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,bateria:canjeBateria,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
       ingresos.push(ingreso);
       await saveItem('ingresos',ingreso);
+      // Crear equipo en stock con los datos del canje
+      const eqCanje={
+        modelo:canjeModelo,
+        memoria:'—',
+        bateria:canjeBateria||0,
+        imei:canjeImei||'',
+        sucursal:sv,
+        precio:canjeValor||0,
+        costo:0,
+        stock:1,
+        esCanje:true,
+        condicion:canjeEstado,
+        clienteCanje:canjeCliente||'—'
+      };
+      equipos.push(eqCanje);
+      await saveItem('equipos',eqCanje);
+      renderEq();
+      showSyncBar(`✓ Venta guardada — ${canjeModelo} agregado al stock`,'ok');
+    } else {
+      showSyncBar('✓ Venta guardada en la nube','ok');
     }
-    renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
+    renderVentas();return;
   }
   if(modalType==='venta-ac'){
     const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;const sv=document.getElementById('mf-suc-venta').value;
@@ -1403,51 +1440,45 @@ async function anularVenta(idx){
   const v=ventas[idx];
   if(!v){alert('No se encontró la venta.');return;}
 
-  if(v.tipo==='equipo'){
-    // Buscar por eqId (ID de Supabase guardado en la venta) o por nombre como fallback
-    const eq = equipos.find(e=>
-      (v.eqId && e._id===v.eqId) ||
-      `${e.modelo} ${e.memoria}`===v.producto
-    );
-    if(eq){
-      eq.stock=(eq.stock||0)+v.cantidad;
-      await saveItem('equipos',eq);
-    } else {
-      alert('No se encontró el equipo en stock. El stock no fue actualizado.');
+  // Si es venta de carrito, devolver stock de todos los items
+  if(v.tipo==='carrito'&&v.items&&v.items.length>0){
+    for(const item of v.items){
+      if(item.tipo==='equipo'){
+        const eq=equipos.find(e=>(item.eqId&&e._id===item.eqId)||`${e.modelo} ${e.memoria}`===item.nombre);
+        if(eq){eq.stock=(eq.stock||0)+item.qty;await saveItem('equipos',eq);}
+      } else {
+        const ac=accesorios.find(a=>(item.acId&&a._id===item.acId)||a.nombre===item.nombre);
+        if(ac){
+          if(v.sucursal==='Tunuyán') ac.stockT=(ac.stockT||0)+item.qty;
+          else ac.stockC=(ac.stockC||0)+item.qty;
+          await saveItem('accesorios',ac);
+        }
+      }
     }
-  }
-
-  if(v.tipo==='accesorio'){
-    // Buscar por acId o por nombre como fallback
-    const ac = accesorios.find(a=>
-      (v.acId && a._id===v.acId) ||
-      a.nombre===v.producto
-    );
-    if(ac){
-      if(v.sucursal==='Tunuyán') ac.stockT=(ac.stockT||0)+v.cantidad;
-      else ac.stockC=(ac.stockC||0)+v.cantidad;
-      await saveItem('accesorios',ac);
-    } else {
-      alert('No se encontró el accesorio en stock. El stock no fue actualizado.');
+  } else {
+    // Venta individual
+    if(v.tipo==='equipo'){
+      const eq=equipos.find(e=>(v.eqId&&e._id===v.eqId)||`${e.modelo} ${e.memoria}`===v.producto);
+      if(eq){eq.stock=(eq.stock||0)+v.cantidad;await saveItem('equipos',eq);}
+      else alert('No se encontró el equipo. El stock no fue actualizado.');
+    }
+    if(v.tipo==='accesorio'){
+      const ac=accesorios.find(a=>(v.acId&&a._id===v.acId)||a.nombre===v.producto);
+      if(ac){
+        if(v.sucursal==='Tunuyán') ac.stockT=(ac.stockT||0)+v.cantidad;
+        else ac.stockC=(ac.stockC||0)+v.cantidad;
+        await saveItem('accesorios',ac);
+      } else alert('No se encontró el accesorio. El stock no fue actualizado.');
     }
   }
 
   ventas[idx]={...v,estado:'anulada',anuladoPor:rolLabel(),anuladoEn:Date.now()};
   await saveItem('ventas',ventas[idx]);
 
-  // Si la venta tenía canje, eliminar el ingreso correspondiente
-  if(v.canje && v.canje.modelo){
-    // Buscar el ingreso que coincida con esta venta (mismo timestamp aprox o mismo producto/cliente)
-    const ingresoIdx = ingresos.findIndex(i=>
-      i.modelo===v.canje.modelo &&
-      i.ventaProducto===v.producto &&
-      Math.abs(i.ts - v.ts) < 60000 // dentro del mismo minuto
-    );
-    if(ingresoIdx!==-1){
-      const ingId=ingresos[ingresoIdx]._id;
-      ingresos.splice(ingresoIdx,1);
-      if(ingId) await deleteItem('ingresos',ingId);
-    }
+  // Si tenía canje, eliminar el ingreso correspondiente
+  if(v.canje&&v.canje.modelo){
+    const ingresoIdx=ingresos.findIndex(i=>i.modelo===v.canje.modelo&&i.ventaProducto===v.producto&&Math.abs(i.ts-v.ts)<60000);
+    if(ingresoIdx!==-1){const ingId=ingresos[ingresoIdx]._id;ingresos.splice(ingresoIdx,1);if(ingId)await deleteItem('ingresos',ingId);}
   }
 
   renderEq();renderAc();renderVentas();
@@ -1572,7 +1603,6 @@ function renderDetalleDia(fechaStr){
   document.getElementById('caja-dia-titulo').textContent='📂 '+nombreDia.charAt(0).toUpperCase()+nombreDia.slice(1);
   document.getElementById('caja-dia-sub').textContent=`${data.length} venta${data.length!==1?'s':''} · ${suc||'Ambas sucursales'}`;
 
-  // Banner cierre
   const banner=document.getElementById('caja-cerrada-banner');
   const cierre=cierres.find(c=>c.fecha===fechaStr&&(!suc||c.sucursal===suc||c.sucursal==='Ambas'));
   if(cierre){
@@ -1582,62 +1612,94 @@ function renderDetalleDia(fechaStr){
   } else {
     banner.style.display='none';
     document.getElementById('btn-cerrar-caja').style.display='inline-block';
-    // Solo mostrar botón cerrar para el día de hoy o si es admin/gerente
-    if(fechaStr!==hoy&&!canEdit()){
-      document.getElementById('btn-cerrar-caja').style.display='none';
-    }
+    if(fechaStr!==hoy&&!canEdit()) document.getElementById('btn-cerrar-caja').style.display='none';
   }
 
-  // Stats
-  const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
-  const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
-  const canjes=data.filter(v=>v.canje&&v.canje.valor>0);
-  const totalCanjes=canjes.reduce((a,v)=>a+(v.canje.valor||0),0);
-  document.getElementById('caja-stats').innerHTML=`
-    <div class="sc sc-blue"><div class="sc-label">VENTAS</div><div class="sc-val">${data.length}</div></div>
-    <div class="sc"><div class="sc-label">EQUIPOS (USD)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
-    <div class="sc"><div class="sc-label">ACCESORIOS (ARS)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
-    <div class="sc" style="background:#FFF3E0"><div class="sc-label">CANJES</div><div class="sc-val" style="font-size:13px;padding-top:3px;color:#8A4D00">${canjes.length>0?'USD '+totalCanjes.toLocaleString('es-AR'):'—'}</div></div>`;
-
-  // Pagos
+  // Totales por método de pago
   const pagoTotals={};
   METODOS.forEach(m=>pagoTotals[m.id]={label:m.label,prefix:m.prefix,total:0});
   data.forEach(v=>(v.pagos||[]).forEach(p=>{if(pagoTotals[p.id])pagoTotals[p.id].total+=p.monto;}));
-  const activos=Object.values(pagoTotals).filter(p=>p.total>0);
-  document.getElementById('caja-pagos').innerHTML=activos.length===0
-    ?'<div style="color:#6E6E73;font-size:12px">Sin pagos registrados</div>'
-    :activos.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F5F5F7;font-size:12px;"><span style="color:#6E6E73">${p.label}</span><strong>${p.prefix} ${p.total.toLocaleString('es-AR')}</strong></div>`).join('');
+  const totalEfectivo=pagoTotals['efectivo'].total;
+  const totalTransf=pagoTotals['transferencia'].total;
+  const totalDolBillete=pagoTotals['dolares'].total;
+  const totalDolDig=pagoTotals['dolares_dig'].total;
+  const totalPesos=totalEfectivo+totalTransf;
+  const totalDolares=totalDolBillete+totalDolDig;
+  const canjes=data.filter(v=>v.canje&&v.canje.valor>0);
+  const totalCanjes=canjes.reduce((a,v)=>a+(v.canje.valor||0),0);
 
-  // Por sucursal
+  // Stats por método
+  document.getElementById('caja-stats').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-label">VENTAS</div><div class="sc-val">${data.length}</div></div>
+    <div class="sc sc-green"><div class="sc-label">💵 EFECTIVO</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(totalEfectivo)}</div></div>
+    <div class="sc sc-green"><div class="sc-label">📲 TRANSFERENCIA</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(totalTransf)}</div></div>
+    <div class="sc sc-blue"><div class="sc-label">💲 USD BILLETE</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(totalDolBillete)}</div></div>
+    <div class="sc sc-blue"><div class="sc-label">💻 USD DIGITAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(totalDolDig)}</div></div>
+    ${totalCanjes>0?`<div class="sc" style="background:#FFF3E0"><div class="sc-label">🔄 CANJES</div><div class="sc-val" style="font-size:13px;padding-top:3px;color:#8A4D00">${fmtUSD(totalCanjes)}</div></div>`:''}`;
+
+  // Panel pagos con totales finales
+  const activos=Object.values(pagoTotals).filter(p=>p.total>0);
+  document.getElementById('caja-pagos').innerHTML=`
+    ${activos.length===0?'<div style="color:#6E6E73;font-size:12px">Sin pagos registrados</div>':
+      activos.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F5F5F7;font-size:12px;">
+        <span style="color:#6E6E73">${p.label}</span><strong>${p.prefix} ${p.total.toLocaleString('es-AR')}</strong>
+      </div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:9px 0;margin-top:4px;font-size:13px;border-top:2px solid #E8E8ED;font-weight:700">
+      <span>Total pesos</span><span style="color:#1B5E20">${fmtARS(totalPesos)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:700">
+      <span>Total dólares</span><span style="color:#0058B0">${fmtUSD(totalDolares)}</span>
+    </div>`;
+
+  // Por sucursal con desglose de métodos
   const bySuc={};
-  SUCS.forEach(s=>bySuc[s]={usd:0,ars:0,cant:0});
-  data.forEach(v=>{if(bySuc[v.sucursal]){bySuc[v.sucursal].cant++;if(v.moneda==='USD')bySuc[v.sucursal].usd+=v.total;else bySuc[v.sucursal].ars+=v.total;}});
+  SUCS.forEach(s=>bySuc[s]={cant:0,ef:0,tr:0,db:0,dd:0});
+  data.forEach(v=>{
+    const s=v.sucursal;
+    if(!bySuc[s]) return;
+    bySuc[s].cant++;
+    (v.pagos||[]).forEach(p=>{
+      if(p.id==='efectivo') bySuc[s].ef+=p.monto;
+      else if(p.id==='transferencia') bySuc[s].tr+=p.monto;
+      else if(p.id==='dolares') bySuc[s].db+=p.monto;
+      else if(p.id==='dolares_dig') bySuc[s].dd+=p.monto;
+    });
+  });
   document.getElementById('caja-suc-resumen').innerHTML=SUCS.map(s=>`
     <div style="margin-bottom:10px;">
       <div style="font-size:11px;font-weight:600;color:#6E6E73;margin-bottom:5px;">📍 ${s} — ${bySuc[s].cant} ventas</div>
-      ${bySuc[s].usd>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#6E6E73">Equipos</span><strong>${fmtUSD(bySuc[s].usd)}</strong></div>`:''}
-      ${bySuc[s].ars>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#6E6E73">Accesorios</span><strong>${fmtARS(bySuc[s].ars)}</strong></div>`:''}
-      ${bySuc[s].usd===0&&bySuc[s].ars===0?`<div style="font-size:12px;color:#6E6E73">Sin ventas</div>`:''}
+      ${bySuc[s].ef>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#6E6E73">💵 Efectivo</span><strong>${fmtARS(bySuc[s].ef)}</strong></div>`:''}
+      ${bySuc[s].tr>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#6E6E73">📲 Transferencia</span><strong>${fmtARS(bySuc[s].tr)}</strong></div>`:''}
+      ${bySuc[s].db>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#6E6E73">💲 USD Billete</span><strong>${fmtUSD(bySuc[s].db)}</strong></div>`:''}
+      ${bySuc[s].dd>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#6E6E73">💻 USD Digital</span><strong>${fmtUSD(bySuc[s].dd)}</strong></div>`:''}
+      ${bySuc[s].cant===0?`<div style="font-size:12px;color:#6E6E73">Sin ventas</div>`:''}
     </div>`).join('<hr style="border:none;border-top:1px solid #F0F0F5;margin:4px 0"/>');
 
-  // Tabla ventas
+  // Tabla ventas del día
   document.getElementById('caja-tabla').innerHTML=data.length===0
     ?`<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#6E6E73;font-size:13px">Sin ventas en este día</td></tr>`
     :[...data].reverse().map(v=>{
       const hora=new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
       const ph=(v.pagos||[]).map(p=>`<span class="pago-tag">${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}</span>`).join('');
       const canjeTag=v.canje&&v.canje.modelo?`<span class="pago-tag" style="background:#FFF3E0;color:#8A4D00">🔄 ${v.canje.modelo} − USD ${Number(v.canje.valor).toLocaleString('es-AR')}</span>`:'';
+      const tipoTag=v.tipo==='carrito'?'vtag-car':v.tipo==='equipo'?'vtag-eq':'vtag-ac';
+      const tipoLabel=v.tipo==='carrito'?'🛒':v.tipo==='equipo'?'Equipo':'Acces.';
+      const totalStr=v.tipo==='carrito'
+        ?`${v.totalUSD>0?'USD '+v.totalUSD.toLocaleString('es-AR'):''}${v.totalUSD>0&&v.totalARS>0?' + ':''}${v.totalARS>0?'$ '+v.totalARS.toLocaleString('es-AR'):''}`
+        :`${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}`;
+      const productoStr=v.resumen?v.resumen.slice(0,35)+(v.resumen.length>35?'…':''):v.producto;
       return`<tr style="border-bottom:1px solid #F0F0F5;">
         <td style="padding:8px 10px;font-size:11px;color:#6E6E73">${hora}</td>
-        <td style="padding:8px 10px"><span class="vtag ${v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
-        <td style="padding:8px 10px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.producto}">${v.producto}</td>
+        <td style="padding:8px 10px"><span class="vtag ${tipoTag}">${tipoLabel}</span></td>
+        <td style="padding:8px 10px;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.resumen||v.producto}">${productoStr}</td>
         <td style="padding:8px 10px;font-size:12px">${v.sucursal}</td>
-        <td style="padding:8px 10px;font-size:12px;font-weight:600">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
+        <td style="padding:8px 10px;font-size:12px;font-weight:600">${totalStr}</td>
         <td style="padding:8px 10px;font-size:12px;white-space:normal;line-height:1.5">${canjeTag}${ph||(!canjeTag?'—':'')}</td>
         <td style="padding:8px 10px;font-size:11px;color:#6E6E73">${v.por}</td>
       </tr>`;
     }).join('');
 }
+
 
 async function cerrarCaja(){
   if(!cajaFechaActual){return;}
@@ -1853,6 +1915,56 @@ function agregarAcAlCarrito(ri){
   abrirCarrito();
 }
 
+function toggleCanjeFila(i){
+  const item=carrito[i];
+  if(!item) return;
+  if(!item.canje) item.canje={activo:false,cliente:'',modelo:'',imei:'',bateria:0,valor:0,estado:'Bueno'};
+  item.canje.activo=!item.canje.activo;
+  actualizarCarritoUI();
+  actualizarCarritoTotales();
+}
+
+function updateCanjeFila(i, campo, valor){
+  const item=carrito[i];
+  if(!item||!item.canje) return;
+  item.canje[campo]=campo==='valor'||campo==='bateria'?parseFloat(valor)||0:valor;
+  // Re-renderizar solo el resumen de canje sin recrear todo
+  const resEl=document.getElementById('canje-fila-'+i);
+  if(resEl&&campo==='valor'){
+    const resDiv=resEl.querySelector('[data-canje-resumen]');
+    // actualizar totales
+    actualizarCarritoTotales();
+  } else {
+    actualizarCarritoTotales();
+  }
+}
+
+function renderDrawerSearch(){
+  const q=(document.getElementById('drawer-search')?.value||'').toLowerCase().trim();
+  const el=document.getElementById('drawer-search-results');
+  if(!el) return;
+  if(!q){el.innerHTML='';return;}
+  const eqs=equipos.filter(e=>e.stock>0&&(`${e.modelo} ${e.memoria}`).toLowerCase().includes(q)).slice(0,4);
+  const acs=accesorios.filter(a=>totalAc(a)>0&&a.nombre.toLowerCase().includes(q)).slice(0,4);
+  if(!eqs.length&&!acs.length){el.innerHTML=`<div style="font-size:12px;color:#6E6E73;padding:6px 0;">Sin resultados</div>`;return;}
+  el.innerHTML=[
+    ...eqs.map((e,i)=>{
+      const ri=equipos.indexOf(e);
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid #E8E8ED;margin-bottom:4px;">
+        <div><div style="font-size:12px;font-weight:500;">📱 ${e.modelo} ${e.memoria}</div><div style="font-size:11px;color:#6E6E73;">USD ${e.precio.toLocaleString('es-AR')} · 🔋${e.bateria}% · ${e.sucursal}</div></div>
+        <button class="prod-list-add" onclick="agregarEqAlCarrito(${ri});document.getElementById('drawer-search').value='';renderDrawerSearch();">+ Agregar</button>
+      </div>`;
+    }),
+    ...acs.map((a,i)=>{
+      const ri=accesorios.indexOf(a);
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid #E8E8ED;margin-bottom:4px;">
+        <div><div style="font-size:12px;font-weight:500;">🎧 ${a.nombre}</div><div style="font-size:11px;color:#6E6E73;">$ ${a.precio.toLocaleString('es-AR')} · ${a.cat}</div></div>
+        <button class="prod-list-add" onclick="agregarAcAlCarrito(${ri});document.getElementById('drawer-search').value='';renderDrawerSearch();">+ Agregar</button>
+      </div>`;
+    })
+  ].join('');
+}
+
 function abrirCarrito(){
   document.getElementById('carrito-drawer').classList.add('open');
   document.getElementById('carrito-overlay').classList.add('open');
@@ -1862,6 +1974,11 @@ function cerrarCarrito(){
   document.getElementById('carrito-drawer').classList.remove('open');
   document.getElementById('carrito-overlay').classList.remove('open');
 }
+
+// Cerrar con Escape
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') cerrarCarrito();
+});
 
 function carritoFiltro(f, btn){
   carritoFiltroActual=f;
@@ -1942,34 +2059,69 @@ function limpiarCarrito(){
 
 function actualizarCarritoUI(){
   const n=carrito.length;
-  // Actualizar todos los badges
   ['carrito-count','carrito-badge','carrito-count-eq','carrito-count-ac'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.textContent=n;
   });
-  // Mostrar/ocultar botón flotante
   const btnFloat=document.getElementById('btn-carrito-float');
   if(btnFloat) btnFloat.style.display=n>0?'flex':'none';
 
   const el=document.getElementById('carrito-items');
   if(!el) return;
   if(n===0){
-    el.innerHTML=`<div class="carrito-empty">📦 Agregá productos desde Equipos o Accesorios</div>`;
+    el.innerHTML=`<div class="carrito-empty">📦 Buscá productos arriba o agregá desde las tablas</div>`;
   } else {
-    el.innerHTML=carrito.map((c,i)=>`
-      <div class="carrito-item">
-        <div style="flex:1">
-          <div class="carrito-item-name">${c.nombre}</div>
-          <div class="carrito-item-sub">${c.moneda==='USD'?'USD':'$'} ${c.precioUnit.toLocaleString('es-AR')} c/u</div>
+    el.innerHTML=carrito.map((c,i)=>{
+      const esEq=c.tipo==='equipo';
+      const canje=c.canje||{};
+      const canjeActivo=canje.activo||false;
+      return`<div style="background:#F9F9FB;border:1px solid #E8E8ED;border-radius:12px;padding:10px;margin-bottom:8px;">
+        <!-- Fila principal -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:600;color:#1D1D1F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nombre}</div>
+            <div style="font-size:11px;color:#6E6E73;">${c.sub||''} · ${c.moneda==='USD'?'USD':'$'} ${c.precioUnit.toLocaleString('es-AR')} c/u</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},-1)">−</button>
+            <span class="carrito-qty-num">${c.qty}</span>
+            <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},1)">+</button>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#1D1D1F;white-space:nowrap;min-width:70px;text-align:right;">${c.moneda==='USD'?'USD':'$'} ${(c.precioUnit*c.qty).toLocaleString('es-AR')}</div>
+          <button class="carrito-item-remove" onclick="quitarDelCarrito(${i})">✕</button>
         </div>
-        <div class="carrito-qty">
-          <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},-1)">−</button>
-          <span class="carrito-qty-num">${c.qty}</span>
-          <button class="carrito-qty-btn" onclick="cambiarQtyCarrito(${i},1)">+</button>
-        </div>
-        <div class="carrito-item-precio">${c.moneda==='USD'?'USD':'$'} ${(c.precioUnit*c.qty).toLocaleString('es-AR')}</div>
-        <button class="carrito-item-remove" onclick="quitarDelCarrito(${i})">✕</button>
-      </div>`).join('');
+        <!-- Botón canje (solo equipos) -->
+        ${esEq?`<div style="margin-top:8px;">
+          <button onclick="toggleCanjeFila(${i})" style="font-size:11px;padding:4px 10px;border:1px solid ${canjeActivo?'#A5D6A7':'#D2D2D7'};border-radius:8px;background:${canjeActivo?'#E8F5E9':'#fff'};color:${canjeActivo?'#1B5E20':'#6E6E73'};cursor:pointer;width:100%;text-align:left;">
+            🔄 ${canjeActivo?'Plan canje activado ▲':'Agregar plan canje ▼'}
+          </button>
+          <div id="canje-fila-${i}" style="display:${canjeActivo?'block':'none'};margin-top:8px;background:#FFF3E0;border-radius:9px;padding:9px;">
+            <div style="font-size:10px;font-weight:600;color:#8A4D00;letter-spacing:0.05em;margin-bottom:7px;">EQUIPO QUE ENTREGA EL CLIENTE</div>
+            <input type="text" placeholder="Nombre del cliente" value="${canje.cliente||''}" oninput="updateCanjeFila(${i},'cliente',this.value)"
+              style="width:100%;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;margin-bottom:6px;font-family:inherit;"/>
+            <input type="text" placeholder="Modelo (ej: iPhone 13 128GB)" value="${canje.modelo||''}" oninput="updateCanjeFila(${i},'modelo',this.value)"
+              style="width:100%;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;margin-bottom:6px;font-family:inherit;"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+              <input type="text" placeholder="IMEI" value="${canje.imei||''}" oninput="updateCanjeFila(${i},'imei',this.value)"
+                style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;"/>
+              <input type="number" placeholder="Batería %" min="1" max="100" value="${canje.bateria||''}" oninput="updateCanjeFila(${i},'bateria',this.value)"
+                style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <input type="number" placeholder="Valor USD" min="0" value="${canje.valor||''}" oninput="updateCanjeFila(${i},'valor',this.value)"
+                style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;"/>
+              <select onchange="updateCanjeFila(${i},'estado',this.value)"
+                style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;">
+                <option ${canje.estado==='Bueno'?'selected':''}>Bueno</option>
+                <option ${canje.estado==='Regular'?'selected':''}>Regular</option>
+                <option ${canje.estado==='Malo'?'selected':''}>Malo</option>
+              </select>
+            </div>
+            ${canje.valor>0?`<div style="margin-top:7px;font-size:12px;font-weight:600;color:#1B5E20;">💰 Descuento: USD ${Number(canje.valor).toLocaleString('es-AR')} del total</div>`:''}
+          </div>
+        </div>`:''}
+      </div>`;
+    }).join('');
   }
   actualizarCarritoTotales();
 }
@@ -2095,38 +2247,41 @@ async function confirmarVentaCarrito(){
   const descTipo=document.getElementById('carrito-desc-tipo')?.value||'%';
   const pagos=getCarritoPagos();
   const ts=Date.now();
-
-  // Calcular descuentos
   const subtotalUSD=carrito.filter(c=>c.moneda==='USD').reduce((a,c)=>a+c.precioUnit*c.qty,0);
   const subtotalARS=carrito.filter(c=>c.moneda==='ARS').reduce((a,c)=>a+c.precioUnit*c.qty,0);
   let descUSD=0,descARS=0;
-  if(descVal>0){if(descTipo==='%'){descUSD=subtotalUSD*descVal/100;descARS=subtotalARS*descVal/100;}else if(descTipo==='USD'){descUSD=Math.min(descVal,subtotalUSD);}else{descARS=Math.min(descVal,subtotalARS);}}
-
-  if(!confirm(`Confirmar venta de ${carrito.length} producto(s) en ${sv}?`)) return;
-
+  if(descVal>0){
+    if(descTipo==='%'){descUSD=subtotalUSD*descVal/100;descARS=subtotalARS*descVal/100;}
+    else if(descTipo==='USD'){descUSD=Math.min(descVal,subtotalUSD);}
+    else{descARS=Math.min(descVal,subtotalARS);}
+  }
+  // Restar canjes del total USD
+  const totalCanjesUSD=carrito.reduce((a,c)=>a+(c.canje&&c.canje.activo&&c.canje.valor?c.canje.valor:0),0);
+  const totalUSD=Math.max(0,subtotalUSD-descUSD-totalCanjesUSD);
+  const totalARS=Math.max(0,subtotalARS-descARS);
+  const cantTotal=carrito.reduce((a,c)=>a+c.qty,0);
+  const resumen=carrito.map(c=>c.nombre+(c.qty>1?' x'+c.qty:'')).join(', ');
+  if(!confirm(`Confirmar venta de ${cantTotal} producto(s) en ${sv}?`)) return;
   document.getElementById('btn-confirmar-venta').disabled=true;
   document.getElementById('btn-confirmar-venta').textContent='Guardando...';
-
-  // Registrar cada item como venta individual y descontar stock
+  const itemsDetalle=[];
   for(const item of carrito){
-    // Calcular descuento proporcional para este item
-    const itemSubtotal=item.precioUnit*item.qty;
-    let itemDesc=0;
-    if(descVal>0){
-      if(descTipo==='%') itemDesc=itemSubtotal*descVal/100;
-      else if(descTipo==='USD'&&item.moneda==='USD') itemDesc=item.qty*(descUSD/carrito.filter(c=>c.moneda==='USD').length||1);
-      else if(descTipo==='$'&&item.moneda==='ARS') itemDesc=item.qty*(descARS/carrito.filter(c=>c.moneda==='ARS').length||1);
-    }
-    const totalItem=Math.max(0,itemSubtotal-itemDesc);
-
     if(item.tipo==='equipo'){
       const eq=equipos.find(e=>`${e.modelo} ${e.memoria}`===item.nombre&&e.stock>=item.qty);
       if(eq){
         eq.stock-=item.qty;
         await saveItem('equipos',eq);
-        const venta={ts,tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:eq.sucursal,cantidad:item.qty,precioUnit:item.precioUnit,total:totalItem,descuento:itemDesc,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq._id||null,acIdx:null,acId:null,pagos,canje:null};
-        ventas.push(venta);
-        await saveItem('ventas',venta);
+        itemsDetalle.push({tipo:'equipo',nombre:item.nombre,qty:item.qty,precioUnit:item.precioUnit,moneda:'USD',eqId:eq._id||null,canje:item.canje?.activo?item.canje:null});
+        // Registrar canje si hay
+        if(item.canje&&item.canje.activo&&item.canje.modelo){
+          const ingreso={ts,cliente:item.canje.cliente||'—',modelo:item.canje.modelo,imei:item.canje.imei||'',estado:item.canje.estado||'Bueno',bateria:item.canje.bateria||0,valor:item.canje.valor||0,sucursal:sv,por:rolLabel(),ventaProducto:item.nombre};
+          ingresos.push(ingreso);
+          await saveItem('ingresos',ingreso);
+          // Agregar al stock
+          const eqCanje={modelo:item.canje.modelo,memoria:'—',bateria:item.canje.bateria||0,imei:item.canje.imei||'',sucursal:sv,precio:item.canje.valor||0,costo:0,stock:1,esCanje:true,condicion:item.canje.estado,clienteCanje:item.canje.cliente||'—'};
+          equipos.push(eqCanje);
+          await saveItem('equipos',eqCanje);
+        }
       }
     } else {
       const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
@@ -2134,17 +2289,18 @@ async function confirmarVentaCarrito(){
         if((ac.stockT||0)>=(ac.stockC||0)) ac.stockT=Math.max(0,(ac.stockT||0)-item.qty);
         else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
         await saveItem('accesorios',ac);
-        const venta={ts,tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:totalItem,descuento:itemDesc,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac._id||null,pagos,canje:null};
-        ventas.push(venta);
-        await saveItem('ventas',venta);
+        itemsDetalle.push({tipo:'accesorio',nombre:item.nombre,qty:item.qty,precioUnit:item.precioUnit,moneda:'ARS',acId:ac._id||null});
       }
     }
   }
-
-  limpiarCarrito();
-  renderEq();renderAc();renderVentas();renderCarritoProductos();
+  const canjeResumen=itemsDetalle.filter(i=>i.canje&&i.canje.activo).map(i=>`🔄 ${i.canje.modelo} USD ${i.canje.valor}`).join(', ');
+  const ventaCarrito={ts,tipo:'carrito',producto:carrito.length===1?carrito[0].nombre:cantTotal+' productos',resumen,items:itemsDetalle,sucursal:sv,cantidad:cantTotal,subtotalUSD,subtotalARS,descuento:descVal>0?{valor:descVal,tipo:descTipo,usd:descUSD,ars:descARS}:null,totalCanjesUSD,totalUSD,totalARS,total:totalUSD>0?totalUSD:totalARS,moneda:totalUSD>0?'USD':'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:null,pagos,canje:canjeResumen?{resumen:canjeResumen}:null};
+  ventas.push(ventaCarrito);
+  await saveItem('ventas',ventaCarrito);
+  limpiarCarrito();cerrarCarrito();renderEq();renderAc();renderVentas();
+  document.getElementById('btn-confirmar-venta').disabled=false;
   document.getElementById('btn-confirmar-venta').textContent='✅ Confirmar venta';
-  showSyncBar(`✓ Venta guardada`,'ok');
+  showSyncBar(`✓ Venta de ${cantTotal} producto(s) guardada`,'ok');
 }
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 
