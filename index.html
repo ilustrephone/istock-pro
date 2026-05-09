@@ -2362,7 +2362,6 @@ async function confirmarVentaCarrito(){
   document.getElementById('btn-confirmar-venta').textContent='✅ Confirmar venta';
   showSyncBar(`✓ Venta de ${cantTotal} producto(s) guardada`,'ok');
 }
-function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 
 // ===================== INICIO =====================
 async function init(){
