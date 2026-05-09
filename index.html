@@ -1352,27 +1352,27 @@ async function saveModal(){
     await saveItem('ventas',venta);
     // Si hay canje, registrar en ingresos Y agregar al stock de equipos
     if(tieneCanje&&canjeModelo){
-      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,bateria:canjeBateria,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
+      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei||'',estado:canjeEstado||'Bueno',bateria:parseInt(canjeBateria)||0,valor:parseFloat(canjeValor)||0,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
       ingresos.push(ingreso);
       await saveItem('ingresos',ingreso);
-      // Crear equipo en stock con los datos del canje
+      // Crear equipo en stock con los datos del canje — tipos numéricos explícitos
       const eqCanje={
-        modelo:canjeModelo,
+        modelo:canjeModelo.trim(),
         memoria:'—',
-        bateria:canjeBateria||0,
+        bateria:parseInt(canjeBateria)||0,
         imei:canjeImei||'',
         sucursal:sv,
-        precio:canjeValor||0,
+        precio:parseFloat(canjeValor)||0,
         costo:0,
         stock:1,
         esCanje:true,
-        condicion:canjeEstado,
+        condicion:canjeEstado||'Bueno',
         clienteCanje:canjeCliente||'—'
       };
-      equipos.push(eqCanje);
-      await saveItem('equipos',eqCanje);
+      const saved = await saveItem('equipos',eqCanje);
+      if(saved) equipos.push(eqCanje);
       renderEq();
-      showSyncBar(`✓ Venta guardada — ${canjeModelo} agregado al stock`,'ok');
+      showSyncBar(`✓ ${canjeModelo} agregado al stock como canje`,'ok');
     } else {
       showSyncBar('✓ Venta guardada en la nube','ok');
     }
@@ -2278,9 +2278,9 @@ async function confirmarVentaCarrito(){
           ingresos.push(ingreso);
           await saveItem('ingresos',ingreso);
           // Agregar al stock
-          const eqCanje={modelo:item.canje.modelo,memoria:'—',bateria:item.canje.bateria||0,imei:item.canje.imei||'',sucursal:sv,precio:item.canje.valor||0,costo:0,stock:1,esCanje:true,condicion:item.canje.estado,clienteCanje:item.canje.cliente||'—'};
-          equipos.push(eqCanje);
-          await saveItem('equipos',eqCanje);
+          const eqCanje={modelo:item.canje.modelo.trim(),memoria:'—',bateria:parseInt(item.canje.bateria)||0,imei:item.canje.imei||'',sucursal:sv,precio:parseFloat(item.canje.valor)||0,costo:0,stock:1,esCanje:true,condicion:item.canje.estado||'Bueno',clienteCanje:item.canje.cliente||'—'};
+          const saved=await saveItem('equipos',eqCanje);
+          if(saved) equipos.push(eqCanje);
         }
       }
     } else {
