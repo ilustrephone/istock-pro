@@ -2294,12 +2294,6 @@ function getCarritoPagos(){
   });
 }
 
-    label:m.label.replace(/^.\s/,''),
-    prefix:m.prefix,
-    monto:parseFloat(document.getElementById('cp-amt-'+m.id).value)||0
-  }));
-}
-
 async function confirmarVentaCarrito(){
   if(carrito.length===0) return;
   const sv=document.getElementById('carrito-suc').value;
