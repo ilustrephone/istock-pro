@@ -1145,7 +1145,11 @@ function buildForm(type,idx){
       <div class="mgrid"><div class="mfl"><label>MEMORIA</label><select id="mf-mem">${MEMS.map(m=>opt(m,it?it.memoria:'')).join('')}</select></div><div class="mfl"><label>BATERÍA (%)</label><input id="mf-bat" type="number" min="1" max="100" placeholder="92" value="${it?it.bateria:''}"/></div></div>
       <div class="mfl"><label>IMEI</label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
       <div class="mgrid"><div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>SUCURSAL</label><select id="mf-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
-      ${cf}<div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>`;
+      ${cf}<div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>
+      <div class="mfl"><label>URL DE IMAGEN (opcional)</label><input id="mf-imagen" type="url" placeholder="https://..." value="${it&&it.imagen?it.imagen:''}"/>
+      <div style="font-size:10px;color:#6E6E73;margin-top:-6px;margin-bottom:8px;">Pegá el link de una foto del equipo para mostrar en la web</div>
+      ${it&&it.imagen?`<img src="${it.imagen}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #E8E8ED;" onerror="this.style.display='none'"/>`:''}
+      </div>`;
   }
   if(type==='ac-edit'){
     const it=idx!==null?accesorios[idx]:null;
@@ -1153,7 +1157,11 @@ function buildForm(type,idx){
     return`<div class="mfl"><label>NOMBRE</label><input id="mf-nombre" type="text" placeholder="ej: Funda MagSafe" value="${it?it.nombre:''}"/></div>
       <div class="mfl"><label>CATEGORÍA</label><select id="mf-cat-ac">${CATS.map(c=>opt(c,it?it.cat:'')).join('')}</select></div>
       <div class="mfl"><label>PRECIO VENTA (ARS $)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div>
-      ${cf}<div class="mgrid"><div class="mfl"><label>STOCK TUNUYÁN</label><input id="mf-stockT" type="number" min="0" value="${it!=null?(it.stockT||0):''}"/></div><div class="mfl"><label>STOCK LA CONSULTA</label><input id="mf-stockC" type="number" min="0" value="${it!=null?(it.stockC||0):''}"/></div></div>`;
+      ${cf}<div class="mgrid"><div class="mfl"><label>STOCK TUNUYÁN</label><input id="mf-stockT" type="number" min="0" value="${it!=null?(it.stockT||0):''}"/></div><div class="mfl"><label>STOCK LA CONSULTA</label><input id="mf-stockC" type="number" min="0" value="${it!=null?(it.stockC||0):''}"/></div></div>
+      <div class="mfl"><label>URL DE IMAGEN (opcional)</label><input id="mf-imagen" type="url" placeholder="https://..." value="${it&&it.imagen?it.imagen:''}"/>
+      <div style="font-size:10px;color:#6E6E73;margin-top:-6px;margin-bottom:8px;">Pegá el link de una foto para mostrar en la web</div>
+      ${it&&it.imagen?`<img src="${it.imagen}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #E8E8ED;" onerror="this.style.display='none'"/>`:''}
+      </div>`;
   }
   if(type==='venta-eq'){
     const e=equipos[idx];
@@ -1174,9 +1182,11 @@ function buildForm(type,idx){
             <div class="mfl"><label>IMEI DEL CANJE</label><input id="canje-imei" type="text" placeholder="354621..." style="margin-bottom:8px"/></div>
           </div>
           <div class="mgrid">
-            <div class="mfl"><label>VALOR CANJE (USD)</label><input id="canje-valor" type="number" min="0" placeholder="0" oninput="recalcTotal('eq',${idx})" style="margin-bottom:8px"/></div>
-            <div class="mfl"><label>BATERÍA (%)</label><input id="canje-bateria" type="number" min="1" max="100" placeholder="ej: 85" style="margin-bottom:8px"/></div>
+            <div class="mfl"><label>VALOR CANJE / COSTO (USD)</label><input id="canje-valor" type="number" min="0" placeholder="0" oninput="recalcTotal('eq',${idx})" style="margin-bottom:8px"/></div>
+            <div class="mfl"><label>PRECIO VENTA (USD)</label><input id="canje-precio-venta" type="number" min="0" placeholder="0" style="margin-bottom:8px"/></div>
           </div>
+          <div class="mgrid">
+            <div class="mfl"><label>BATERÍA (%)</label><input id="canje-bateria" type="number" min="1" max="100" placeholder="ej: 85" style="margin-bottom:8px"/></div>
             <div class="mfl"><label>ESTADO DEL CANJE</label>
               <select id="canje-estado" style="margin-bottom:8px">
                 <option value="Bueno">Bueno</option>
@@ -1305,7 +1315,7 @@ async function saveModal(){
     const imei=document.getElementById('mf-imei').value.trim();
     if(!imei){alert('Ingresá el IMEI');return;}
     const costEl=document.getElementById('mf-costo');
-    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0};
+    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,imagen:document.getElementById('mf-imagen')?.value.trim()||''};
     if(editIdx!==null){obj._id=equipos[editIdx]._id;equipos[editIdx]=obj;}else{equipos.push(obj);}
     closeModal();renderEq();
     await saveItem('equipos', obj);
@@ -1316,7 +1326,7 @@ async function saveModal(){
     const nombre=document.getElementById('mf-nombre').value.trim();
     if(!nombre){alert('Ingresá el nombre');return;}
     const costEl=document.getElementById('mf-costo');
-    const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?accesorios[editIdx].costo:0),stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0};
+    const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?accesorios[editIdx].costo:0),stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0,imagen:document.getElementById('mf-imagen')?.value.trim()||''};
     if(editIdx!==null){obj._id=accesorios[editIdx]._id;accesorios[editIdx]=obj;}else{accesorios.push(obj);}
     closeModal();renderAc();
     await saveItem('accesorios', obj);
@@ -1336,6 +1346,7 @@ async function saveModal(){
     const chkCanje=document.getElementById('chk-canje');
     const tieneCanje=chkCanje&&chkCanje.checked;
     const canjeValor=tieneCanje?parseFloat(document.getElementById('canje-valor')?.value)||0:0;
+    const canjePrecioVenta=tieneCanje?parseFloat(document.getElementById('canje-precio-venta')?.value)||0:0;
     const canjeModelo=tieneCanje?document.getElementById('canje-modelo')?.value.trim():'';
     const canjeImei=tieneCanje?document.getElementById('canje-imei')?.value.trim():'';
     const canjeEstado=tieneCanje?document.getElementById('canje-estado')?.value:'';
@@ -1362,8 +1373,8 @@ async function saveModal(){
         bateria:parseInt(canjeBateria)||0,
         imei:canjeImei||'',
         sucursal:sv,
-        precio:parseFloat(canjeValor)||0,
-        costo:0,
+        precio:canjePrecioVenta>0?canjePrecioVenta:parseFloat(canjeValor)||0,
+        costo:parseFloat(canjeValor)||0,
         stock:1,
         esCanje:true,
         condicion:canjeEstado||'Bueno',
@@ -2108,10 +2119,14 @@ function actualizarCarritoUI(){
                 style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;"/>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <input type="number" placeholder="Valor USD" min="0" value="${canje.valor||''}" oninput="updateCanjeFila(${i},'valor',this.value)"
+              <input type="number" placeholder="Valor canje / Costo USD" min="0" value="${canje.valor||''}" oninput="updateCanjeFila(${i},'valor',this.value)"
                 style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;"/>
+              <input type="number" placeholder="Precio venta USD" min="0" value="${canje.precioVenta||''}" oninput="updateCanjeFila(${i},'precioVenta',this.value)"
+                style="padding:6px 9px;font-size:12px;border:1px solid #A5D6A7;border-radius:8px;font-family:inherit;"/>
+            </div>
+            <div style="margin-top:6px;">
               <select onchange="updateCanjeFila(${i},'estado',this.value)"
-                style="padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;">
+                style="width:100%;padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;font-family:inherit;">
                 <option ${canje.estado==='Bueno'?'selected':''}>Bueno</option>
                 <option ${canje.estado==='Regular'?'selected':''}>Regular</option>
                 <option ${canje.estado==='Malo'?'selected':''}>Malo</option>
@@ -2278,7 +2293,7 @@ async function confirmarVentaCarrito(){
           ingresos.push(ingreso);
           await saveItem('ingresos',ingreso);
           // Agregar al stock
-          const eqCanje={modelo:item.canje.modelo.trim(),memoria:'—',bateria:parseInt(item.canje.bateria)||0,imei:item.canje.imei||'',sucursal:sv,precio:parseFloat(item.canje.valor)||0,costo:0,stock:1,esCanje:true,condicion:item.canje.estado||'Bueno',clienteCanje:item.canje.cliente||'—'};
+          const eqCanje={modelo:item.canje.modelo.trim(),memoria:'—',bateria:parseInt(item.canje.bateria)||0,imei:item.canje.imei||'',sucursal:sv,precio:parseFloat(item.canje.precioVenta)||parseFloat(item.canje.valor)||0,costo:parseFloat(item.canje.valor)||0,stock:1,esCanje:true,condicion:item.canje.estado||'Bueno',clienteCanje:item.canje.cliente||'—'};
           const saved=await saveItem('equipos',eqCanje);
           if(saved) equipos.push(eqCanje);
         }
