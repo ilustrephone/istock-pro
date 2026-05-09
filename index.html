@@ -345,8 +345,7 @@ tr:hover td{background:#FAFAFA;}
         <th style="width:9%">Batería</th><th style="width:12%">IMEI</th>
         <th style="width:10%">Sucursal</th><th style="width:9%">Precio</th>
         <th style="width:9%" id="th-costo-eq">Costo</th>
-        <th style="width:6%">Stock</th><th style="width:7%">Estado</th>
-        <th style="width:12%">Acciones</th>
+        <th style="width:13%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-eq"></tbody>
     </table></div>
@@ -873,7 +872,7 @@ function renderEq(){
         <td>${batBadge(e.bateria)}</td>
         <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
         <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
-        ${costoCell}<td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
+        ${costoCell}
         <td>
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
           <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${e.stock===0?'disabled':''} onclick="agregarEqAlCarrito(${ri})">🛒</button>
