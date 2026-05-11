@@ -2253,28 +2253,46 @@ function updateCarritoPagoResumen(totalUSD, totalARS){
       else pagARS+=v;
     }
   });
-  // Convertir pesos a USD si hay cotización
-  const pagArsEnUSD=(cotiz>0&&pagARS>0)?pagARS/cotiz:0;
-  const totalPagadoUSD=pagUSD+pagArsEnUSD;
+
   let msg='';
+
+  // --- Total USD ---
   if(totalUSD>0){
+    // Los pagos en pesos se convierten a USD solo si hay cotización
+    const pagArsEnUSD=(cotiz>0&&pagARS>0)?pagARS/cotiz:0;
+    const totalPagadoUSD=pagUSD+pagArsEnUSD;
     const difUSD=totalUSD-totalPagadoUSD;
     if(pagARS>0&&cotiz===0){
-      msg+=`<span style="color:#E65100">⚠️ Ingresá la cotización del dólar</span> `;
+      msg+=`<span style="color:#E65100">⚠️ Ingresá la cotización del dólar</span><br>`;
     } else if(Math.abs(difUSD)<0.01){
-      msg+=`<span style="color:#1B5E20">✓ USD cubierto</span> `;
+      msg+=`<span style="color:#1B5E20">✓ Equipos cubiertos</span><br>`;
     } else if(difUSD>0){
-      msg+=`<span style="color:#C62828">Falta USD ${difUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span> `;
+      msg+=`<span style="color:#C62828">Falta USD ${difUSD.toLocaleString('es-AR',{maximumFractionDigits:2})} (equipos)</span><br>`;
     } else {
-      msg+=`<span style="color:#1B5E20">Vuelto USD ${Math.abs(difUSD).toLocaleString('es-AR',{maximumFractionDigits:2})}</span> `;
+      msg+=`<span style="color:#1B5E20">Vuelto USD ${Math.abs(difUSD).toLocaleString('es-AR',{maximumFractionDigits:2})}</span><br>`;
     }
   }
+
+  // --- Total ARS (independiente del USD) ---
   if(totalARS>0){
-    const difARS=totalARS-pagARS;
-    if(Math.abs(difARS)<0.01) msg+=`<span style="color:#1B5E20">✓ ARS cubierto</span>`;
-    else if(difARS>0) msg+=`<span style="color:#C62828">Falta $ ${difARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span>`;
+    // Para ARS usamos solo los pagos en pesos
+    // Si no hay cotización para convertir pesos a USD, los pagos ARS cubren el total ARS
+    let pagArsParaARS=pagARS;
+    // Si hay cotización y parte de los pesos ya se usó para cubrir USD, descontar
+    if(cotiz>0&&totalUSD>0){
+      const pagArsUsadoEnUSD=Math.min(pagARS, totalUSD*cotiz);
+      pagArsParaARS=Math.max(0,pagARS-pagArsUsadoEnUSD);
+    }
+    // Si no hay cotización, los pesos van directo a cubrir ARS
+    if(cotiz===0||totalUSD===0){
+      pagArsParaARS=pagARS;
+    }
+    const difARS=totalARS-pagArsParaARS;
+    if(Math.abs(difARS)<0.01) msg+=`<span style="color:#1B5E20">✓ Accesorios cubiertos</span>`;
+    else if(difARS>0) msg+=`<span style="color:#C62828">Falta $ ${difARS.toLocaleString('es-AR',{maximumFractionDigits:2})} (accesorios)</span>`;
     else msg+=`<span style="color:#1B5E20">Vuelto $ ${Math.abs(difARS).toLocaleString('es-AR',{maximumFractionDigits:2})}</span>`;
   }
+
   el.innerHTML=msg;
 }
 
