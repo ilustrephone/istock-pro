@@ -2150,17 +2150,15 @@ function actualizarCarritoTotales(){
 
   let descUSD=0,descARS=0;
   if(descVal>0){
-    if(descTipo==='%'){
-      descUSD=subtotalUSD*descVal/100;
-      descARS=subtotalARS*descVal/100;
-    } else if(descTipo==='USD'){
-      descUSD=Math.min(descVal,subtotalUSD);
-    } else {
-      descARS=Math.min(descVal,subtotalARS);
-    }
+    if(descTipo==='%'){descUSD=subtotalUSD*descVal/100;descARS=subtotalARS*descVal/100;}
+    else if(descTipo==='USD'){descUSD=Math.min(descVal,subtotalUSD);}
+    else{descARS=Math.min(descVal,subtotalARS);}
   }
 
-  const totalUSD=Math.max(0,subtotalUSD-descUSD);
+  // Sumar todos los canjes activos
+  const totalCanjesUSD=carrito.reduce((a,c)=>a+(c.canje&&c.canje.activo&&c.canje.valor?parseFloat(c.canje.valor)||0:0),0);
+
+  const totalUSD=Math.max(0,subtotalUSD-descUSD-totalCanjesUSD);
   const totalARS=Math.max(0,subtotalARS-descARS);
 
   el.innerHTML=`
@@ -2168,6 +2166,7 @@ function actualizarCarritoTotales(){
     ${subtotalARS>0?`<div class="carrito-subtotal-row"><span>Subtotal accesorios</span><span>$ ${subtotalARS.toLocaleString('es-AR')}</span></div>`:''}
     ${descVal>0&&descUSD>0?`<div class="carrito-subtotal-row" style="color:#C62828"><span>Descuento</span><span>−USD ${descUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
     ${descVal>0&&descARS>0?`<div class="carrito-subtotal-row" style="color:#C62828"><span>Descuento</span><span>−$ ${descARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
+    ${totalCanjesUSD>0?`<div class="carrito-subtotal-row" style="color:#8A4D00"><span>🔄 Canje(s)</span><span>−USD ${totalCanjesUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
     ${totalUSD>0?`<div class="carrito-subtotal-row total"><span>Total USD</span><span>USD ${totalUSD.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
     ${totalARS>0?`<div class="carrito-subtotal-row total"><span>Total ARS</span><span>$ ${totalARS.toLocaleString('es-AR',{maximumFractionDigits:2})}</span></div>`:''}
     ${carrito.length===0?'<div style="color:#6E6E73;font-size:12px;text-align:center;padding:8px">Carrito vacío</div>':''}`;
