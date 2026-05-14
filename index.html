@@ -745,12 +745,13 @@ async function deleteItem(tabla, id){
 // Refresca datos cada 30 segundos automáticamente
 let autoRefreshInterval = null;
 function startAutoRefresh(){
-  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-  autoRefreshInterval = setInterval(async ()=>{
-    if(!rol) return;
-    await loadAll();
-    renderAll();
-  }, 30000);
+  // AUTO-REFRESH DESACTIVADO TEMPORALMENTE
+  // if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  // autoRefreshInterval = setInterval(async ()=>{
+  //   if(!rol) return;
+  //   await loadAll();
+  //   renderAll();
+  // }, 30000);
 }
 
 // ===================== HELPERS =====================
