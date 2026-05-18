@@ -1278,7 +1278,7 @@ function imprimirCaja(){
     '<div class="section"><div class="section-title">Ingresos por método de pago</div>'+Object.values(pagoTotals).filter(p=>p.total>0).map(p=>'<div class="row"><span>'+p.label+'</span><strong>'+p.prefix+' '+p.total.toLocaleString('es-AR')+'</strong></div>').join('')+'</div>'+
     '<div class="section"><div class="section-title">Detalle de ventas</div><table><thead><tr><th>Hora</th><th>Producto</th><th>Sucursal</th><th>Total</th><th>Forma de pago</th><th>Por</th></tr></thead><tbody>'+
     [...data].reverse().map(v=>{const hora=new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});const ph=(v.pagos||[]).map(p=>p.label+': '+p.prefix+' '+Number(p.monto).toLocaleString('es-AR')).join(' / ');return'<tr><td>'+hora+'</td><td>'+v.producto+'</td><td>'+v.sucursal+'</td><td><strong>'+(v.moneda==='USD'?'USD ':'$ ')+v.total.toLocaleString('es-AR')+'</strong></td><td>'+(ph||'—')+'</td><td>'+v.por+'</td></tr>';}).join('')+
-    '</tbody></table></div><footer>Generado el '+new Date().toLocaleString('es-AR')+' · iStock Pro</footer><script>window.onload=()=>window.print()<\/script></body></html>');
+    '</tbody></table></div><footer>Generado el '+new Date().toLocaleString('es-AR')+' · iStock Pro</footer><scr'+'ipt>window.onload=()=>window.print()<\/script></body></html>');
   win.document.close();
 }
 
