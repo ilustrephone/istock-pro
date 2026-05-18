@@ -1098,7 +1098,6 @@ async function saveModal(){
     if(editIdx!==null){obj._id=servicios[editIdx]._id;servicios[editIdx]=obj;}else{servicios.push(obj);}
     closeModal();renderST();await saveItem('servicios',obj);showSyncBar('✓ Servicio guardado','ok');return;
   }
-}
 
 async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
