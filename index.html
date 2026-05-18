@@ -489,6 +489,7 @@ async function loadAll(){
 }
 
 async function saveItem(tabla,item){
+  if(!item){console.error('saveItem: item es undefined en tabla',tabla);return false;}
   _guardando=true;
   setSyncDot('syncing');
   try{
@@ -1040,21 +1041,30 @@ async function saveModal(){
     renderVentas();return;
   }
   if(modalType==='venta-ac'){
-    const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;const sv=document.getElementById('mf-suc-venta').value;
+    const a=accesorios[editIdx];
+    if(!a){showSyncBar('⚠️ Error: accesorio no encontrado','error');return;}
+    const c=parseInt(document.getElementById('mf-cant').value)||1;
+    const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;
+    const sv=document.getElementById('mf-suc-venta').value;
     const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
     if(c>maxSt){alert('Stock insuficiente en '+sv+'. Disponible: '+maxSt);return;}
-    if(!a._id){alert('Error: este accesorio no tiene ID en Supabase. Editalo y guardalo nuevamente.');return;}
     const pagosGuardados=getPagos();
-    if(sv==='Tunuyán')accesorios[editIdx].stockT-=c;else accesorios[editIdx].stockC-=c;
+    // Guardar copia del accesorio con stock actualizado
+    const acConStockActualizado={...a};
+    if(sv==='Tunuyán')acConStockActualizado.stockT=(a.stockT||0)-c;
+    else acConStockActualizado.stockC=(a.stockC||0)-c;
+    // Actualizar array local
+    if(sv==='Tunuyán')accesorios[editIdx].stockT=(a.stockT||0)-c;
+    else accesorios[editIdx].stockC=(a.stockC||0)-c;
     closeModal();renderAc();
-    const guardado=await saveItem('accesorios',accesorios[editIdx]);
+    const guardado=await saveItem('accesorios',acConStockActualizado);
     if(!guardado){
-      // Revertir el cambio local si no se pudo guardar
-      if(sv==='Tunuyán')accesorios[editIdx].stockT+=c;else accesorios[editIdx].stockC+=c;
-      renderAc();
-      showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');
-      return;
+      if(sv==='Tunuyán')accesorios[editIdx].stockT=(a.stockT||0);
+      else accesorios[editIdx].stockC=(a.stockC||0);
+      renderAc();showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');return;
     }
+    // Actualizar _id si vino nuevo
+    if(acConStockActualizado._id) accesorios[editIdx]._id=acConStockActualizado._id;
     const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:editIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
     ventas.push(venta);await saveItem('ventas',venta);renderVentas();showSyncBar('✓ Venta guardada','ok');return;
   }
