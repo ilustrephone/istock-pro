@@ -995,7 +995,7 @@ function recalcEdit(idx){
 function closeModal(){document.getElementById('modal').style.display='none';modalType='';editIdx=null;}
 
 // ===== SAVE MODAL =====
-async function saveModal(){
+async async function saveModal(){
   if(modalType==='eq-edit'){
     const modelo=document.getElementById('mf-modelo').value.trim();if(!modelo){alert('Ingresá el modelo');return;}
     const bat=parseInt(document.getElementById('mf-bat').value)||0;if(bat<1||bat>100){alert('Batería entre 1 y 100');return;}
