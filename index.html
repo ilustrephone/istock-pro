@@ -1013,9 +1013,14 @@ async function saveModal(){
     closeModal();renderAc();await saveItem('accesorios',obj);showSyncBar('✓ Accesorio guardado','ok');return;
   }
   if(modalType==='venta-eq'){
-    const e=equipos[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;const sv=document.getElementById('mf-suc-venta').value;
+    const eIdx=editIdx;
+    const e={...equipos[eIdx]};
+    const c=parseInt(document.getElementById('mf-cant').value)||1;
+    const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;
+    const sv=document.getElementById('mf-suc-venta').value;
     if(c>e.stock){alert('Stock insuficiente. Disponible: '+e.stock);return;}
-    const chkCanje=document.getElementById('chk-canje');const tieneCanje=chkCanje&&chkCanje.checked;
+    const chkCanje=document.getElementById('chk-canje');
+    const tieneCanje=chkCanje&&chkCanje.checked;
     const canjeValor=tieneCanje?parseFloat(document.getElementById('canje-valor')?.value)||0:0;
     const canjePV=tieneCanje?parseFloat(document.getElementById('canje-precio-venta')?.value)||0:0;
     const canjeModelo=tieneCanje?document.getElementById('canje-modelo')?.value.trim():'';
@@ -1025,48 +1030,60 @@ async function saveModal(){
     const canjeBateria=tieneCanje?parseInt(document.getElementById('canje-bateria')?.value)||0:0;
     const totalFinal=Math.max(0,c*p-canjeValor);
     const pagosGuardados=getPagos();
-    equipos[editIdx].stock-=c;closeModal();renderEq();
-    const guardadoEq=await saveItem('equipos',equipos[editIdx]);
-    if(!guardadoEq){equipos[editIdx].stock+=c;renderEq();showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');return;}
+    closeModal();
+    equipos[eIdx].stock=e.stock-c;
+    renderEq();
+    const guardadoEq=await saveItem('equipos',equipos[eIdx]);
+    if(!guardadoEq){
+      equipos[eIdx].stock=e.stock;
+      renderEq();
+      showSyncBar('⚠️ Error al guardar stock. Venta no registrada.','error');
+      return;
+    }
     const canjeObj=tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado,cliente:canjeCliente}:null;
-    const venta={ts:Date.now(),tipo:'equipo',producto:e.modelo+' '+e.memoria,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
-    ventas.push(venta);await saveItem('ventas',venta);
+    const venta={ts:Date.now(),tipo:'equipo',producto:e.modelo+' '+e.memoria,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:eIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
+    ventas.push(venta);
+    await saveItem('ventas',venta);
+    renderVentas();
     if(tieneCanje&&canjeModelo){
       const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei||'',estado:canjeEstado||'Bueno',bateria:parseInt(canjeBateria)||0,valor:parseFloat(canjeValor)||0,sucursal:sv,por:rolLabel(),ventaProducto:e.modelo+' '+e.memoria};
       ingresos.push(ingreso);await saveItem('ingresos',ingreso);
       const eqCanje={modelo:canjeModelo.trim(),memoria:'—',bateria:parseInt(canjeBateria)||0,imei:canjeImei||'',sucursal:sv,precio:canjePV>0?canjePV:parseFloat(canjeValor)||0,costo:parseFloat(canjeValor)||0,stock:1,esCanje:true,condicion:canjeEstado||'Bueno',clienteCanje:canjeCliente||'—'};
-      const saved=await saveItem('equipos',eqCanje);if(saved)equipos.push(eqCanje);renderEq();
-      showSyncBar('✓ '+canjeModelo+' agregado al stock como canje','ok');
-    }else{showSyncBar('✓ Venta guardada','ok');}
-    renderVentas();return;
+      const saved=await saveItem('equipos',eqCanje);if(saved)equipos.push(eqCanje);
+      renderEq();showSyncBar('✓ Venta guardada · '+canjeModelo+' agregado al stock','ok');
+    }else{
+      showSyncBar('✓ Venta guardada','ok');
+    }
+    return;
   }
   if(modalType==='venta-ac'){
-    const a=accesorios[editIdx];
-    if(!a){showSyncBar('⚠️ Error: accesorio no encontrado','error');return;}
+    const aIdx=editIdx;
+    const a={...accesorios[aIdx]};
+    if(!a||!a.nombre){showSyncBar('⚠️ Error: accesorio no encontrado','error');return;}
     const c=parseInt(document.getElementById('mf-cant').value)||1;
     const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;
     const sv=document.getElementById('mf-suc-venta').value;
     const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
     if(c>maxSt){alert('Stock insuficiente en '+sv+'. Disponible: '+maxSt);return;}
     const pagosGuardados=getPagos();
-    // Guardar copia del accesorio con stock actualizado
-    const acConStockActualizado={...a};
-    if(sv==='Tunuyán')acConStockActualizado.stockT=(a.stockT||0)-c;
-    else acConStockActualizado.stockC=(a.stockC||0)-c;
-    // Actualizar array local
-    if(sv==='Tunuyán')accesorios[editIdx].stockT=(a.stockT||0)-c;
-    else accesorios[editIdx].stockC=(a.stockC||0)-c;
-    closeModal();renderAc();
-    const guardado=await saveItem('accesorios',acConStockActualizado);
+    closeModal();
+    if(sv==='Tunuyán')accesorios[aIdx].stockT=(a.stockT||0)-c;
+    else accesorios[aIdx].stockC=(a.stockC||0)-c;
+    renderAc();
+    const guardado=await saveItem('accesorios',accesorios[aIdx]);
     if(!guardado){
-      if(sv==='Tunuyán')accesorios[editIdx].stockT=(a.stockT||0);
-      else accesorios[editIdx].stockC=(a.stockC||0);
-      renderAc();showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');return;
+      if(sv==='Tunuyán')accesorios[aIdx].stockT=(a.stockT||0);
+      else accesorios[aIdx].stockC=(a.stockC||0);
+      renderAc();showSyncBar('⚠️ Error al guardar stock. Venta no registrada.','error');
+      return;
     }
-    // Actualizar _id si vino nuevo
-    if(acConStockActualizado._id) accesorios[editIdx]._id=acConStockActualizado._id;
-    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:editIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
-    ventas.push(venta);await saveItem('ventas',venta);renderVentas();showSyncBar('✓ Venta guardada','ok');return;
+    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:aIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
+    ventas.push(venta);
+    await saveItem('ventas',venta);
+    renderVentas();
+    showSyncBar('✓ Venta guardada','ok');
+    return;
+  }
   }
   if(modalType==='venta-edit'){
     const v=ventas[editIdx];const cN=parseInt(document.getElementById('mf-cant').value)||1;const pN=parseFloat(document.getElementById('mf-pventa').value)||v.precioUnit;const svN=document.getElementById('mf-suc-venta').value;
