@@ -1025,7 +1025,8 @@ async function saveModal(){
     const totalFinal=Math.max(0,c*p-canjeValor);
     const pagosGuardados=getPagos();
     equipos[editIdx].stock-=c;closeModal();renderEq();
-    await saveItem('equipos',equipos[editIdx]);
+    const guardadoEq=await saveItem('equipos',equipos[editIdx]);
+    if(!guardadoEq){equipos[editIdx].stock+=c;renderEq();showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');return;}
     const canjeObj=tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado,cliente:canjeCliente}:null;
     const venta={ts:Date.now(),tipo:'equipo',producto:e.modelo+' '+e.memoria,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:editIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
     ventas.push(venta);await saveItem('ventas',venta);
@@ -1042,9 +1043,18 @@ async function saveModal(){
     const a=accesorios[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||a.precio;const sv=document.getElementById('mf-suc-venta').value;
     const maxSt=sv==='Tunuyán'?(a.stockT||0):(a.stockC||0);
     if(c>maxSt){alert('Stock insuficiente en '+sv+'. Disponible: '+maxSt);return;}
+    if(!a._id){alert('Error: este accesorio no tiene ID en Supabase. Editalo y guardalo nuevamente.');return;}
     const pagosGuardados=getPagos();
     if(sv==='Tunuyán')accesorios[editIdx].stockT-=c;else accesorios[editIdx].stockC-=c;
-    closeModal();renderAc();await saveItem('accesorios',accesorios[editIdx]);
+    closeModal();renderAc();
+    const guardado=await saveItem('accesorios',accesorios[editIdx]);
+    if(!guardado){
+      // Revertir el cambio local si no se pudo guardar
+      if(sv==='Tunuyán')accesorios[editIdx].stockT+=c;else accesorios[editIdx].stockC+=c;
+      renderAc();
+      showSyncBar('⚠️ Error al guardar. No se registró la venta.','error');
+      return;
+    }
     const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:editIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
     ventas.push(venta);await saveItem('ventas',venta);renderVentas();showSyncBar('✓ Venta guardada','ok');return;
   }
@@ -1521,4 +1531,4 @@ async function init(){
 onRolChange();init();
 </script>
 </body>
-</html>2
+</html>
