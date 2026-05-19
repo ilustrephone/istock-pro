@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- saved from url=(0069)file:///C:/Users/Windows%20Microsoft/Downloads/istock_supabase_5.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iStock Pro</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -205,7 +205,7 @@ tr:hover td{background:#FAFAFA;}
     <div class="login-logo"><span class="logo-icon">📱</span><h2>iStock Pro</h2><p>Tunuyán &amp; La Consulta</p></div>
     <div class="fl"><label>ROL</label><select id="sel-rol" onchange="onRolChange()"><option value="empleado">Empleado</option><option value="gerente">Gerente</option><option value="admin">Administrador</option></select></div>
     <div class="fl"><label>SUCURSAL</label><select id="sel-suc"><option value="Tunuyán">📍 Tunuyán</option><option value="La Consulta">📍 La Consulta</option></select></div>
-    <div class="fl" id="pin-wrap" style="display:none"><label>PIN</label><input type="password" id="inp-pin" maxlength="4" placeholder="••••"/></div>
+    <div class="fl" id="pin-wrap" style="display:none"><label>PIN</label><input type="password" id="inp-pin" maxlength="4" placeholder="••••"></div>
     <button class="btn-login" onclick="login()">Ingresar</button>
     <div class="login-hint">Seleccioná tu rol e ingresá tu PIN si corresponde</div>
   </div>
@@ -225,17 +225,17 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('ac',this)">🎧 Accesorios</button>
-    <button class="tab" onclick="switchTab('eq',this)">📱 Equipos</button>
-    <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
-    <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
-    <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
-    <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
-    <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
+    <button class="tab active" onclick="switchTab(&#39;ac&#39;,this)">🎧 Accesorios</button>
+    <button class="tab" onclick="switchTab(&#39;eq&#39;,this)">📱 Equipos</button>
+    <button class="tab" onclick="switchTab(&#39;st&#39;,this)">🔧 Serv. Técnico</button>
+    <button class="tab" onclick="switchTab(&#39;ingresos&#39;,this)">📋 Registro de Ingresos</button>
+    <button class="tab" onclick="switchTab(&#39;ventas&#39;,this)">🧾 Ventas</button>
+    <button class="tab" onclick="switchTab(&#39;caja&#39;,this)">🏦 Cierre de Caja</button>
+    <button class="tab" onclick="switchTab(&#39;rep&#39;,this)">📊 Reportes</button>
   </div>
   <div class="content" id="tab-eq" style="display:none">
     <div class="stats-row" id="stats-eq"></div>
-    <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria…" oninput="onSearch('eq',this)"/><button class="search-clear" id="clear-eq" onclick="clearSearch('eq')">✕</button></div>
+    <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria…" oninput="onSearch(&#39;eq&#39;,this)"><button class="search-clear" id="clear-eq" onclick="clearSearch(&#39;eq&#39;)">✕</button></div>
     <div class="search-count" id="count-eq"></div>
     <div class="toolbar" id="toolbar-eq"></div>
     <div class="twrap"><table>
@@ -252,7 +252,7 @@ tr:hover td{background:#FAFAFA;}
   <div class="content" id="tab-ac">
     <div class="stats-row" id="stats-ac"></div>
     <div class="suc-stock-row" id="suc-stock-ac"></div>
-    <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-ac" placeholder="Buscar por nombre, categoría…" oninput="onSearch('ac',this)"/><button class="search-clear" id="clear-ac" onclick="clearSearch('ac')">✕</button></div>
+    <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-ac" placeholder="Buscar por nombre, categoría…" oninput="onSearch(&#39;ac&#39;,this)"><button class="search-clear" id="clear-ac" onclick="clearSearch(&#39;ac&#39;)">✕</button></div>
     <div class="search-count" id="count-ac"></div>
     <div class="toolbar" id="toolbar-ac"></div>
     <div class="twrap"><table>
@@ -290,7 +290,7 @@ tr:hover td{background:#FAFAFA;}
     <div class="toolbar">
       <select id="f-st-estado" onchange="renderST()"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="En progreso">En progreso</option><option value="Listo para entregar">Listo para entregar</option><option value="Entregado">Entregado</option></select>
       <select id="f-st-suc" onchange="renderST()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
-      <button class="btn-add" onclick="openModal('st-edit',null)">+ Nuevo servicio</button>
+      <button class="btn-add" onclick="openModal(&#39;st-edit&#39;,null)">+ Nuevo servicio</button>
     </div>
     <div class="twrap"><table>
       <thead><tr>
@@ -305,9 +305,9 @@ tr:hover td{background:#FAFAFA;}
   </div>
   <div class="content" id="tab-rep" style="display:none">
     <div class="reporte-tabs">
-      <button class="rtab active" onclick="switchReporte('dia',this)">Hoy</button>
-      <button class="rtab" onclick="switchReporte('semana',this)">Esta semana</button>
-      <button class="rtab" onclick="switchReporte('mes',this)">Este mes</button>
+      <button class="rtab active" onclick="switchReporte(&#39;dia&#39;,this)">Hoy</button>
+      <button class="rtab" onclick="switchReporte(&#39;semana&#39;,this)">Esta semana</button>
+      <button class="rtab" onclick="switchReporte(&#39;mes&#39;,this)">Este mes</button>
     </div>
     <div class="period-label" id="rep-period-label"></div>
     <div class="stats-row" id="rep-stats"></div>
@@ -388,7 +388,7 @@ tr:hover td{background:#FAFAFA;}
       <button class="carrito-drawer-close" onclick="cerrarCarrito()" title="Cerrar (Esc)">✕</button>
     </div>
     <div style="padding:10px 14px;border-bottom:1px solid #E8E8ED;background:#FAFAFA;">
-      <input type="text" id="drawer-search" placeholder="🔍 Agregar producto al carrito..." oninput="renderDrawerSearch()" style="width:100%;padding:7px 11px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;font-family:inherit;outline:none;"/>
+      <input type="text" id="drawer-search" placeholder="🔍 Agregar producto al carrito..." oninput="renderDrawerSearch()" style="width:100%;padding:7px 11px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;font-family:inherit;outline:none;">
       <div id="drawer-search-results" style="margin-top:6px;max-height:160px;overflow-y:auto;"></div>
     </div>
     <div class="carrito-drawer-body">
@@ -401,7 +401,7 @@ tr:hover td{background:#FAFAFA;}
       <div style="margin-top:12px;margin-bottom:6px;">
         <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">DESCUENTO</div>
         <div class="descuento-row">
-          <input type="number" class="descuento-inp" id="carrito-desc-val" placeholder="0" min="0" oninput="actualizarCarritoTotales()"/>
+          <input type="number" class="descuento-inp" id="carrito-desc-val" placeholder="0" min="0" oninput="actualizarCarritoTotales()">
           <select class="descuento-tipo" id="carrito-desc-tipo" onchange="actualizarCarritoTotales()"><option value="$">$ ARS</option><option value="USD">USD</option><option value="%">%</option></select>
         </div>
       </div>
@@ -412,7 +412,7 @@ tr:hover td{background:#FAFAFA;}
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;">
         <button onclick="limpiarCarrito()" style="flex:0;padding:10px 14px;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;">Limpiar</button>
-        <button class="btn-confirmar-venta" id="btn-confirmar-venta" onclick="confirmarVentaCarrito()" disabled style="flex:1;">✅ Confirmar venta</button>
+        <button class="btn-confirmar-venta" id="btn-confirmar-venta" onclick="confirmarVentaCarrito()" disabled="" style="flex:1;">✅ Confirmar venta</button>
       </div>
     </div>
   </div>
@@ -1556,5 +1556,6 @@ async function init(){
 }
 onRolChange();init();
 </script>
-</body>
-</html>
+
+
+</body></html>
