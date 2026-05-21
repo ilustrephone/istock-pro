@@ -176,12 +176,10 @@ tr:hover td{background:#FAFAFA;}
 </style>
 </head>
 <body>
-
 <div id="loading-overlay" class="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Conectando con la nube...</div>
 </div>
-
 <div id="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-logo"><span class="logo-icon">📱</span><h2>iStock Pro</h2><p>Tunuyán &amp; La Consulta</p></div>
@@ -207,7 +205,6 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
 </div>
-
 <div id="main-app" style="display:none">
   <div class="sync-bar" id="sync-bar"></div>
   <div class="header">
@@ -231,7 +228,6 @@ tr:hover td{background:#FAFAFA;}
     <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
     <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
   </div>
-
   <div class="content" id="tab-eq">
     <div class="stats-row" id="stats-eq"></div>
     <div class="search-wrap"><span class="search-icon">🔍</span>
@@ -252,7 +248,6 @@ tr:hover td{background:#FAFAFA;}
       <tbody id="tbody-eq"></tbody>
     </table></div>
   </div>
-
   <div class="content" id="tab-ac" style="display:none">
     <div class="stats-row" id="stats-ac"></div>
     <div class="suc-stock-row" id="suc-stock-ac"></div>
@@ -273,7 +268,6 @@ tr:hover td{background:#FAFAFA;}
       <tbody id="tbody-ac"></tbody>
     </table></div>
   </div>
-
   <div class="content" id="tab-ventas" style="display:none">
     <div class="stats-row" id="stats-ventas"></div>
     <div class="toolbar">
@@ -293,7 +287,6 @@ tr:hover td{background:#FAFAFA;}
       <tbody id="tbody-ventas"></tbody>
     </table></div>
   </div>
-
   <div class="content" id="tab-st" style="display:none">
     <div class="stats-row" id="stats-st"></div>
     <div class="toolbar">
@@ -312,7 +305,6 @@ tr:hover td{background:#FAFAFA;}
       <tbody id="tbody-st"></tbody>
     </table></div>
   </div>
-
   <div class="content" id="tab-rep" style="display:none">
     <div class="reporte-tabs">
       <button class="rtab active" onclick="switchReporte('dia',this)">Hoy</button>
@@ -337,10 +329,8 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
   </div>
-
   <!-- CIERRE DE CAJA -->
   <div class="content" id="tab-caja" style="display:none">
-
     <!-- VISTA: LISTA DE FECHAS (carpetas) -->
     <div id="caja-vista-fechas">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
@@ -358,7 +348,6 @@ tr:hover td{background:#FAFAFA;}
       </div>
       <div id="lista-carpetas"></div>
     </div>
-
     <!-- VISTA: DETALLE DE UN DÍA -->
     <div id="caja-vista-dia" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
@@ -374,9 +363,8 @@ tr:hover td{background:#FAFAFA;}
           <button onclick="imprimirCaja()" style="padding:7px 15px;background:#0071E3;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🖨️ Imprimir</button>
         </div>
       </div>
-
       <div id="caja-cerrada-banner" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:12px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#1B5E20;font-weight:500;"></div>
-
+      
       <div class="stats-row" id="caja-stats"></div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
@@ -409,7 +397,6 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
   </div>
-
   <!-- REGISTRO DE INGRESOS (CANJES) -->
   <div class="content" id="tab-ingresos" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
@@ -431,11 +418,9 @@ tr:hover td{background:#FAFAFA;}
         </select>
       </div>
     </div>
-
     <div class="stats-row" id="stats-ingresos"></div>
     <div id="lista-ingresos"></div>
   </div>
-
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <h3 id="modal-ttl"></h3>
@@ -443,9 +428,7 @@ tr:hover td{background:#FAFAFA;}
       <div class="mac" id="modal-actions"></div>
     </div>
   </div>
-
 </div><!-- /main-app -->
-
 <script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
 // ⚙️ Cambiá los PINs acá — solo vos ves este archivo
@@ -453,7 +436,6 @@ const PIN_ADMIN   = '1234';   // ← PIN del Administrador
 const PIN_GERENTE = '5678';   // ← PIN del Gerente
 const SUPA_URL = 'https://rvnvixiuigluutbzftxq.supabase.co';
 const SUPA_KEY = 'sb_publishable_y3TIT6mATrqkoaki2zZSew__HDhxZCm';
-
 async function sbFetch(path, method='GET', body=null){
   const headers = {
     'apikey': SUPA_KEY,
@@ -465,7 +447,6 @@ async function sbFetch(path, method='GET', body=null){
 
   const opts = {method, headers};
   if(body) opts.body = JSON.stringify(body);
-
   try {
     const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
     const txt = await res.text();
@@ -479,32 +460,26 @@ async function sbFetch(path, method='GET', body=null){
     throw e;
   }
 }
-
 async function sbGetAll(tabla){
   const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc`);
   return rows.map(r => ({...r.data, _id: r.id}));
 }
-
 async function sbInsert(tabla, data){
   const {_id, ...cleanData} = data;
   const rows = await sbFetch(tabla, 'POST', {data: cleanData});
   return rows[0];
 }
-
 async function sbUpdate(tabla, id, data){
   const {_id, ...cleanData} = data;
   await sbFetch(`${tabla}?id=eq.${id}`, 'PATCH', {data: cleanData, updated_at: new Date().toISOString()});
 }
-
 async function sbDelete(tabla, id){
   await sbFetch(`${tabla}?id=eq.${id}`, 'DELETE');
 }
-
 // ===================== ESTADO LOCAL =====================
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
-
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -515,7 +490,6 @@ const METODOS=[
   {id:'dolares',label:'💲 Dólares billete',prefix:'USD'},
   {id:'dolares_dig',label:'💻 Dólares digitales',prefix:'USD'},
 ];
-
 // ===================== SYNC =====================
 function setSyncDot(state){
   const d = document.getElementById('sync-dot');
@@ -523,7 +497,6 @@ function setSyncDot(state){
   d.className = 'sync-dot ' + state;
   d.title = state==='ok'?'Sincronizado':state==='syncing'?'Sincronizando...':'Error de conexión';
 }
-
 function showSyncBar(msg, type='info'){
   const b = document.getElementById('sync-bar');
   b.textContent = msg;
@@ -531,7 +504,6 @@ function showSyncBar(msg, type='info'){
   b.style.display = 'block';
   if(type !== 'error') setTimeout(()=>b.style.display='none', 2500);
 }
-
 async function loadAll(){
   setSyncDot('syncing');
   try {
@@ -549,7 +521,6 @@ async function loadAll(){
     setTimeout(loadAll, 5000);
   }
 }
-
 async function saveItem(tabla, item){
   setSyncDot('syncing');
   try {
@@ -569,7 +540,6 @@ async function saveItem(tabla, item){
     return false;
   }
 }
-
 async function deleteItem(tabla, id){
   setSyncDot('syncing');
   try {
@@ -580,7 +550,6 @@ async function deleteItem(tabla, id){
     showSyncBar('⚠️ Error al eliminar.', 'error');
   }
 }
-
 // Refresca datos cada 30 segundos automáticamente
 function startAutoRefresh(){
   setInterval(async ()=>{
@@ -589,7 +558,6 @@ function startAutoRefresh(){
     renderAll();
   }, 30000);
 }
-
 // ===================== HELPERS =====================
 function opt(v,cur){return`<option ${cur===v?'selected':''}>${v}</option>`;}
 function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});}
@@ -609,7 +577,6 @@ function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucur
 function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio)].some(v=>v&&v.toLowerCase().includes(q));}
 function fmtARS(n){return'$ '+Number(n||0).toLocaleString('es-AR');}
 function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
-
 function renderToolbar(){
   const ce=canEdit();
   // Equipos: todos los roles pueden agregar
@@ -623,9 +590,7 @@ function renderToolbar(){
   document.getElementById('th-costo-eq').style.display=isAdmin()?'':'none';
   document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
-
 function onRolChange(){document.getElementById('pin-wrap').style.display=document.getElementById('sel-rol').value!=='empleado'?'block':'none';}
-
 async function login(){
   const r=document.getElementById('sel-rol').value;
   const s=document.getElementById('sel-suc').value;
@@ -641,16 +606,13 @@ async function login(){
   br.textContent=labels[rol]; br.className='badge-role rchip '+cls[rol];
   document.getElementById('badge-suc').textContent='📍 '+sucursal;
   document.getElementById('btn-export').style.display=isAdmin()?'inline-block':'none';
-
   // Cargar datos frescos de la nube al entrar
   showSyncBar('☁️ Cargando datos...', 'info');
   await loadAll();
   showSyncBar('✓ Datos sincronizados', 'ok');
-
   renderToolbar(); renderAll();
   startAutoRefresh();
 }
-
 function logout(){
   rol=''; sucursal=''; searchEq=''; searchAc='';
   document.getElementById('main-app').style.display='none';
@@ -661,7 +623,6 @@ function logout(){
   document.getElementById('search-ac').value='';
   onRolChange(); switchTabByName('eq');
 }
-
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -675,7 +636,6 @@ function switchTabByName(tab){
   ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();}
-
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
   if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
@@ -685,7 +645,6 @@ function clearSearch(tipo){
   if(tipo==='eq'){searchEq='';document.getElementById('search-eq').value='';document.getElementById('clear-eq').style.display='none';renderEq();}
   else{searchAc='';document.getElementById('search-ac').value='';document.getElementById('clear-ac').style.display='none';renderAc();}
 }
-
 // ===================== RENDERS =====================
 function renderEq(){
   const q=searchEq;
@@ -719,7 +678,6 @@ function renderEq(){
     <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>
     <div class="sc"><div class="sc-label">PRODUCTOS</div><div class="sc-val">${equipos.length}</div></div>`;
 }
-
 function renderAc(){
   const q=searchAc;
   const fCel=document.getElementById('f-cat');
@@ -762,7 +720,6 @@ function renderAc(){
     <div class="sc"><div class="sc-label">VALOR STOCK</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(val)}</div></div>
     <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>`;
 }
-
 function renderVentas(){
   const fS=document.getElementById('f-suc-v').value;
   const fT=document.getElementById('f-tipo-v').value;
@@ -795,7 +752,6 @@ function renderVentas(){
       </tr>`;
     }).join('');
 }
-
 function renderST(){
   const fE=document.getElementById('f-st-estado').value;
   const fS=document.getElementById('f-st-suc').value;
@@ -825,7 +781,6 @@ function renderST(){
       </tr>`;
     }).join('');
 }
-
 // ===================== REPORTES =====================
 function switchReporte(periodo,el){
   reportePeriodo=periodo;
@@ -837,10 +792,8 @@ function getPeriodRange(periodo){
   if(periodo==='dia'){
     desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
 bash
-
 sed -n '839,1676p' /home/claude/istock_final.html
 Salida
-
     hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
   } else if(periodo==='semana'){
     const day=now.getDay(); const diff=now.getDate()-day+(day===0?-6:1);
@@ -909,7 +862,6 @@ function renderReporte(){
       return`<tr><td style="font-size:11px">${fmtDatetime(v.ts)}</td><td>${v.producto}</td><td>${v.sucursal}</td><td>${v.cantidad}</td><td style="font-weight:600">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td><td style="white-space:normal">${canjeTag}${ph||(!canjeTag?'—':'')}</td></tr>`;
     }).join('');
 }
-
 // ===================== PAGOS =====================
 function buildPagoSection(esUSD){
   const cotizBlock=esUSD?`<div id="cotiz-block" style="display:none;margin-bottom:10px;background:#fff;border:1px solid #E8E8ED;border-radius:10px;padding:10px 12px;"><div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.04em;margin-bottom:8px;">💱 COTIZACIÓN DEL DÓLAR</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;"><div><label style="display:block;font-size:11px;color:#6E6E73;margin-bottom:4px;">TIPO DE CAMBIO ($ x USD)</label><input id="inp-cotiz" type="number" min="1" placeholder="ej: 1200" style="width:100%;padding:7px 9px;font-size:13px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" oninput="updateCotiz()"/></div><div id="cotiz-resultado" style="font-size:12px;color:#6E6E73;padding-bottom:8px;"></div></div></div>`:''
@@ -954,7 +906,6 @@ function getPagos(){
   const monedaVenta=t&&t.textContent.includes('USD')?'USD':'ARS';
   return METODOS.filter(m=>{const c=document.getElementById('chk-'+m.id);const a=document.getElementById('amt-'+m.id);return c&&c.checked&&a&&parseFloat(a.value)>0;}).map(m=>{const monto=parseFloat(document.getElementById('amt-'+m.id).value)||0;const obj={id:m.id,label:m.label.replace(/^.\s/,''),prefix:m.prefix,monto};if(monedaVenta==='USD'&&m.prefix==='$'&&cotiz>0){obj.cotizacion=cotiz;obj.montoUSD=monto/cotiz;}return obj;});
 }
-
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
@@ -967,7 +918,6 @@ function openModal(type,idx){
   if(type==='venta')setTimeout(updateVentaGeneral,50);
   document.getElementById('modal').style.display='flex';
 }
-
 function buildForm(type,idx){
   const admin=isAdmin();
   if(type==='eq-edit'){
@@ -1062,7 +1012,6 @@ function buildForm(type,idx){
   }
   return '';
 }
-
 function toggleCanje(){
   const chk=document.getElementById('chk-canje');
   const form=document.getElementById('canje-form');
@@ -1090,7 +1039,6 @@ function toggleCanje(){
     }
   }
 }
-
 function recalcTotal(tipo,idx){
   const c=parseInt(document.getElementById('mf-cant')?.value)||0;
   const p=parseFloat(document.getElementById('mf-pventa')?.value)||0;
@@ -1126,7 +1074,6 @@ function updateVentaGeneral(){
   const p=parseFloat(pvEl?.value)||item.precio;
   t.textContent=(tipo==='eq'?'USD ':'$ ')+(c*p).toLocaleString('es-AR');updateResumen();
 }
-
 // ===================== SAVE / DELETE =====================
 async function saveModal(){
   if(modalType==='eq-edit'){
@@ -1155,13 +1102,11 @@ async function saveModal(){
     showSyncBar('✓ Accesorio guardado en la nube','ok');
     return;
   }
-
   const regVenta=async(tipo,prodIdx,c,p,sv,moneda,producto,sStock,eqIdx,acIdx)=>{
     const venta={ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx,acIdx,pagos:getPagos()};
     ventas.push(venta);
     await saveItem('ventas', venta);
   };
-
   if(modalType==='venta-eq'){
     const e=equipos[editIdx];const c=parseInt(document.getElementById('mf-cant').value)||1;const p=parseFloat(document.getElementById('mf-pventa').value)||e.precio;const sv=document.getElementById('mf-suc-venta').value;
     if(c>e.stock){alert(`Stock insuficiente. Disponible: ${e.stock}`);return;}
@@ -1248,7 +1193,6 @@ async function saveModal(){
     showSyncBar('✓ Servicio guardado en la nube','ok');return;
   }
 }
-
 async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
   const v=ventas[idx];
@@ -1267,7 +1211,6 @@ async function anularVenta(idx){
       alert('No se encontró el equipo en stock. El stock no fue actualizado.');
     }
   }
-
   if(v.tipo==='accesorio'){
     // Buscar por acId o por nombre como fallback
     const ac = accesorios.find(a=>
@@ -1282,7 +1225,6 @@ async function anularVenta(idx){
       alert('No se encontró el accesorio en stock. El stock no fue actualizado.');
     }
   }
-
   ventas[idx]={...v,estado:'anulada',anuladoPor:rolLabel(),anuladoEn:Date.now()};
   await saveItem('ventas',ventas[idx]);
 
@@ -1300,12 +1242,10 @@ async function anularVenta(idx){
       if(ingId) await deleteItem('ingresos',ingId);
     }
   }
-
   renderEq();renderAc();renderVentas();
   if(document.getElementById('tab-ingresos').style.display!=='none') renderIngresos();
   showSyncBar('✓ Venta anulada y stock devuelto','ok');
 }
-
 async function delItem(type,idx){
   if(!confirm('¿Eliminar?'))return;
   if(type==='eq'){const id=equipos[idx]._id;equipos.splice(idx,1);renderEq();if(id)await deleteItem('equipos',id);}
@@ -1313,7 +1253,6 @@ async function delItem(type,idx){
   else{const id=servicios[idx]._id;servicios.splice(idx,1);renderST();if(id)await deleteItem('servicios',id);}
   showSyncBar('✓ Eliminado de la nube','ok');
 }
-
 function exportarDatos(){
   const backup={fecha:new Date().toISOString(),version:'iStockPro-supabase',equipos,accesorios,ventas,servicios};
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
@@ -1322,23 +1261,19 @@ function exportarDatos(){
   a.download=`istock-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();URL.revokeObjectURL(url);
 }
-
 // ===================== CIERRE DE CAJA =====================
 let cierres=[];
 let cajaFechaActual=null; // fecha seleccionada en vista detalle
-
 async function loadCierres(){
   try{
     const rows=await sbFetch('cierres?select=id,data&order=updated_at.desc');
     cierres=rows.map(r=>({...r.data,_id:r.id}));
   }catch(e){cierres=[];}
 }
-
 function tsToFechaStr(ts){
   const d=new Date(ts);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function getVentasPorFecha(fechaStr, sucFiltro){
   return ventas.filter(v=>{
     if(v.estado!=='activa') return false;
@@ -1347,7 +1282,6 @@ function getVentasPorFecha(fechaStr, sucFiltro){
     return true;
   });
 }
-
 function getFechasConVentas(){
   const suc=document.getElementById('caja-suc-filtro')?.value||'';
   const fechas={};
@@ -1361,11 +1295,9 @@ function getFechasConVentas(){
   });
   return Object.values(fechas).sort((a,b)=>b.fecha.localeCompare(a.fecha));
 }
-
 function renderCaja(){
   renderCarpetas();
 }
-
 function renderCarpetas(){
   document.getElementById('caja-vista-fechas').style.display='block';
   document.getElementById('caja-vista-dia').style.display='none';
@@ -1399,30 +1331,25 @@ function renderCarpetas(){
     </div>`;
   }).join('');
 }
-
 function abrirDia(fechaStr){
   cajaFechaActual=fechaStr;
   document.getElementById('caja-vista-fechas').style.display='none';
   document.getElementById('caja-vista-dia').style.display='block';
   renderDetalleDia(fechaStr);
 }
-
 function volverCarpetas(){
   cajaFechaActual=null;
   document.getElementById('caja-vista-fechas').style.display='block';
   document.getElementById('caja-vista-dia').style.display='none';
 }
-
 function renderDetalleDia(fechaStr){
   const suc=document.getElementById('caja-suc-filtro')?.value||'';
   const data=getVentasPorFecha(fechaStr,suc);
   const d=new Date(fechaStr+'T12:00:00');
   const nombreDia=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const hoy=tsToFechaStr(Date.now());
-
   document.getElementById('caja-dia-titulo').textContent='📂 '+nombreDia.charAt(0).toUpperCase()+nombreDia.slice(1);
   document.getElementById('caja-dia-sub').textContent=`${data.length} venta${data.length!==1?'s':''} · ${suc||'Ambas sucursales'}`;
-
   // Banner cierre
   const banner=document.getElementById('caja-cerrada-banner');
   const cierre=cierres.find(c=>c.fecha===fechaStr&&(!suc||c.sucursal===suc||c.sucursal==='Ambas'));
@@ -1438,7 +1365,6 @@ function renderDetalleDia(fechaStr){
       document.getElementById('btn-cerrar-caja').style.display='none';
     }
   }
-
   // Stats
   const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
   const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
@@ -1449,7 +1375,6 @@ function renderDetalleDia(fechaStr){
     <div class="sc"><div class="sc-label">EQUIPOS (USD)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
     <div class="sc"><div class="sc-label">ACCESORIOS (ARS)</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
     <div class="sc" style="background:#FFF3E0"><div class="sc-label">CANJES</div><div class="sc-val" style="font-size:13px;padding-top:3px;color:#8A4D00">${canjes.length>0?'USD '+totalCanjes.toLocaleString('es-AR'):'—'}</div></div>`;
-
   // Pagos
   const pagoTotals={};
   METODOS.forEach(m=>pagoTotals[m.id]={label:m.label,prefix:m.prefix,total:0});
@@ -1458,7 +1383,6 @@ function renderDetalleDia(fechaStr){
   document.getElementById('caja-pagos').innerHTML=activos.length===0
     ?'<div style="color:#6E6E73;font-size:12px">Sin pagos registrados</div>'
     :activos.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F5F5F7;font-size:12px;"><span style="color:#6E6E73">${p.label}</span><strong>${p.prefix} ${p.total.toLocaleString('es-AR')}</strong></div>`).join('');
-
   // Por sucursal
   const bySuc={};
   SUCS.forEach(s=>bySuc[s]={usd:0,ars:0,cant:0});
@@ -1470,7 +1394,6 @@ function renderDetalleDia(fechaStr){
       ${bySuc[s].ars>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#6E6E73">Accesorios</span><strong>${fmtARS(bySuc[s].ars)}</strong></div>`:''}
       ${bySuc[s].usd===0&&bySuc[s].ars===0?`<div style="font-size:12px;color:#6E6E73">Sin ventas</div>`:''}
     </div>`).join('<hr style="border:none;border-top:1px solid #F0F0F5;margin:4px 0"/>');
-
   // Tabla ventas
   document.getElementById('caja-tabla').innerHTML=data.length===0
     ?`<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#6E6E73;font-size:13px">Sin ventas en este día</td></tr>`
@@ -1489,7 +1412,6 @@ function renderDetalleDia(fechaStr){
       </tr>`;
     }).join('');
 }
-
 async function cerrarCaja(){
   if(!cajaFechaActual){return;}
   const suc=document.getElementById('caja-suc-filtro')?.value||'';
@@ -1516,7 +1438,6 @@ async function cerrarCaja(){
   renderDetalleDia(cajaFechaActual);
   // Actualizar también la lista de carpetas en segundo plano
 }
-
 function imprimirCaja(){
   if(!cajaFechaActual) return;
   const suc=document.getElementById('caja-suc-filtro')?.value||'';
@@ -1577,7 +1498,6 @@ function renderIngresos(){
     (!fSuc||i.sucursal===fSuc)&&
     (!fEst||i.estado===fEst)
   );
-
   const total=ingresos.length;
   const buenos=ingresos.filter(i=>i.estado==='Bueno').length;
   const regulares=ingresos.filter(i=>i.estado==='Regular').length;
@@ -1602,7 +1522,6 @@ function renderIngresos(){
     </div>`;
     return;
   }
-
   el.innerHTML=data.map(i=>{
     const batColor=i.bateria>=80?'#2E7D32':i.bateria>=50?'#E65100':'#C62828';
     return`<div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -1650,13 +1569,11 @@ function renderIngresos(){
     </div>`;
   }).join('');
 }
-
 function closeModal(){
   document.getElementById('modal').style.display='none';
   modalType=''; editIdx=null;
 }
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
-
 // ===================== INICIO =====================
 async function init(){
   try {
@@ -1671,7 +1588,6 @@ async function init(){
     document.querySelector('.loading-text').textContent = msg;
   }
 }
-
 onRolChange();
 init();
 </script>
@@ -1679,5 +1595,3 @@ init();
 </html>
 ","stderr":""}",
         "uuid": "ab
-
-
