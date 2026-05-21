@@ -426,13 +426,14 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
 </div><!-- /main-app -->
-<script>
+  <script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
 // ⚙️ Cambiá los PINs acá — solo vos ves este archivo
 const PIN_ADMIN   = '1234';   // ← PIN del Administrador
 const PIN_GERENTE = '5678';   // ← PIN del Gerente
 const SUPA_URL = 'https://rvnvixiuigluutbzftxq.supabase.co';
 const SUPA_KEY = 'sb_publishable_y3TIT6mATrqkoaki2zZSew__HDhxZCm';
+
 async function sbFetch(path, method='GET', body=null){
   const headers = {
     'apikey': SUPA_KEY,
@@ -441,8 +442,10 @@ async function sbFetch(path, method='GET', body=null){
   };
   if(method==='POST') headers['Prefer'] = 'return=representation';
   if(method==='PATCH') headers['Prefer'] = 'return=minimal';
+
   const opts = {method, headers};
   if(body) opts.body = JSON.stringify(body);
+
   try {
     const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
     const txt = await res.text();
@@ -476,7 +479,6 @@ async function sbDelete(tabla, id){
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
-
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -621,7 +623,6 @@ function logout(){
   document.getElementById('search-ac').value='';
   onRolChange(); switchTabByName('eq');
 }
-
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -1194,6 +1195,7 @@ async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
   const v=ventas[idx];
   if(!v){alert('No se encontró la venta.');return;}
+
   if(v.tipo==='equipo'){
     // Buscar por eqId (ID de Supabase guardado en la venta) o por nombre como fallback
     const eq = equipos.find(e=>
@@ -1259,6 +1261,7 @@ function exportarDatos(){
 // ===================== CIERRE DE CAJA =====================
 let cierres=[];
 let cajaFechaActual=null; // fecha seleccionada en vista detalle
+
 async function loadCierres(){
   try{
     const rows=await sbFetch('cierres?select=id,data&order=updated_at.desc');
@@ -1588,4 +1591,3 @@ init();
 </html>
 ","stderr":""}",
         "uuid": "ab
-
