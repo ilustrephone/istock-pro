@@ -833,7 +833,6 @@ function switchReporte(periodo,el){
   el.classList.add('active'); renderReporte();
 }
 function getPeriodRange(periodo){
-  const now=new Date(); let desde,hasta;
    hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
   } else if(periodo==='semana'){
     const day=now.getDay(); const diff=now.getDate()-day+(day===0?-6:1);
@@ -1559,7 +1558,7 @@ function imprimirCaja(){
     }).join('')}</tbody></table>
   </div>
   <footer>Generado el ${new Date().toLocaleString('es-AR')} · iStock Pro</footer>
-  <scr\ipt>window.onload=()=>window.print()<\/script></body></html>`);
+  <scr'+'ipt>window.onload=()=>window.print()<\/script></body></html>`);
   win.document.close();
 }
 // ===================== REGISTRO DE INGRESOS =====================
@@ -1672,5 +1671,6 @@ init();
 </html>
 ","stderr":""}",
         "uuid": "ab
+  const now=new Date(); let desde,hasta;
   if(periodo==='dia'){
     desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
