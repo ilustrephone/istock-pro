@@ -364,9 +364,7 @@ tr:hover td{background:#FAFAFA;}
         </div>
       </div>
       <div id="caja-cerrada-banner" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:12px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#1B5E20;font-weight:500;"></div>
-      
       <div class="stats-row" id="caja-stats"></div>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;">
           <div style="font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;">💰 Ingresos por método de pago</div>
@@ -377,7 +375,6 @@ tr:hover td{background:#FAFAFA;}
           <div id="caja-suc-resumen"></div>
         </div>
       </div>
-
       <div style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;">
         <div style="font-size:13px;font-weight:600;color:#1D1D1F;margin-bottom:0.9rem;">🧾 Ventas del día</div>
         <div style="overflow-x:auto">
@@ -444,7 +441,6 @@ async function sbFetch(path, method='GET', body=null){
   };
   if(method==='POST') headers['Prefer'] = 'return=representation';
   if(method==='PATCH') headers['Prefer'] = 'return=minimal';
-
   const opts = {method, headers};
   if(body) opts.body = JSON.stringify(body);
   try {
@@ -480,6 +476,7 @@ async function sbDelete(tabla, id){
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
+
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -610,6 +607,7 @@ async function login(){
   showSyncBar('☁️ Cargando datos...', 'info');
   await loadAll();
   showSyncBar('✓ Datos sincronizados', 'ok');
+
   renderToolbar(); renderAll();
   startAutoRefresh();
 }
@@ -623,6 +621,7 @@ function logout(){
   document.getElementById('search-ac').value='';
   onRolChange(); switchTabByName('eq');
 }
+
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -636,6 +635,7 @@ function switchTabByName(tab){
   ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();}
+
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
   if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
@@ -791,9 +791,6 @@ function getPeriodRange(periodo){
   const now=new Date(); let desde,hasta;
   if(periodo==='dia'){
     desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
-bash
-sed -n '839,1676p' /home/claude/istock_final.html
-Salida
     hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
   } else if(periodo==='semana'){
     const day=now.getDay(); const diff=now.getDate()-day+(day===0?-6:1);
@@ -1197,7 +1194,6 @@ async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
   const v=ventas[idx];
   if(!v){alert('No se encontró la venta.');return;}
-
   if(v.tipo==='equipo'){
     // Buscar por eqId (ID de Supabase guardado en la venta) o por nombre como fallback
     const eq = equipos.find(e=>
@@ -1227,7 +1223,6 @@ async function anularVenta(idx){
   }
   ventas[idx]={...v,estado:'anulada',anuladoPor:rolLabel(),anuladoEn:Date.now()};
   await saveItem('ventas',ventas[idx]);
-
   // Si la venta tenía canje, eliminar el ingreso correspondiente
   if(v.canje && v.canje.modelo){
     // Buscar el ingreso que coincida con esta venta (mismo timestamp aprox o mismo producto/cliente)
@@ -1509,11 +1504,9 @@ function renderIngresos(){
     <div class="sc"><div class="sc-label">REGULARES</div><div class="sc-val">${regulares}</div></div>
     <div class="sc sc-red"><div class="sc-label">MALOS</div><div class="sc-val">${malos}</div></div>
     <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${valTotal.toLocaleString('es-AR')}</div></div>`;
-
   const condColor={'Bueno':'#E8F5E9','Regular':'#FFF3E0','Malo':'#FFEBEE'};
   const condText={'Bueno':'#1B5E20','Regular':'#8A4D00','Malo':'#C62828'};
   const condIcon={'Bueno':'✅','Regular':'⚠️','Malo':'❌'};
-
   const el=document.getElementById('lista-ingresos');
   if(data.length===0){
     el.innerHTML=`<div class="empty-state" style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:3rem">
@@ -1595,3 +1588,4 @@ init();
 </html>
 ","stderr":""}",
         "uuid": "ab
+
