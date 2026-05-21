@@ -1,3 +1,8 @@
+bash
+
+sed -n '1,838p' /home/claude/istock_final.html
+Salida
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -833,7 +838,15 @@ function switchReporte(periodo,el){
   el.classList.add('active'); renderReporte();
 }
 function getPeriodRange(periodo){
-   hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
+  const now=new Date(); let desde,hasta;
+  if(periodo==='dia'){
+    desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
+bash
+
+sed -n '839,1676p' /home/claude/istock_final.html
+Salida
+
+    hasta=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59);
   } else if(periodo==='semana'){
     const day=now.getDay(); const diff=now.getDate()-day+(day===0?-6:1);
     desde=new Date(now.getFullYear(),now.getMonth(),diff,0,0,0);
@@ -1671,6 +1684,5 @@ init();
 </html>
 ","stderr":""}",
         "uuid": "ab
-  const now=new Date(); let desde,hasta;
-  if(periodo==='dia'){
-    desde=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
+
+
