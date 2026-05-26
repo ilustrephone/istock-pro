@@ -472,6 +472,11 @@ tr:hover td{background:#FAFAFA;}
         </div>
       </div>
       <div class="carrito-subtotal" id="carritoTotales"></div>
+      <div style="margin-top:12px;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:6px;">MÉTODO DE PAGO</div>
+        <div id="carrito-pagos-lista" style="display:flex;flex-direction:column;gap:4px;"></div>
+        <div id="carrito-pago-resumen" style="margin-top:6px;font-size:12px;color:#6E6E73;"></div>
+      </div>
       <div style="display:flex;gap:8px;margin-top:12px;">
         <button onclick="limpiarCarrito()" style="flex:0;padding:10px 14px;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;">Limpiar</button>
         <button class="btn-confirmar-venta" id="btnConfirmarVenta" onclick="confirmarVentaCarrito()" disabled style="flex:1;">✅ Confirmar venta</button>
@@ -480,7 +485,7 @@ tr:hover td{background:#FAFAFA;}
   </div>
   <button class="btn-carrito-float" id="btnCarritoFloat" onclick="abrirCarrito()" style="display:none;">🛒 Carrito <span class="badge" id="carritoBadge">0</span></button>
 </div><!-- /main-app -->
-  <script>
+<script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
 // ⚙️ Cambiá los PINs acá — solo vos ves este archivo
 const PIN_ADMIN   = '1234';   // ← PIN del Administrador
@@ -530,7 +535,6 @@ async function sbDelete(tabla, id){
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
-
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -1735,7 +1739,98 @@ function actualizarCarritoTotales(){
     (totalUSD>0?'<div class="carrito-subtotal-row total"><span>Total USD</span><span>USD '+totalUSD.toLocaleString('es-AR',{maximumFractionDigits:2})+'</span></div>':'')+
     (totalARS>0?'<div class="carrito-subtotal-row total"><span>Total ARS</span><span>$ '+totalARS.toLocaleString('es-AR',{maximumFractionDigits:2})+'</span></div>':'')+
     (carrito.length===0?'<div style="color:#6E6E73;font-size:12px;text-align:center;padding:8px">Carrito vacío</div>':'');
+  renderCarritoPagos(totalUSD,totalARS);
   document.getElementById('btnConfirmarVenta').disabled=carrito.length===0;
+}
+function renderCarritoPagos(totalUSD,totalARS){
+  const el=document.getElementById('carrito-pagos-lista');if(!el)return;
+  if(carrito.length===0){el.innerHTML='';const pr=document.getElementById('carrito-pago-resumen');if(pr)pr.innerHTML='';return;}
+  el.innerHTML='';
+  // Sección USD (equipos)
+  if(totalUSD>0){
+    const tituloUSD=document.createElement('div');
+    tituloUSD.style.cssText='font-size:11px;font-weight:600;color:#0058B0;letter-spacing:0.04em;margin-bottom:4px;margin-top:6px;';
+    tituloUSD.textContent='EQUIPOS (USD '+totalUSD.toLocaleString("es-AR")+')';
+    el.appendChild(tituloUSD);
+    METODOS.forEach(function(m){
+      const div=document.createElement('div');
+      div.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F5F5F7;';
+      const lbl=document.createElement('label');
+      lbl.style.cssText='display:flex;align-items:center;gap:6px;flex:1;font-size:12px;cursor:pointer;';
+      const chk=document.createElement('input');
+      chk.type='checkbox';chk.id='cp-usd-'+m.id;chk.style.cssText='accent-color:#0071E3;width:14px;height:14px;';
+      chk.onchange=function(){toggleCarritoPago('usd',m.id);};
+      lbl.appendChild(chk);
+      lbl.appendChild(document.createTextNode(' '+m.label));
+      const inp=document.createElement('input');
+      inp.type='number';inp.id='cpa-usd-'+m.id;inp.placeholder='0';inp.disabled=true;inp.min='0';
+      inp.style.cssText='width:90px;padding:5px 8px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#fff;';
+      inp.oninput=updateCarritoPagoResumen;
+      div.appendChild(lbl);div.appendChild(inp);
+      el.appendChild(div);
+    });
+  }
+  // Sección ARS (accesorios)
+  if(totalARS>0){
+    const tituloARS=document.createElement('div');
+    tituloARS.style.cssText='font-size:11px;font-weight:600;color:#8A4D00;letter-spacing:0.04em;margin-bottom:4px;margin-top:10px;';
+    tituloARS.textContent='ACCESORIOS ($ '+totalARS.toLocaleString("es-AR")+')';
+    el.appendChild(tituloARS);
+    METODOS.forEach(function(m){
+      const div=document.createElement('div');
+      div.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F5F5F7;';
+      const lbl=document.createElement('label');
+      lbl.style.cssText='display:flex;align-items:center;gap:6px;flex:1;font-size:12px;cursor:pointer;';
+      const chk=document.createElement('input');
+      chk.type='checkbox';chk.id='cp-ars-'+m.id;chk.style.cssText='accent-color:#E65100;width:14px;height:14px;';
+      chk.onchange=function(){toggleCarritoPago('ars',m.id);};
+      lbl.appendChild(chk);
+      lbl.appendChild(document.createTextNode(' '+m.label));
+      const inp=document.createElement('input');
+      inp.type='number';inp.id='cpa-ars-'+m.id;inp.placeholder='0';inp.disabled=true;inp.min='0';
+      inp.style.cssText='width:90px;padding:5px 8px;font-size:12px;border:1px solid #D2D2D7;border-radius:8px;background:#fff;';
+      inp.oninput=updateCarritoPagoResumen;
+      div.appendChild(lbl);div.appendChild(inp);
+      el.appendChild(div);
+    });
+  }
+  updateCarritoPagoResumen();
+}
+function toggleCarritoPago(moneda,id){
+  const chk=document.getElementById('cp-'+moneda+'-'+id);
+  const inp=document.getElementById('cpa-'+moneda+'-'+id);
+  if(!inp)return;
+  inp.disabled=!chk.checked;
+  if(!chk.checked)inp.value='';
+  updateCarritoPagoResumen();
+}
+function updateCarritoPagoResumen(){
+  const el=document.getElementById('carrito-pago-resumen');if(!el)return;
+  const rows=[];
+  ['usd','ars'].forEach(function(mon){
+    METODOS.forEach(function(m){
+      const c=document.getElementById('cp-'+mon+'-'+m.id);
+      const a=document.getElementById('cpa-'+mon+'-'+m.id);
+      if(c&&c.checked&&a&&parseFloat(a.value)>0){
+        const v=parseFloat(a.value)||0;
+        rows.push('<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;">'+
+          '<span style="color:#6E6E73">'+m.label.slice(3)+' ('+(mon==='usd'?'USD':'ARS')+')</span>'+
+          '<strong>'+m.prefix+' '+v.toLocaleString('es-AR')+'</strong></div>');
+      }
+    });
+  });
+  el.innerHTML=rows.length?'<div style="background:#F5F5F7;border-radius:8px;padding:6px 10px;margin-top:4px;">'+rows.join('')+'</div>':'';
+}
+function getCarritoPagos(moneda){
+  const prefix=moneda||'usd';
+  return METODOS.filter(function(m){
+    const c=document.getElementById('cp-'+prefix+'-'+m.id);
+    const a=document.getElementById('cpa-'+prefix+'-'+m.id);
+    return c&&c.checked&&a&&parseFloat(a.value)>0;
+  }).map(function(m){
+    const monto=parseFloat(document.getElementById('cpa-'+prefix+'-'+m.id).value)||0;
+    return{id:m.id,label:m.label.slice(3),prefix:m.prefix,monto};
+  });
 }
 async function confirmarVentaCarrito(){
   if(carrito.length===0)return;
@@ -1756,7 +1851,7 @@ async function confirmarVentaCarrito(){
     if(item.tipo==='equipo'){
       const eq=equipos.find(e=>(e.modelo+' '+e.memoria)===item.nombre&&e.stock>=item.qty);
       if(eq){eq.stock-=item.qty;await saveItem('equipos',eq);}
-      const venta={ts:Date.now(),tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:[]};
+      const venta={ts:Date.now(),tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
       ventas.push(venta);await saveItem('ventas',venta);
     }else{
       const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
@@ -1765,7 +1860,7 @@ async function confirmarVentaCarrito(){
         else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
         await saveItem('accesorios',ac);
       }
-      const venta={ts:Date.now(),tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:[]};
+      const venta={ts:Date.now(),tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
       ventas.push(venta);await saveItem('ventas',venta);
     }
   }
