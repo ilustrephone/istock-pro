@@ -437,11 +437,9 @@ tr:hover td{background:#FAFAFA;}
         </select>
       </div>
     </div>
-
     <div class="stats-row" id="stats-ingresos"></div>
     <div id="lista-ingresos"></div>
   </div>
-
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <h3 id="modal-ttl"></h3>
@@ -482,7 +480,7 @@ tr:hover td{background:#FAFAFA;}
   </div>
   <button class="btn-carrito-float" id="btnCarritoFloat" onclick="abrirCarrito()" style="display:none;">🛒 Carrito <span class="badge" id="carritoBadge">0</span></button>
 </div><!-- /main-app -->
-<script>
+  <script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
 // ⚙️ Cambiá los PINs acá — solo vos ves este archivo
 const PIN_ADMIN   = '1234';   // ← PIN del Administrador
@@ -511,6 +509,7 @@ async function sbFetch(path, method='GET', body=null){
     if(e.message.includes('fetch')) throw new Error('Sin conexión a internet');
     throw e;
   }
+}
 async function sbGetAll(tabla){
   const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc`);
   return rows.map(r => ({...r.data, _id: r.id}));
@@ -531,6 +530,7 @@ async function sbDelete(tabla, id){
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
+
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -661,11 +661,18 @@ async function login(){
   showSyncBar('☁️ Cargando datos...', 'info');
   await loadAll();
   showSyncBar('✓ Datos sincronizados', 'ok');
+  try{sessionStorage.setItem('istock_rol',r);sessionStorage.setItem('istock_suc',s);}catch(e){}
   renderToolbar(); renderAll();
+  // Restaurar pestaña activa si existe
+  try{
+    const savedTab=sessionStorage.getItem('istock_tab');
+    if(savedTab&&savedTab!=='eq') switchTabByName(savedTab);
+  }catch(e){}
   startAutoRefresh();
 }
 function logout(){
   rol=''; sucursal=''; searchEq=''; searchAc='';
+  try{sessionStorage.removeItem('istock_rol');sessionStorage.removeItem('istock_suc');sessionStorage.removeItem('istock_tab');}catch(e){}
   document.getElementById('main-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('inp-pin').value='';
@@ -681,6 +688,7 @@ function switchTab(tab,el){
   if(tab==='rep') renderReporte();
   if(tab==='caja') renderCaja();
   if(tab==='ingresos') renderIngresos();
+  try{sessionStorage.setItem('istock_tab',tab);}catch(e){}
 }
 function switchTabByName(tab){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos'][i]===tab));
@@ -1625,6 +1633,17 @@ async function init(){
   try {
     await sbFetch('equipos?select=id&limit=1');
     document.getElementById('loading-overlay').style.display='none';
+    // Auto-login si hay sesión guardada
+    try{
+      const savedRol=sessionStorage.getItem('istock_rol');
+      const savedSuc=sessionStorage.getItem('istock_suc');
+      if(savedRol&&savedSuc){
+        document.getElementById('sel-rol').value=savedRol;
+        document.getElementById('sel-suc').value=savedSuc;
+        await login();
+        return;
+      }
+    }catch(e){}
     document.getElementById('login-screen').style.display='flex';
   } catch(e) {
     console.error('Init error:', e.message);
@@ -1760,5 +1779,3 @@ init();
 </script>
 </body>
 </html>
-","stderr":""}",
-        "uuid": "ab        
