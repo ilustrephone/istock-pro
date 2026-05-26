@@ -265,7 +265,6 @@ tr:hover td{background:#FAFAFA;}
         <th style="width:9%">Batería</th><th style="width:12%">IMEI</th>
         <th style="width:10%">Sucursal</th><th style="width:9%">Precio</th>
         <th style="width:9%" id="th-costo-eq">Costo</th>
-        <th style="width:6%">Stock</th><th style="width:7%">Estado</th>
         <th style="width:12%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-eq"></tbody>
@@ -428,14 +427,68 @@ tr:hover td{background:#FAFAFA;}
         <select id="f-ing-suc" style="padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" onchange="renderIngresos()">
           <option value="">Ambas sucursales</option>
           <option>Tunuyán</option>
-          <script>
+          <option>La Consulta</option>
+        </select>
+        <select id="f-ing-estado" style="padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" onchange="renderIngresos()">
+          <option value="">Todos los estados</option>
+          <option value="Bueno">Bueno</option>
+          <option value="Regular">Regular</option>
+          <option value="Malo">Malo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-row" id="stats-ingresos"></div>
+    <div id="lista-ingresos"></div>
+  </div>
+
+  <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3 id="modal-ttl"></h3>
+      <div id="modal-body"></div>
+      <div class="mac" id="modal-actions"></div>
+    </div>
+  </div>
+  <div class="carrito-overlay" id="carritoOverlay" onclick="cerrarCarrito()"></div>
+  <div class="carrito-drawer" id="carritoDrawer">
+    <div class="carrito-drawer-header">
+      <h3>🛒 Carrito <span id="carritoCount" style="background:#E3F0FF;color:#0058B0;padding:1px 8px;border-radius:10px;font-size:11px;margin-left:4px;">0</span></h3>
+      <button class="carrito-drawer-close" onclick="cerrarCarrito()">✕</button>
+    </div>
+    <div style="padding:10px 14px;border-bottom:1px solid #E8E8ED;background:#FAFAFA;">
+      <input type="text" id="drawerSearch" placeholder="🔍 Agregar producto..." oninput="renderDrawerSearch()" style="width:100%;padding:7px 11px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;font-family:inherit;outline:none;"/>
+      <div id="drawerResults" style="margin-top:6px;max-height:160px;overflow-y:auto;"></div>
+    </div>
+    <div class="carrito-drawer-body">
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">SUCURSAL</div>
+        <select class="carrito-suc-sel" id="carritoSuc"><option value="Tunuyán">📍 Tunuyán</option><option value="La Consulta">📍 La Consulta</option></select>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:6px;">PRODUCTOS</div>
+      <div id="carritoItems"><div style="text-align:center;padding:2rem;color:#6E6E73;font-size:13px;">📦 Buscá productos arriba</div></div>
+      <div style="margin-top:12px;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:5px;">DESCUENTO</div>
+        <div class="descuento-row">
+          <input type="number" class="descuento-inp" id="carritoDescVal" placeholder="0" min="0" oninput="actualizarCarritoTotales()"/>
+          <select class="descuento-tipo" id="carritoDescTipo" onchange="actualizarCarritoTotales()"><option value="$">$ ARS</option><option value="USD">USD</option><option value="%">%</option></select>
+        </div>
+      </div>
+      <div class="carrito-subtotal" id="carritoTotales"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="limpiarCarrito()" style="flex:0;padding:10px 14px;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;">Limpiar</button>
+        <button class="btn-confirmar-venta" id="btnConfirmarVenta" onclick="confirmarVentaCarrito()" disabled style="flex:1;">✅ Confirmar venta</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn-carrito-float" id="btnCarritoFloat" onclick="abrirCarrito()" style="display:none;">🛒 Carrito <span class="badge" id="carritoBadge">0</span></button>
+</div><!-- /main-app -->
+<script>
 // ===================== CONFIGURACIÓN DE ACCESO =====================
 // ⚙️ Cambiá los PINs acá — solo vos ves este archivo
 const PIN_ADMIN   = '1234';   // ← PIN del Administrador
 const PIN_GERENTE = '5678';   // ← PIN del Gerente
 const SUPA_URL = 'https://rvnvixiuigluutbzftxq.supabase.co';
 const SUPA_KEY = 'sb_publishable_y3TIT6mATrqkoaki2zZSew__HDhxZCm';
-
 async function sbFetch(path, method='GET', body=null){
   const headers = {
     'apikey': SUPA_KEY,
@@ -444,10 +497,8 @@ async function sbFetch(path, method='GET', body=null){
   };
   if(method==='POST') headers['Prefer'] = 'return=representation';
   if(method==='PATCH') headers['Prefer'] = 'return=minimal';
-
   const opts = {method, headers};
   if(body) opts.body = JSON.stringify(body);
-
   try {
     const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
     const txt = await res.text();
@@ -460,7 +511,6 @@ async function sbFetch(path, method='GET', body=null){
     if(e.message.includes('fetch')) throw new Error('Sin conexión a internet');
     throw e;
   }
-}
 async function sbGetAll(tabla){
   const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc`);
   return rows.map(r => ({...r.data, _id: r.id}));
@@ -611,7 +661,6 @@ async function login(){
   showSyncBar('☁️ Cargando datos...', 'info');
   await loadAll();
   showSyncBar('✓ Datos sincronizados', 'ok');
-
   renderToolbar(); renderAll();
   startAutoRefresh();
 }
@@ -663,7 +712,7 @@ function renderEq(){
         <td>${batBadge(e.bateria)}</td>
         <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
         <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
-        ${costoCell}<td>${e.stock}</td><td>${stockBadge(e.stock)}</td>
+        ${costoCell}
         <td>
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
           <button class="btn-e" onclick="openModal('eq-edit',${ri})">Editar</button>
@@ -971,7 +1020,7 @@ function buildForm(type,idx){
           <div id="canje-resumen" style="font-size:12px;color:#8A4D00;background:#fff;border-radius:8px;padding:8px 10px;margin-top:2px;"></div>
         </div>
       </div>
-      ${buildPagoSection(true,'USD')}`;
+      ${buildPagoSection(true)}`;
   }
   if(type==='venta-ac'){
     const a=accesorios[idx];
@@ -979,7 +1028,7 @@ function buildForm(type,idx){
       <div class="mfl"><label>DESCONTAR DE SUCURSAL</label><select id="mf-suc-venta">${a.stockT>0?`<option value="Tunuyán">Tunuyán (${a.stockT||0} uds)</option>`:''}${a.stockC>0?`<option value="La Consulta">La Consulta (${a.stockC||0} uds)</option>`:''}</select></div>
       <div class="mgrid"><div class="mfl"><label>CANTIDAD</label><input id="mf-cant" type="number" min="1" value="1" oninput="recalcTotal('ac',${idx})"/></div><div class="mfl"><label>PRECIO VENTA (ARS $)</label><input id="mf-pventa" type="number" min="0" value="${a.precio}" oninput="recalcTotal('ac',${idx})"/></div></div>
       <div class="sell-info" style="margin-bottom:12px">Total: <strong id="vtotal">$ ${a.precio.toLocaleString('es-AR')}</strong></div>
-      <hr class="divider"/>${buildPagoSection(false,'ARS')}`;
+      <hr class="divider"/>${buildPagoSection(false)}`;
   }
   if(type==='venta'){
     const eqO=equipos.filter(e=>e.stock>0).map(e=>{const ri=equipos.indexOf(e);return`<option value="eq-${ri}">${e.modelo} ${e.memoria} · ${e.sucursal} (${e.stock}) — USD ${e.precio.toLocaleString('es-AR')}</option>`;}).join('');
@@ -1712,11 +1761,4 @@ init();
 </body>
 </html>
 ","stderr":""}",
-        "uuid": "ab}
-
-
-
-
-
-
-          
+        "uuid": "ab        
