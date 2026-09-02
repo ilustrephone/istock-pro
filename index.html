@@ -516,7 +516,7 @@ async function sbFetch(path, method='GET', body=null){
   }
 }
 async function sbGetAll(tabla){
-  const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc`);
+const rows = await sbFetch(`${tabla}?select=id,data&order=updated_at.asc&limit=10000`);
   return rows.map(r => ({...r.data, _id: r.id}));
 }
 async function sbInsert(tabla, data){
