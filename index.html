@@ -351,11 +351,11 @@ tr:hover td{background:#FAFAFA;}
     </div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:7%">Fecha</th><th style="width:12%">Equipo</th><th style="width:7%">Precio</th>
-        <th style="width:7%">Seña</th><th style="width:13%">Cliente</th>
-        <th style="width:7%">Vendedor</th><th style="width:9%">Sucursal</th>
-        <th style="width:12%">Plan canje</th><th style="width:7%">Saldo</th>
-        <th style="width:13%">Estado</th><th style="width:8%">Acciones</th>
+        <th style="width:10%">Modelo</th><th style="width:6%">Color</th><th style="width:6%">Precio</th>
+        <th style="width:6%">Seña</th><th style="width:10%">Cliente</th><th style="width:6%">Vendedor</th>
+        <th style="width:8%">Teléfono</th><th style="width:8%">Sucursal</th><th style="width:10%">Estado</th>
+        <th style="width:10%">Plan canje</th><th style="width:6%">Fecha</th><th style="width:6%">Saldo</th>
+        <th style="width:8%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-enc"></tbody>
     </table></div>
@@ -917,7 +917,7 @@ function renderEncargos(){
   const vends=[...new Set(encargos.map(e=>(e.vendedor||'').trim()).filter(Boolean))].sort();
   const selV=document.getElementById('f-enc-vend');
   selV.innerHTML='<option value="">Todos los vendedores</option>'+vends.map(v=>`<option ${v===fV?'selected':''}>${esc(v)}</option>`).join('');
-  const data=[...encargos].reverse().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).filter(e=>{
+  const data=[...encargos].sort((a,b)=>(a.orden??1e12)-(b.orden??1e12)).filter(e=>{
     if(fE==='activos'&&e.estado==='Entregado') return false;
     if(fE&&fE!=='activos'&&e.estado!==fE) return false;
     if(fV&&(e.vendedor||'').trim()!==fV) return false;
@@ -933,22 +933,25 @@ function renderEncargos(){
     <div class="sc sc-green"><div class="sc-label">LLEGARON</div><div class="sc-val">${cnt('Llegó')}</div></div>
     <div class="sc"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
   tb.innerHTML=data.length===0
-    ?'<tr><td colspan="11" class="empty-state">Sin encargos</td></tr>'
+    ?'<tr><td colspan="13" class="empty-state">Sin encargos</td></tr>'
     :data.map(e=>{
       const ri=encargos.indexOf(e);
       const canje=e.canje
         ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
-        :'<span class="enc-sub">No</span>';
+        :`<span class="enc-sub">${e.notas?esc(e.notas):'No'}</span>`;
       return`<tr>
-        <td style="font-size:11px">${e.fecha?fmtDate(e.fecha):'<span class="enc-sub">—</span>'}</td>
-        <td title="${esc(e.modelo)} ${esc(e.color)}"><strong>${esc(e.modelo)}</strong><div class="enc-sub">${esc(e.color)}</div></td>
+        <td title="${esc(e.modelo)}"><strong>${esc(e.modelo)}</strong></td>
+        <td title="${esc(e.color)}">${esc(e.color)}</td>
         <td>${fmtUSD(e.precio)}</td>
         <td>${encSenaTxt(e)}</td>
-        <td title="${esc(e.cliente)}">${esc(e.cliente)}<div class="enc-sub">${e.telefono?`<a href="https://wa.me/549${esc(String(e.telefono).replace(/\D/g,''))}" target="_blank" style="color:#0058B0;text-decoration:none">📞 ${esc(e.telefono)}</a>`:''}</div></td>
-        <td>${esc(e.vendedor)}</td><td>${esc(e.sucursal)}</td>
-        <td>${canje}</td>
-        <td><strong>${fmtUSD(encSaldo(e))}</strong>${e.senaMoneda==='ARS'&&e.sena?'<div class="enc-sub">- seña en $</div>':''}</td>
+        <td title="${esc(e.cliente)}">${esc(e.cliente)}</td>
+        <td>${esc(e.vendedor)}</td>
+        <td>${e.telefono?`<a href="https://wa.me/549${esc(String(e.telefono).replace(/\D/g,''))}" target="_blank" style="color:#0058B0;text-decoration:none">${esc(e.telefono)}</a>`:'<span class="enc-sub">—</span>'}</td>
+        <td>${esc(e.sucursal)}</td>
         <td>${encBar(e,ri)}</td>
+        <td title="${esc(e.canjeModelo||e.notas||'')}">${canje}</td>
+        <td style="font-size:11px">${e.fecha?fmtDate(e.fecha):'<span class="enc-sub">—</span>'}</td>
+        <td><strong>${fmtUSD(encSaldo(e))}</strong>${e.senaMoneda==='ARS'&&e.sena?'<div class="enc-sub">- seña en $</div>':''}</td>
         <td>
           <button class="btn-e" onclick="openModal('enc-edit',${ri})">Editar</button>
           <button class="btn-d" onclick="delItem('enc',${ri})">✕</button>
@@ -1410,6 +1413,7 @@ async function saveModal(){
       notas:g('enc-notas')};
     if(obj.estado==='Encargado'&&!obj.fechaEncargado) obj.fechaEncargado=Date.now();
     if(obj.estado==='Entregado'&&!obj.fechaEntregado) obj.fechaEntregado=Date.now();
+    if(obj.orden==null) obj.orden=Math.max(0,...encargos.map(e=>e.orden||0))+1;
     if(editIdx!==null){encargos[editIdx]=obj;}else{encargos.push(obj);}
     closeModal();renderEncargos();
     if(await saveItem('encargos',obj)) showSyncBar('✓ Encargo guardado en la nube','ok');
