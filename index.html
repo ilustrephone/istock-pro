@@ -502,6 +502,9 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
     <div class="stats-row" id="stats-ingresos"></div>
+    <div class="search-wrap"><span class="search-icon">🔍</span>
+      <input type="text" id="search-ing" placeholder="Buscar por cliente, modelo, IMEI, teléfono, vendedor…" oninput="ingLimite=100;renderIngresos()"/>
+    </div>
     <div id="pend-ingresos"></div>
     <div id="lista-ingresos"></div>
   </div>
@@ -1899,13 +1902,17 @@ function imprimirCaja(){
   win.document.close();
 }
 // ===================== REGISTRO DE INGRESOS =====================
+let ingLimite=100;
 function renderIngresos(){
   const fSuc=document.getElementById('f-ing-suc')?.value||'';
   const fEst=document.getElementById('f-ing-estado')?.value||'';
-  const data=[...ingresos].reverse().filter(i=>
+  const qI=(document.getElementById('search-ing')?.value||'').trim().toLowerCase();
+  const all=[...ingresos].sort((a,b)=>(b.ts||0)-(a.ts||0)).filter(i=>
     (!fSuc||i.sucursal===fSuc)&&
-    (!fEst||i.estado===fEst)
+    (!fEst||i.estado===fEst)&&
+    (!qI||[i.cliente,i.modelo,i.imei,i.telefono,i.por,i.notas,i.sucursal].some(v=>v&&String(v).toLowerCase().includes(qI)))
   );
+  const data=all.slice(0,ingLimite);
   const total=ingresos.length;
   const buenos=ingresos.filter(i=>i.estado==='Bueno').length;
   const regulares=ingresos.filter(i=>i.estado==='Regular').length;
@@ -1963,7 +1970,10 @@ function renderIngresos(){
           <span style="font-size:12px;color:#6E6E73;">👤 ${i.cliente||'Sin nombre'}</span>
           <span style="font-size:11px;color:#9E9E9E;">·</span>
           <span style="font-size:11px;color:#6E6E73;">${fmtDate(i.ts)}</span>
+          ${i.telefono?`<span style="font-size:11px;color:#9E9E9E;">·</span><a href="https://wa.me/549${esc(String(i.telefono).replace(/\D/g,''))}" target="_blank" style="font-size:11px;color:#0058B0;text-decoration:none">📞 ${esc(i.telefono)}</a>`:''}
+          ${i.por?`<span style="font-size:11px;color:#9E9E9E;">·</span><span style="font-size:11px;color:#6E6E73;">🧑‍💼 ${esc(i.por)}</span>`:''}
         </div>
+        ${i.notas?`<div style="font-size:11px;color:#8A4D00;margin-top:3px;">📝 ${esc(i.notas)}</div>`:''}
       </div>
       <!-- Batería -->
       <div style="text-align:center;min-width:70px;">
@@ -1992,7 +2002,7 @@ function renderIngresos(){
         <div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${i.sucursal||'—'}</div>
       </div>
     </div>`;
-  }).join('');
+  }).join('')+(all.length>data.length?`<div style="text-align:center;margin:14px 0"><button class="btn-e" style="padding:8px 18px" onclick="ingLimite+=200;renderIngresos()">Mostrar más (${all.length-data.length} restantes)</button></div>`:`<div style="text-align:center;font-size:11px;color:#6E6E73;margin:10px 0">${all.length} ingreso${all.length!==1?'s':''}</div>`);
 }
 function closeModal(){
   document.getElementById('modal').style.display='none';
