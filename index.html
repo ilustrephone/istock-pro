@@ -488,6 +488,7 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
     <div class="stats-row" id="stats-ingresos"></div>
+    <div id="pend-ingresos"></div>
     <div id="lista-ingresos"></div>
   </div>
   <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
@@ -985,6 +986,7 @@ function renderAIng(){
   const pend=encPendIngreso();
   const badge=document.getElementById('aing-count');
   if(badge){badge.textContent=pend.length;badge.style.display=pend.length?'inline-block':'none';}
+  if(document.getElementById('tab-ingresos')?.style.display!=='none') renderIngresos();
   const ver=document.getElementById('f-aing-ver').value;
   const fS=document.getElementById('f-aing-suc').value;
   const base=ver==='ok'?encargos.filter(e=>e.canje&&e.ingresado):pend;
@@ -1261,6 +1263,7 @@ function buildForm(type,idx){
       <div class="mfl"><label>IMEI DEL EQUIPO QUE INGRESA *</label><input id="ing-imei" type="text" inputmode="numeric" maxlength="20" placeholder="354621087432100" autofocus/></div>
       <div class="mgrid"><div class="mfl"><label>MODELO</label><input id="ing-modelo" type="text" value="${esc(modeloLimpio)}"/></div><div class="mfl"><label>MEMORIA</label><select id="ing-mem">${MEMS.map(m=>opt(m,mem||'128GB')).join('')}</select></div></div>
       <div class="mgrid"><div class="mfl"><label>BATERÍA (%)</label><input id="ing-bat" type="number" min="1" max="100" value="${e.canjeBateria||''}"/></div><div class="mfl"><label>SUCURSAL</label><select id="ing-suc">${SUCS.map(s=>opt(s,e.sucursal||sucursal)).join('')}</select></div></div>
+      <div class="mfl"><label>CONDICIÓN</label><select id="ing-cond"><option>Bueno</option><option>Regular</option><option>Malo</option></select></div>
       <div class="mgrid"><div class="mfl"><label>PRECIO VENTA (USD) *</label><input id="ing-precio" type="number" min="0" placeholder="a cuánto lo vendés"/></div>${cf||`<div class="mfl"><label>COTIZACIÓN (USD)</label><input type="text" value="${e.canjeCotiz||0}" disabled/></div>`}</div>`;
   }
   if(type==='enc-edit'){
@@ -1482,9 +1485,9 @@ async function saveModal(){
     const okEq=await saveItem('equipos',eq);
     if(eq._id) e.ingresoEqId=eq._id;
     await saveItem('encargos',e);
-    const ingreso={ts:ahora,cliente:e.cliente||'—',modelo:`${modelo} ${eq.memoria}`,imei,estado:'Bueno',bateria:bat,valor:Number(e.canjeCotiz)||0,sucursal:suc,por:rolLabel(),ventaProducto:`Sellado ${e.modelo} ${e.color||''}`.trim()};
+    const ingreso={ts:ahora,cliente:e.cliente||'—',modelo:`${modelo} ${eq.memoria}`,imei,estado:g('ing-cond')||'Bueno',bateria:bat,valor:Number(e.canjeCotiz)||0,sucursal:suc,por:rolLabel(),ventaProducto:`Sellado ${e.modelo} ${e.color||''}`.trim()};
     ingresos.push(ingreso); await saveItem('ingresos',ingreso);
-    if(document.getElementById('tab-ingresos').style.display!=='none') renderIngresos();
+    renderIngresos();
     if(okEq) showSyncBar('✓ Sellado entregado · equipo cargado al stock','ok');
     return;
   }
@@ -1841,7 +1844,26 @@ function renderIngresos(){
     <div class="sc sc-green"><div class="sc-label">BUENOS</div><div class="sc-val">${buenos}</div></div>
     <div class="sc"><div class="sc-label">REGULARES</div><div class="sc-val">${regulares}</div></div>
     <div class="sc sc-red"><div class="sc-label">MALOS</div><div class="sc-val">${malos}</div></div>
+    <div class="sc" style="background:#FFF3E0"><div class="sc-label">POR INGRESAR</div><div class="sc-val" style="color:#8A4D00">${encPendIngreso().length}</div></div>
     <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${valTotal.toLocaleString('es-AR')}</div></div>`;
+  // Pendientes que vienen de sellados con plan canje
+  const pend=encPendIngreso().filter(e=>!fSuc||e.sucursal===fSuc).sort((a,b)=>(a.orden??1e12)-(b.orden??1e12));
+  const pendEl=document.getElementById('pend-ingresos');
+  if(pendEl){
+    pendEl.innerHTML=(pend.length&&!fEst)?`<div style="font-size:12px;font-weight:600;color:#8A4D00;margin:4px 0 8px">⏳ Por ingresar — sellados con plan canje (${pend.length})</div>`+pend.map(e=>{
+      const ri=encargos.indexOf(e); const b=Number(e.canjeBateria)||0; const bc=batColor(b);
+      return`<div style="background:#FFFBF5;border:1px dashed #FFCC80;border-radius:14px;padding:0.85rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⏳</div>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:14px;font-weight:600;color:#1D1D1F;margin-bottom:3px;">${esc(e.canjeModelo||'—')}</div>
+          <div style="font-size:12px;color:#6E6E73;">👤 ${esc(e.cliente)} · se lleva ${esc(e.modelo)} ${esc(e.color||'')} · sellado: <strong>${esc(e.estado)}</strong></div>
+        </div>
+        <div style="text-align:center;min-width:70px;"><div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">BATERÍA</div><span style="font-size:12px;font-weight:600;color:${b?bc:'#6E6E73'}">${b?b+'%':'—'}</span></div>
+        <div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">IMEI</div><span style="font-size:11px;color:#8A4D00;">pendiente</span></div>
+        <div style="text-align:right;min-width:90px;"><div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">COTIZACIÓN</div><div style="font-size:15px;font-weight:700;color:#1D1D1F;">${fmtUSD(e.canjeCotiz)}</div><div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${esc(e.sucursal)}</div></div>
+        <button class="btn-e" style="background:#E3F0FF;color:#0058B0;border-color:#90CAF9" onclick="openModal('enc-ingreso',${ri})">Ingresar</button>
+      </div>`;}).join('')+`<div style="font-size:12px;font-weight:600;color:#6E6E73;margin:14px 0 8px">✓ Ingresados</div>`:'';
+  }
   const condColor={'Bueno':'#E8F5E9','Regular':'#FFF3E0','Malo':'#FFEBEE'};
   const condText={'Bueno':'#1B5E20','Regular':'#8A4D00','Malo':'#C62828'};
   const condIcon={'Bueno':'✅','Regular':'⚠️','Malo':'❌'};
@@ -1849,7 +1871,7 @@ function renderIngresos(){
   if(data.length===0){
     el.innerHTML=`<div class="empty-state" style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:3rem">
       <div style="font-size:32px;margin-bottom:0.75rem">📋</div>
-      <div>Sin ingresos registrados</div>
+      <div>Todavía no hay ingresos registrados</div>
     </div>`;
     return;
   }
