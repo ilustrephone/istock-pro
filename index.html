@@ -502,13 +502,8 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
     <div class="stats-row" id="stats-ingresos"></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <div class="search-wrap" style="flex:0 1 330px;min-width:240px;border:2px solid #0071E3;"><span class="search-icon">#️⃣</span>
-        <input type="text" id="search-ing-imei" inputmode="numeric" placeholder="Buscar por IMEI (completo o últimos dígitos)" oninput="ingLimite=100;renderIngresos()"/>
-      </div>
-      <div class="search-wrap" style="flex:1 1 300px;"><span class="search-icon">🔍</span>
-        <input type="text" id="search-ing" placeholder="Buscar por cliente, modelo, teléfono, vendedor…" oninput="ingLimite=100;renderIngresos()"/>
-      </div>
+    <div class="search-wrap"><span class="search-icon">🔍</span>
+      <input type="text" id="search-ing" placeholder="Buscar por IMEI, cliente, modelo, teléfono o vendedor…" oninput="ingLimite=100;renderIngresos()"/>
     </div>
     <div id="pend-ingresos"></div>
     <div id="lista-ingresos"></div>
@@ -1912,12 +1907,13 @@ function renderIngresos(){
   const fSuc=document.getElementById('f-ing-suc')?.value||'';
   const fEst=document.getElementById('f-ing-estado')?.value||'';
   const qI=(document.getElementById('search-ing')?.value||'').trim().toLowerCase();
-  const qImei=(document.getElementById('search-ing-imei')?.value||'').replace(/\D/g,'');
+  // Si lo escrito es un número (con o sin espacios/guiones), se busca también como IMEI
+  const qImei=/^[\d\s-]{3,}$/.test(qI)?qI.replace(/\D/g,''):'';
   const all=[...ingresos].sort((a,b)=>(b.ts||0)-(a.ts||0)).filter(i=>
     (!fSuc||i.sucursal===fSuc)&&
     (!fEst||i.estado===fEst)&&
-    (!qI||[i.cliente,i.modelo,i.imei,i.telefono,i.por,i.notas,i.sucursal].some(v=>v&&String(v).toLowerCase().includes(qI)))&&
-    (!qImei||String(i.imei||'').replace(/\D/g,'').includes(qImei))
+    (!qI||[i.cliente,i.modelo,i.imei,i.telefono,i.por,i.notas,i.sucursal].some(v=>v&&String(v).toLowerCase().includes(qI))||
+      (qImei&&[i.imei,i.telefono].some(v=>String(v||'').replace(/\D/g,'').includes(qImei))))
   );
   const data=all.slice(0,ingLimite);
   const total=ingresos.length;
