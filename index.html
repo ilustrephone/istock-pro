@@ -230,6 +230,7 @@ tr:hover td{background:#FAFAFA;}
     <div class="login-logo"><span class="logo-icon">📱</span><h2>iStock Pro</h2><p>Tunuyán &amp; La Consulta</p></div>
     <div class="fl"><label>ROL</label>
       <select id="sel-rol" onchange="onRolChange()">
+        <option value="" disabled selected>Elegí tu rol…</option>
         <option value="empleado">Empleado</option>
         <option value="gerente">Gerente</option>
         <option value="admin">Administrador</option>
@@ -711,9 +712,10 @@ function renderToolbar(){
   document.getElementById('th-costo-eq').style.display=isAdmin()?'':'none';
   document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
-function onRolChange(){document.getElementById('pin-wrap').style.display=document.getElementById('sel-rol').value!=='empleado'?'block':'none';}
+function onRolChange(){const v=document.getElementById('sel-rol').value;document.getElementById('pin-wrap').style.display=(v==='admin'||v==='gerente')?'block':'none';}
 async function login(){
   const r=document.getElementById('sel-rol').value;
+  if(!r){alert('Elegí tu rol para entrar');document.getElementById('sel-rol').focus();return;}
   const s=document.getElementById('sel-suc').value;
   const pin=document.getElementById('inp-pin').value;
   if(r==='admin'&&pin!==PIN_ADMIN){alert('PIN incorrecto');return;}
@@ -746,7 +748,7 @@ function logout(){
   document.getElementById('main-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('inp-pin').value='';
-  document.getElementById('sel-rol').value='empleado';
+  document.getElementById('sel-rol').value='';
   document.getElementById('search-eq').value='';
   document.getElementById('search-ac').value='';
   onRolChange(); switchTabByName('eq');
