@@ -7,6 +7,8 @@
 <title>iStock Pro</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+html{zoom:1.18;}
+@media(max-width:700px){html{zoom:1;}}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F7;min-height:100vh;font-size:14px;color:#1D1D1F;}
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
 .login-card{background:#fff;border:1px solid #E0E0E5;border-radius:16px;padding:2rem;width:100%;max-width:370px;box-shadow:0 2px 16px rgba(0,0,0,0.07);}
@@ -42,10 +44,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sync-dot.ok{background:#2E7D32;}
 .sync-dot.error{background:#C62828;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-.tabs{display:flex;border-bottom:1px solid #E8E8ED;background:#fff;padding:0 1.5rem;overflow-x:auto;}
-.tab{padding:11px 14px;font-size:12px;color:#6E6E73;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
-.tab.active{color:#0071E3;border-bottom-color:#0071E3;font-weight:500;}
+.tabs{display:flex;border-bottom:1px solid #E8E8ED;background:#fff;padding:0 1.5rem;flex-wrap:wrap;column-gap:2px;}
+.tab{padding:12px 13px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:#6E6E73;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
+.tab.active{color:#0071E3;border-bottom-color:#0071E3;font-weight:700;}
 .tab:hover:not(.active){color:#1D1D1F;}
+.tab{--tc:#6E6E73;color:var(--tc)!important;border-radius:10px 10px 0 0;}
+.tabs .tab:nth-child(1){--tc:#0071E3;}
+.tabs .tab:nth-child(2){--tc:#AF52DE;}
+.tabs .tab:nth-child(3){--tc:#34A853;}
+.tabs .tab:nth-child(4){--tc:#FF9500;}
+.tabs .tab:nth-child(5){--tc:#5856D6;}
+.tabs .tab:nth-child(6){--tc:#00897B;}
+.tabs .tab:nth-child(7){--tc:#E91E63;}
+.tabs .tab:nth-child(8){--tc:#D35400;}
+.tabs .tab:nth-child(9){--tc:#0097A7;}
+.tab:hover{background:color-mix(in srgb,var(--tc) 8%,transparent);}
+.tab.active{border-bottom:3px solid var(--tc)!important;background:color-mix(in srgb,var(--tc) 13%,transparent);}
+.enc-row-0 td{background:#FFF8EE;}.enc-row-0 td:first-child{box-shadow:inset 4px 0 0 #FF9500;}
+.enc-row-1 td{background:#EEF5FF;}.enc-row-1 td:first-child{box-shadow:inset 4px 0 0 #0071E3;}
+.enc-row-2 td{background:#EAF8EE;}.enc-row-2 td:first-child{box-shadow:inset 4px 0 0 #34C759;}
+.enc-row-3 td{background:#F6EEFB;}.enc-row-3 td:first-child{box-shadow:inset 4px 0 0 #AF52DE;}
+.sc.sc-purple{background:#F6EEFB;}.sc-purple .sc-val{color:#7B1FA2;}
+.sc.sc-orange{background:#FFF3E0;}.sc-orange .sc-val{color:#D35400;}
 .content{padding:1.25rem 1.5rem;}
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:1.1rem;}
 .sc{background:#F5F5F7;border-radius:12px;padding:0.75rem 1rem;}
@@ -350,12 +370,12 @@ tr:hover td{background:#FAFAFA;}
       <select id="f-enc-suc" onchange="renderEncargos()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
       <button class="btn-add" onclick="openModal('enc-edit',null)">+ Nuevo encargo</button>
     </div>
-    <div class="twrap"><table>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:1400px">
       <thead><tr>
-        <th style="width:10%">Modelo</th><th style="width:6%">Color</th><th style="width:6%">Precio</th>
-        <th style="width:6%">Seña</th><th style="width:10%">Cliente</th><th style="width:6%">Vendedor</th>
-        <th style="width:8%">Teléfono</th><th style="width:8%">Sucursal</th><th style="width:10%">Estado</th>
-        <th style="width:10%">Plan canje</th><th style="width:6%">Fecha</th><th style="width:6%">Saldo</th>
+        <th style="width:10%">Modelo</th><th style="width:6%">Color</th><th style="width:7%">Precio</th>
+        <th style="width:7%">Seña</th><th style="width:10%">Cliente</th><th style="width:6%">Vendedor</th>
+        <th style="width:8%">Teléfono</th><th style="width:8%">Sucursal</th><th style="width:9%">Estado</th>
+        <th style="width:10%">Plan canje</th><th style="width:6%">Fecha</th><th style="width:7%">Saldo</th>
         <th style="width:8%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-enc"></tbody>
@@ -367,7 +387,7 @@ tr:hover td{background:#FAFAFA;}
       <select id="f-aing-ver" onchange="renderAIng()"><option value="pend">Pendientes de ingresar</option><option value="ok">Ya ingresados</option></select>
       <select id="f-aing-suc" onchange="renderAIng()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
     </div>
-    <div class="twrap"><table>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:1100px">
       <thead><tr>
         <th style="width:15%">Equipo que entra</th><th style="width:7%">Batería</th><th style="width:8%">Cotización</th>
         <th style="width:12%">Cliente</th><th style="width:9%">Teléfono</th><th style="width:7%">Vendedor</th>
@@ -947,10 +967,10 @@ function renderEncargos(){
   const cnt=st=>encargos.filter(e=>e.estado===st).length;
   document.getElementById('stats-enc').innerHTML=`
     <div class="sc"><div class="sc-label">TOTAL</div><div class="sc-val">${encargos.length}</div></div>
-    <div class="sc sc-red"><div class="sc-label">SIN ENCARGAR</div><div class="sc-val">${cnt('Sin encargar')}</div></div>
+    <div class="sc sc-orange"><div class="sc-label">SIN ENCARGAR</div><div class="sc-val">${cnt('Sin encargar')}</div></div>
     <div class="sc sc-blue"><div class="sc-label">ENCARGADOS</div><div class="sc-val">${cnt('Encargado')}</div></div>
     <div class="sc sc-green"><div class="sc-label">LLEGARON</div><div class="sc-val">${cnt('Llegó')}</div></div>
-    <div class="sc"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
+    <div class="sc sc-purple"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
   tb.innerHTML=data.length===0
     ?'<tr><td colspan="13" class="empty-state">Sin encargos</td></tr>'
     :data.map(e=>{
@@ -958,7 +978,7 @@ function renderEncargos(){
       const canje=e.canje
         ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
         :`<span class="enc-sub">${e.notas?esc(e.notas):'No'}</span>`;
-      return`<tr>
+      return`<tr class="enc-row-${Math.max(0,ENC_ESTADOS.indexOf(e.estado))}">
         <td title="${esc(e.modelo)}"><strong>${esc(e.modelo)}</strong></td>
         <td title="${esc(e.color)}">${esc(e.color)}</td>
         <td>${fmtUSD(e.precio)}</td>
