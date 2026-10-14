@@ -706,7 +706,7 @@ function renderToolbar(){
   const ce=canEdit();
   // Equipos: todos los roles pueden agregar
   document.getElementById('toolbar-eq').innerHTML=
-    `<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button> <button onclick="abrirCarrito()" style="padding:7px 13px;background:#E3F0FF;color:#0058B0;border:1px solid #90CAF9;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🛒 Carrito <span id='carrito-count-eq' style='background:#0071E3;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;'>0</span></button>`;
+    `<button class="btn-add" onclick="openModal('eq-edit',null)">+ Agregar equipo</button> <button onclick="openModal('eq-lista',null)" style="padding:7px 13px;background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;">📲 Enviar lista por WhatsApp</button> <button onclick="abrirCarrito()" style="padding:7px 13px;background:#E3F0FF;color:#0058B0;border:1px solid #90CAF9;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;">🛒 Carrito <span id='carrito-count-eq' style='background:#0071E3;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;'>0</span></button>`;
   // Accesorios: solo admin y gerente pueden agregar
   const cats=`<select id="f-cat" onchange="renderAc()"><option value="">Todas las categorías</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>`;
   document.getElementById('toolbar-ac').innerHTML=ce
@@ -998,6 +998,68 @@ function renderEncargos(){
   renderAIng(); renderPedidoBtn();
 }
 function encPendIngreso(){return encargos.filter(e=>e.canje&&!e.ingresado);}
+// ===================== LISTA DE EQUIPOS PARA WHATSAPP =====================
+const EQ_COLORES=[
+  {id:'',emoji:'📱',label:'Sin definir'},
+  {id:'negro',emoji:'⚫️',label:'Negro / Black / Midnight / Space'},
+  {id:'blanco',emoji:'⚪️',label:'Blanco / Silver / Starlight / Natural'},
+  {id:'azul',emoji:'🔵',label:'Azul / Celeste / Blue / Teal'},
+  {id:'rojo',emoji:'🔴',label:'Rojo / Red'},
+  {id:'verde',emoji:'🟢',label:'Verde / Green'},
+  {id:'naranja',emoji:'🟠',label:'Naranja / Orange / Desert'},
+  {id:'amarillo',emoji:'🟡',label:'Dorado / Amarillo / Gold'},
+  {id:'violeta',emoji:'🟣',label:'Violeta / Lila / Purple'},
+  {id:'rosa',emoji:'🌸',label:'Rosa / Pink'},
+  {id:'marron',emoji:'🟤',label:'Marrón / Bronce'},
+];
+const EQ_COLOR_WORDS=[['negro','negro|black|midnight|space|graphite|grafito'],['blanco','blanco|white|silver|plata|starlight|natural'],['azul','azul|blue|celeste|sierra|pacific|teal|ultramarine|glaciar|glacier|mist'],['rojo','rojo|red'],['verde','verde|green|alpine'],['naranja','naranja|orange|desert'],['amarillo','gold|dorado|amarillo|yellow'],['violeta','violeta|purple|lila|lavender|deep purple'],['rosa','rosa|pink'],['marron','bronce|marron|marrón|brown']];
+function eqColor(e){ if(e.color!=null&&e.color!=='') return e.color; const t=String(e.modelo||'').toLowerCase(); for(const [id,re] of EQ_COLOR_WORDS){ if(new RegExp('\\b('+re+')\\b').test(t)) return id; } return ''; }
+function eqBC(e){ return e.bc!=null?!!e.bc:/\(\s*b\s*\/?\s*c\s*\)|\bbc\b|cambio de bat|bat(er[ií]a)? cambiada/i.test(String(e.modelo||'')); }
+function eqOculto(e){ return e.ocultoLista!=null?!!e.ocultoLista:/señad|senad|reservad/i.test(String(e.modelo||'')); }
+function eqModeloLista(e){
+  const raw=String(e.modelo||'').trim();
+  const m=raw.match(/\b(iphone|ipad|airpods|apple watch|watch|macbook)\b\s*(\d{1,2}|se|air|mini|pro)?(\s*(pro\s*max|pro|plus|max|mini|air|e))?/i);
+  if(!m) return raw.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
+  let base=m[0].replace(/\s+/g,' ').trim();
+  base=base.replace(/^iphone/i,'iPhone').replace(/^ipad/i,'iPad').replace(/\bpro max\b/i,'pro Max').replace(/\bpro\b/i,'pro').replace(/\bplus\b/i,'plus');
+  if(/^ipad/i.test(base)){ const rest=raw.slice(m.index+m[0].length).replace(/\(.*?\)/g,'').trim(); if(/^\d|gen/i.test(rest)) base+=' '+rest.split(/\s+/).slice(0,2).join(' '); }
+  return base;
+}
+function eqOrdenLista(e){
+  const t=eqModeloLista(e).toLowerCase(); const n=parseInt((t.match(/\d+/)||[0])[0])||0;
+  const v=/pro max/.test(t)?4:/pro/.test(t)?3:/plus|max/.test(t)?2:/mini|e$/.test(t)?0:1;
+  const tipo=/iphone/.test(t)?0:1;
+  return [tipo,n,v,parseInt(String(e.memoria||'0'))||0,Number(e.precio)||0];
+}
+const LISTA_HEADER='ILUSTRE PHONE 📲';
+const LISTA_FOOTER='📲 SOLICITAR EQUIPO EN LA SUCURSAL QUE VAYAS A ASISTIR ‼️\n-La consulta: 2622-225153\n-Tunuyán: 2622-271093\n\n   Los precios no incluyen IVA ❗️\n\n      ENTREGA INMEDIATA 🎁';
+function armarListaWA(){
+  const suc=document.getElementById('lw-suc')?.value||'';
+  const incOcultos=document.getElementById('lw-ocultos')?.checked;
+  const soloIphone=document.getElementById('lw-iphone')?.checked;
+  const items=[];
+  equipos.filter(e=>(e.stock||0)>0&&(!suc||e.sucursal===suc)&&(incOcultos||!eqOculto(e))&&(!soloIphone||/iphone/i.test(e.modelo||''))).forEach(e=>{for(let k=0;k<(e.stock||0);k++) items.push(e);});
+  items.sort((a,b)=>{const x=eqOrdenLista(a),y=eqOrdenLista(b);for(let i=0;i<x.length;i++){if(x[i]!==y[i])return x[i]-y[i];}return 0;});
+  const lineas=items.map(e=>{
+    const col=EQ_COLORES.find(c=>c.id===eqColor(e))||EQ_COLORES[0];
+    const mem=String(e.memoria||'').toLowerCase();
+    return `${col.emoji}${eqModeloLista(e)}${mem?' '+mem:''}${e.bateria?' '+e.bateria+'%':''}${eqBC(e)?' (bc)':''} ${Number(e.precio)||0}usd`;
+  });
+  const sinColor=items.filter(e=>!eqColor(e)).length;
+  const info=document.getElementById('lw-info');
+  if(info) info.innerHTML=`<strong>${items.length}</strong> equipo${items.length!==1?'s':''} en la lista${sinColor?` · <span style="color:#C62828">${sinColor} sin color (salen con 📱 — cargalo en Editar)</span>`:''}`;
+  const ta=document.getElementById('lw-texto'); if(ta) ta.value=`${LISTA_HEADER}\n\n${lineas.join('\n')}\n\n${LISTA_FOOTER}`;
+}
+function copiarListaWA(){
+  const t=document.getElementById('lw-texto'); if(!t) return;
+  const ok=()=>showSyncBar('✓ Lista copiada — pegala en WhatsApp','ok');
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t.value).then(ok,()=>{t.select();document.execCommand('copy');ok();});}
+  else{t.select();document.execCommand('copy');ok();}
+}
+function enviarListaWA(){
+  const t=document.getElementById('lw-texto'); if(!t) return;
+  window.open('https://wa.me/?text='+encodeURIComponent(t.value),'_blank');
+}
 // ===================== PEDIDO AL PROVEEDOR (solo admin) =====================
 // El número del proveedor NO se guarda en el sistema: el mensaje se abre en el WhatsApp del admin y él elige el chat.
 let pedidoGrupos=[];
@@ -1210,7 +1272,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1218,6 +1280,7 @@ function openModal(type,idx){
   else{mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;}
   if(type==='venta')setTimeout(updateVentaGeneral,50);
   if(type==='enc-edit')setTimeout(updateEncSaldo,0);
+  if(type==='eq-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='enc-ingreso'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Entregar e ingresar al stock</button>`;setTimeout(()=>document.getElementById('ing-imei')?.focus(),50);}
   document.getElementById('modal').style.display='flex';
@@ -1231,7 +1294,11 @@ function buildForm(type,idx){
       <div class="mgrid"><div class="mfl"><label>MEMORIA</label><select id="mf-mem">${MEMS.map(m=>opt(m,it?it.memoria:'')).join('')}</select></div><div class="mfl"><label>BATERÍA (%)</label><input id="mf-bat" type="number" min="1" max="100" placeholder="92" value="${it?it.bateria:''}"/></div></div>
       <div class="mfl"><label>IMEI</label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
       <div class="mgrid"><div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>SUCURSAL</label><select id="mf-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
-      ${cf}<div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>`;
+      ${cf}<div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>
+      <div class="section-label">PARA LA LISTA DE WHATSAPP</div>
+      <div class="mfl"><label>COLOR</label><select id="mf-color">${EQ_COLORES.map(c=>`<option value="${c.id}" ${(it?eqColor(it):'')===c.id?'selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0 8px;cursor:pointer"><input type="checkbox" id="mf-bc" ${it&&eqBC(it)?'checked':''} style="width:15px;height:15px"/> Batería cambiada <span class="enc-sub">(sale como "(bc)")</span></label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:0 0 4px;cursor:pointer"><input type="checkbox" id="mf-oculto" ${it&&eqOculto(it)?'checked':''} style="width:15px;height:15px"/> No mostrar en la lista <span class="enc-sub">(señado / reservado)</span></label>`;
   }
   if(type==='ac-edit'){
     const it=idx!==null?accesorios[idx]:null;
@@ -1313,6 +1380,16 @@ function buildForm(type,idx){
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  if(type==='eq-lista'){
+    setTimeout(armarListaWA,0);
+    return`<div class="mgrid"><div class="mfl"><label>SUCURSAL</label><select id="lw-suc" onchange="armarListaWA()"><option value="">Ambas sucursales</option>${SUCS.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="mfl" style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding-bottom:4px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="lw-iphone" checked onchange="armarListaWA()"/> Solo iPhone</label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="lw-ocultos" onchange="armarListaWA()"/> Incluir señados / ocultos</label>
+      </div></div>
+      <div id="lw-info" style="font-size:12px;color:#6E6E73;margin-bottom:8px"></div>
+      <div class="mfl"><label>MENSAJE (lo podés editar antes de enviar)</label><textarea id="lw-texto" style="min-height:300px;font-size:13px;line-height:1.45"></textarea></div>`;
   }
   if(type==='enc-pedido'){
     if(!isAdmin()) return '<div class="sell-info">Solo el administrador puede hacer pedidos.</div>';
@@ -1441,7 +1518,8 @@ async function saveModal(){
     const imei=document.getElementById('mf-imei').value.trim();
     if(!imei){alert('Ingresá el IMEI');return;}
     const costEl=document.getElementById('mf-costo');
-    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0};
+    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
+      color:document.getElementById('mf-color').value,bc:document.getElementById('mf-bc').checked,ocultoLista:document.getElementById('mf-oculto').checked};
     if(editIdx!==null){obj._id=equipos[editIdx]._id;equipos[editIdx]=obj;}else{equipos.push(obj);}
     closeModal();renderEq();
     await saveItem('equipos', obj);
