@@ -1061,9 +1061,19 @@ function copiarListaWA(){
   if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t.value).then(ok,()=>{t.select();document.execCommand('copy');ok();});}
   else{t.select();document.execCommand('copy');ok();}
 }
+function esCelular(){return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent||'');}
 function enviarListaWA(){
   const t=document.getElementById('lw-texto'); if(!t) return;
-  window.open('https://wa.me/?text='+encodeURIComponent(t.value),'_blank');
+  if(esCelular()){
+    // En el celular el link de WhatsApp respeta los emojis
+    window.open('https://wa.me/?text='+encodeURIComponent(t.value),'_blank');
+    return;
+  }
+  // En la computadora WhatsApp pierde los emojis si se le pasa el texto por link: se copia y se pega
+  copiarListaWA();
+  const box=document.getElementById('lw-aviso');
+  if(box){box.style.display='block';}
+  window.open('https://web.whatsapp.com/','_blank');
 }
 // ===================== PEDIDO AL PROVEEDOR (solo admin) =====================
 // El número del proveedor NO se guarda en el sistema: el mensaje se abre en el WhatsApp del admin y él elige el chat.
@@ -1394,6 +1404,7 @@ function buildForm(type,idx){
         <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="lw-ocultos" onchange="armarListaWA()"/> Incluir señados / ocultos</label>
       </div></div>
       <div id="lw-info" style="font-size:12px;color:#6E6E73;margin-bottom:8px"></div>
+      <div id="lw-aviso" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;color:#1B5E20;border-radius:10px;padding:9px 12px;font-size:12.5px;margin-bottom:10px">✅ <strong>Lista copiada.</strong> En WhatsApp abrí el chat (o tu estado) y pegá con <strong>Ctrl+V</strong>: así salen todos los colores.</div>
       <div class="mfl"><label>MENSAJE (lo podés editar antes de enviar)</label><textarea id="lw-texto" style="min-height:300px;font-size:13px;line-height:1.45"></textarea></div>`;
   }
   if(type==='enc-pedido'){
