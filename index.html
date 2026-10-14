@@ -502,8 +502,13 @@ tr:hover td{background:#FAFAFA;}
       </div>
     </div>
     <div class="stats-row" id="stats-ingresos"></div>
-    <div class="search-wrap"><span class="search-icon">🔍</span>
-      <input type="text" id="search-ing" placeholder="Buscar por cliente, modelo, IMEI, teléfono, vendedor…" oninput="ingLimite=100;renderIngresos()"/>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="search-wrap" style="flex:0 1 330px;min-width:240px;border:2px solid #0071E3;"><span class="search-icon">#️⃣</span>
+        <input type="text" id="search-ing-imei" inputmode="numeric" placeholder="Buscar por IMEI (completo o últimos dígitos)" oninput="ingLimite=100;renderIngresos()"/>
+      </div>
+      <div class="search-wrap" style="flex:1 1 300px;"><span class="search-icon">🔍</span>
+        <input type="text" id="search-ing" placeholder="Buscar por cliente, modelo, teléfono, vendedor…" oninput="ingLimite=100;renderIngresos()"/>
+      </div>
     </div>
     <div id="pend-ingresos"></div>
     <div id="lista-ingresos"></div>
@@ -1907,10 +1912,12 @@ function renderIngresos(){
   const fSuc=document.getElementById('f-ing-suc')?.value||'';
   const fEst=document.getElementById('f-ing-estado')?.value||'';
   const qI=(document.getElementById('search-ing')?.value||'').trim().toLowerCase();
+  const qImei=(document.getElementById('search-ing-imei')?.value||'').replace(/\D/g,'');
   const all=[...ingresos].sort((a,b)=>(b.ts||0)-(a.ts||0)).filter(i=>
     (!fSuc||i.sucursal===fSuc)&&
     (!fEst||i.estado===fEst)&&
-    (!qI||[i.cliente,i.modelo,i.imei,i.telefono,i.por,i.notas,i.sucursal].some(v=>v&&String(v).toLowerCase().includes(qI)))
+    (!qI||[i.cliente,i.modelo,i.imei,i.telefono,i.por,i.notas,i.sucursal].some(v=>v&&String(v).toLowerCase().includes(qI)))&&
+    (!qImei||String(i.imei||'').replace(/\D/g,'').includes(qImei))
   );
   const data=all.slice(0,ingLimite);
   const total=ingresos.length;
@@ -1929,7 +1936,7 @@ function renderIngresos(){
   const pend=encPendIngreso().filter(e=>!fSuc||e.sucursal===fSuc).sort((a,b)=>(b.orden??1e12)-(a.orden??1e12));
   const pendEl=document.getElementById('pend-ingresos');
   if(pendEl){
-    pendEl.innerHTML=(pend.length&&!fEst)?`<div style="font-size:12px;font-weight:600;color:#8A4D00;margin:4px 0 8px">⏳ Por ingresar — sellados con plan canje (${pend.length})</div>`+pend.map(e=>{
+    pendEl.innerHTML=(pend.length&&!fEst&&!qI&&!qImei)?`<div style="font-size:12px;font-weight:600;color:#8A4D00;margin:4px 0 8px">⏳ Por ingresar — sellados con plan canje (${pend.length})</div>`+pend.map(e=>{
       const ri=encargos.indexOf(e); const b=Number(e.canjeBateria)||0; const bc=batColor(b);
       return`<div style="background:#FFFBF5;border:1px dashed #FFCC80;border-radius:14px;padding:0.85rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⏳</div>
@@ -1950,7 +1957,7 @@ function renderIngresos(){
   if(data.length===0){
     el.innerHTML=`<div class="empty-state" style="background:#fff;border:1px solid #E8E8ED;border-radius:14px;padding:3rem">
       <div style="font-size:32px;margin-bottom:0.75rem">📋</div>
-      <div>Todavía no hay ingresos registrados</div>
+      <div>${(qI||qImei)?'No se encontró ningún ingreso'+(qImei?' con ese IMEI':''):'Todavía no hay ingresos registrados'}</div>
     </div>`;
     return;
   }
@@ -1986,9 +1993,9 @@ function renderIngresos(){
         </div>
       </div>
       <!-- IMEI -->
-      <div style="text-align:center;min-width:80px;">
+      <div style="text-align:center;min-width:150px;">
         <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">IMEI</div>
-        <span style="font-size:11px;font-family:monospace;background:#F5F5F7;padding:3px 8px;border-radius:6px;color:#6E6E73;">${i.imei?'···'+i.imei.slice(-4):'—'}</span>
+        <span style="font-size:12px;font-family:monospace;background:#F5F5F7;padding:3px 8px;border-radius:6px;color:#1D1D1F;user-select:all" title="Tocá para seleccionar">${i.imei?hl(esc(i.imei),qImei):'—'}</span>
       </div>
       <!-- Condición -->
       <div style="text-align:center;min-width:75px;">
