@@ -165,7 +165,7 @@ tr:hover td{background:#FAFAFA;}
 .sell-info{background:#F5F5F7;border-radius:10px;padding:11px 13px;font-size:12px;color:#6E6E73;margin-bottom:11px;line-height:1.75;}
 .sell-info strong{color:#1D1D1F;font-weight:500;}
 .divider{border:none;border-top:1px solid #E8E8ED;margin:11px 0;}
-.enc-bar{display:flex;gap:3px;min-width:150px;}
+.enc-bar{display:flex;gap:3px;min-width:0;width:100%;}
 .enc-step{flex:1;border:none;cursor:pointer;padding:0;background:none;text-align:center;}
 .enc-step .seg{height:6px;border-radius:3px;background:#E8E8ED;margin-bottom:3px;}
 .enc-step .lbl{font-size:9px;color:#AEAEB2;white-space:nowrap;}
@@ -351,11 +351,11 @@ tr:hover td{background:#FAFAFA;}
     </div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:15%">Equipo</th><th style="width:7%">Precio</th>
-        <th style="width:7%">Seña</th><th style="width:15%">Cliente</th>
+        <th style="width:7%">Fecha</th><th style="width:12%">Equipo</th><th style="width:7%">Precio</th>
+        <th style="width:7%">Seña</th><th style="width:13%">Cliente</th>
         <th style="width:7%">Vendedor</th><th style="width:9%">Sucursal</th>
-        <th style="width:13%">Plan canje</th><th style="width:7%">Saldo</th>
-        <th style="width:12%">Estado</th><th style="width:8%">Acciones</th>
+        <th style="width:12%">Plan canje</th><th style="width:7%">Saldo</th>
+        <th style="width:13%">Estado</th><th style="width:8%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-enc"></tbody>
     </table></div>
@@ -917,7 +917,7 @@ function renderEncargos(){
   const vends=[...new Set(encargos.map(e=>(e.vendedor||'').trim()).filter(Boolean))].sort();
   const selV=document.getElementById('f-enc-vend');
   selV.innerHTML='<option value="">Todos los vendedores</option>'+vends.map(v=>`<option ${v===fV?'selected':''}>${esc(v)}</option>`).join('');
-  const data=[...encargos].reverse().filter(e=>{
+  const data=[...encargos].reverse().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).filter(e=>{
     if(fE==='activos'&&e.estado==='Entregado') return false;
     if(fE&&fE!=='activos'&&e.estado!==fE) return false;
     if(fV&&(e.vendedor||'').trim()!==fV) return false;
@@ -933,13 +933,14 @@ function renderEncargos(){
     <div class="sc sc-green"><div class="sc-label">LLEGARON</div><div class="sc-val">${cnt('Llegó')}</div></div>
     <div class="sc"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
   tb.innerHTML=data.length===0
-    ?'<tr><td colspan="10" class="empty-state">Sin encargos</td></tr>'
+    ?'<tr><td colspan="11" class="empty-state">Sin encargos</td></tr>'
     :data.map(e=>{
       const ri=encargos.indexOf(e);
       const canje=e.canje
         ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
         :'<span class="enc-sub">No</span>';
       return`<tr>
+        <td style="font-size:11px">${e.fecha?fmtDate(e.fecha):'<span class="enc-sub">—</span>'}</td>
         <td title="${esc(e.modelo)} ${esc(e.color)}"><strong>${esc(e.modelo)}</strong><div class="enc-sub">${esc(e.color)}</div></td>
         <td>${fmtUSD(e.precio)}</td>
         <td>${encSenaTxt(e)}</td>
