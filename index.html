@@ -1907,7 +1907,7 @@ function imprimirCaja(){
   win.document.close();
 }
 // ===================== REGISTRO DE INGRESOS =====================
-let ingLimite=100;
+let ingLimite=100, pendIngAbierto=false;
 function renderIngresos(){
   const fSuc=document.getElementById('f-ing-suc')?.value||'';
   const fEst=document.getElementById('f-ing-estado')?.value||'';
@@ -1936,7 +1936,13 @@ function renderIngresos(){
   const pend=encPendIngreso().filter(e=>!fSuc||e.sucursal===fSuc).sort((a,b)=>(b.orden??1e12)-(a.orden??1e12));
   const pendEl=document.getElementById('pend-ingresos');
   if(pendEl){
-    pendEl.innerHTML=(pend.length&&!fEst&&!qI&&!qImei)?`<div style="font-size:12px;font-weight:600;color:#8A4D00;margin:4px 0 8px">⏳ Por ingresar — sellados con plan canje (${pend.length})</div>`+pend.map(e=>{
+    const totCotP=pend.reduce((t,e)=>t+(Number(e.canjeCotiz)||0),0);
+    const cab=`<div onclick="pendIngAbierto=!pendIngAbierto;renderIngresos()" style="background:#FFF3E0;border:1px solid #FFCC80;border-radius:14px;padding:0.9rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⏳</div>
+        <div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:700;color:#8A4D00;">Equipos por ingresar · ${pend.length}</div><div style="font-size:12px;color:#8A4D00;opacity:.8">Sellados con plan canje · ${fmtUSD(totCotP)} cotizado · tocá para ${pendIngAbierto?'ocultar':'ver la lista'}</div></div>
+        <div style="font-size:18px;color:#8A4D00;transition:transform .2s;transform:rotate(${pendIngAbierto?180:0}deg)">▾</div>
+      </div>`;
+    pendEl.innerHTML=(pend.length&&!fEst&&!qI&&!qImei)?cab+(pendIngAbierto?`<div style="margin:-2px 0 6px 14px;padding-left:12px;border-left:3px solid #FFCC80">`+pend.map(e=>{
       const ri=encargos.indexOf(e); const b=Number(e.canjeBateria)||0; const bc=batColor(b);
       return`<div style="background:#FFFBF5;border:1px dashed #FFCC80;border-radius:14px;padding:0.85rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⏳</div>
@@ -1948,7 +1954,7 @@ function renderIngresos(){
         <div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">IMEI</div><span style="font-size:11px;color:#8A4D00;">pendiente</span></div>
         <div style="text-align:right;min-width:90px;"><div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">COTIZACIÓN</div><div style="font-size:15px;font-weight:700;color:#1D1D1F;">${fmtUSD(e.canjeCotiz)}</div><div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${esc(e.sucursal)}</div></div>
         <button class="btn-e" style="background:#E3F0FF;color:#0058B0;border-color:#90CAF9" onclick="openModal('enc-ingreso',${ri})">Ingresar</button>
-      </div>`;}).join('')+`<div style="font-size:12px;font-weight:600;color:#6E6E73;margin:14px 0 8px">✓ Ingresados</div>`:'';
+      </div>`;}).join('')+`</div>`:'')+`<div style="font-size:12px;font-weight:600;color:#6E6E73;margin:14px 0 8px">✓ Ingresados</div>`:'';
   }
   const condColor={'Bueno':'#E8F5E9','Regular':'#FFF3E0','Malo':'#FFEBEE'};
   const condText={'Bueno':'#1B5E20','Regular':'#8A4D00','Malo':'#C62828'};
