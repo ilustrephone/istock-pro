@@ -949,7 +949,7 @@ function renderEncargos(){
   const vends=[...new Set(encargos.map(e=>(e.vendedor||'').trim()).filter(Boolean))].sort();
   const selV=document.getElementById('f-enc-vend');
   selV.innerHTML='<option value="">Todos los vendedores</option>'+vends.map(v=>`<option ${v===fV?'selected':''}>${esc(v)}</option>`).join('');
-  const data=[...encargos].sort((a,b)=>(a.orden??1e12)-(b.orden??1e12)).filter(e=>{
+  const data=[...encargos].sort((a,b)=>(b.orden??1e12)-(a.orden??1e12)).filter(e=>{
     if(fE==='activos'&&e.estado==='Entregado') return false;
     if(fE&&fE!=='activos'&&e.estado!==fE) return false;
     if(fV&&(e.vendedor||'').trim()!==fV) return false;
@@ -1044,7 +1044,7 @@ function renderAIng(){
   const ver=document.getElementById('f-aing-ver').value;
   const fS=document.getElementById('f-aing-suc').value;
   const base=ver==='ok'?encargos.filter(e=>e.canje&&e.ingresado):pend;
-  const data=[...base].sort((a,b)=>(a.orden??1e12)-(b.orden??1e12)).filter(e=>!fS||e.sucursal===fS);
+  const data=[...base].sort((a,b)=>(b.orden??1e12)-(a.orden??1e12)).filter(e=>!fS||e.sucursal===fS);
   const totCot=pend.reduce((t,e)=>t+(Number(e.canjeCotiz)||0),0);
   document.getElementById('stats-aing').innerHTML=`
     <div class="sc sc-blue"><div class="sc-label">POR INGRESAR</div><div class="sc-val">${pend.length}</div></div>
@@ -1917,7 +1917,7 @@ function renderIngresos(){
     <div class="sc" style="background:#FFF3E0"><div class="sc-label">POR INGRESAR</div><div class="sc-val" style="color:#8A4D00">${encPendIngreso().length}</div></div>
     <div class="sc"><div class="sc-label">VALOR TOTAL</div><div class="sc-val" style="font-size:13px;padding-top:3px">USD ${valTotal.toLocaleString('es-AR')}</div></div>`;
   // Pendientes que vienen de sellados con plan canje
-  const pend=encPendIngreso().filter(e=>!fSuc||e.sucursal===fSuc).sort((a,b)=>(a.orden??1e12)-(b.orden??1e12));
+  const pend=encPendIngreso().filter(e=>!fSuc||e.sucursal===fSuc).sort((a,b)=>(b.orden??1e12)-(a.orden??1e12));
   const pendEl=document.getElementById('pend-ingresos');
   if(pendEl){
     pendEl.innerHTML=(pend.length&&!fEst)?`<div style="font-size:12px;font-weight:600;color:#8A4D00;margin:4px 0 8px">⏳ Por ingresar — sellados con plan canje (${pend.length})</div>`+pend.map(e=>{
