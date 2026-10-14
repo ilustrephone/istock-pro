@@ -360,7 +360,7 @@ tr:hover td{background:#FAFAFA;}
       <select id="f-enc-estado" onchange="renderEncargos()"><option value="">Todos los estados</option><option value="activos">Sin entregar</option><option>Sin encargar</option><option>Encargado</option><option>Llegó</option><option>Entregado</option></select>
       <select id="f-enc-vend" onchange="renderEncargos()"><option value="">Todos los vendedores</option></select>
       <select id="f-enc-suc" onchange="renderEncargos()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
-      <button class="btn-add" onclick="openModal('enc-edit',null)">+ Nuevo encargo</button>
+      <button class="btn-add" onclick="openModal('enc-edit',null)">+ Nuevo sellado</button>
     </div>
     <div class="twrap" style="overflow-x:auto"><table style="min-width:1400px">
       <thead><tr>
@@ -964,7 +964,7 @@ function renderEncargos(){
     <div class="sc sc-green"><div class="sc-label">LLEGARON</div><div class="sc-val">${cnt('Llegó')}</div></div>
     <div class="sc sc-purple"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
   tb.innerHTML=data.length===0
-    ?'<tr><td colspan="13" class="empty-state">Sin encargos</td></tr>'
+    ?'<tr><td colspan="13" class="empty-state">Sin sellados</td></tr>'
     :data.map(e=>{
       const ri=encargos.indexOf(e);
       const canje=e.canje
@@ -1163,7 +1163,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo encargo':'Editar encargo','enc-ingreso':'📥 Ingresar equipo de plan canje'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1527,7 +1527,7 @@ async function saveModal(){
     if(obj.estado==='Entregado'&&obj.canje&&!obj.ingresado){obj.estado=prev.estado&&prev.estado!=='Entregado'?prev.estado:'Llegó';obj.fechaEntregado=prev.fechaEntregado;pedirIng=true;}
     if(editIdx!==null){encargos[editIdx]=obj;}else{encargos.push(obj);}
     closeModal();renderEncargos();
-    if(await saveItem('encargos',obj)) showSyncBar('✓ Encargo guardado en la nube','ok');
+    if(await saveItem('encargos',obj)) showSyncBar('✓ Sellado guardado en la nube','ok');
     if(pedirIng) openModal('enc-ingreso',encargos.indexOf(obj));
     return;
   }
