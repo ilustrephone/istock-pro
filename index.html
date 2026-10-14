@@ -165,6 +165,15 @@ tr:hover td{background:#FAFAFA;}
 .sell-info{background:#F5F5F7;border-radius:10px;padding:11px 13px;font-size:12px;color:#6E6E73;margin-bottom:11px;line-height:1.75;}
 .sell-info strong{color:#1D1D1F;font-weight:500;}
 .divider{border:none;border-top:1px solid #E8E8ED;margin:11px 0;}
+.enc-bar{display:flex;gap:3px;min-width:150px;}
+.enc-step{flex:1;border:none;cursor:pointer;padding:0;background:none;text-align:center;}
+.enc-step .seg{height:6px;border-radius:3px;background:#E8E8ED;margin-bottom:3px;}
+.enc-step .lbl{font-size:9px;color:#AEAEB2;white-space:nowrap;}
+.enc-step.on .lbl{color:#1D1D1F;font-weight:600;}
+.enc-s0 .seg{background:#FF9500;}.enc-s1 .seg{background:#0071E3;}.enc-s2 .seg{background:#34C759;}.enc-s3 .seg{background:#AF52DE;}
+.enc-step:disabled{cursor:default;}
+.canje-tag{display:inline-block;background:#FFF3E0;color:#8A4D00;border-radius:8px;padding:1px 7px;font-size:10px;font-weight:600;}
+.enc-sub{font-size:10px;color:#6E6E73;}
 .section-label{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:8px;margin-top:2px;}
 .empty-state{text-align:center;padding:2rem;color:#6E6E73;font-size:13px;}
 .anulada-row td{opacity:0.4;}
@@ -251,6 +260,7 @@ tr:hover td{background:#FAFAFA;}
     <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
     <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
     <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
+    <button class="tab" onclick="switchTab('enc',this)">📦 Encargos</button>
   </div>
   <div class="content" id="tab-eq">
     <div class="stats-row" id="stats-eq"></div>
@@ -326,6 +336,28 @@ tr:hover td{background:#FAFAFA;}
         <th style="width:12%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-st"></tbody>
+    </table></div>
+  </div>
+  <div class="content" id="tab-enc" style="display:none">
+    <div class="stats-row" id="stats-enc"></div>
+    <div class="search-wrap"><span class="search-icon">🔍</span>
+      <input type="text" id="search-enc" placeholder="Buscar por cliente, modelo, teléfono…" oninput="renderEncargos()"/>
+    </div>
+    <div class="toolbar">
+      <select id="f-enc-estado" onchange="renderEncargos()"><option value="">Todos los estados</option><option value="activos">Sin entregar</option><option>Sin encargar</option><option>Encargado</option><option>Llegó</option><option>Entregado</option></select>
+      <select id="f-enc-vend" onchange="renderEncargos()"><option value="">Todos los vendedores</option></select>
+      <select id="f-enc-suc" onchange="renderEncargos()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
+      <button class="btn-add" onclick="openModal('enc-edit',null)">+ Nuevo encargo</button>
+    </div>
+    <div class="twrap"><table>
+      <thead><tr>
+        <th style="width:15%">Equipo</th><th style="width:7%">Precio</th>
+        <th style="width:7%">Seña</th><th style="width:15%">Cliente</th>
+        <th style="width:7%">Vendedor</th><th style="width:9%">Sucursal</th>
+        <th style="width:13%">Plan canje</th><th style="width:7%">Saldo</th>
+        <th style="width:12%">Estado</th><th style="width:8%">Acciones</th>
+      </tr></thead>
+      <tbody id="tbody-enc"></tbody>
     </table></div>
   </div>
   <div class="content" id="tab-rep" style="display:none">
@@ -535,7 +567,8 @@ async function sbDelete(tabla, id){
 // ===================== ESTADO LOCAL =====================
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
-let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[];
+let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[];
+const ENC_ESTADOS=['Sin encargar','Encargado','Llegó','Entregado'];
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
 const MEMS=['64GB','128GB','256GB','512GB','1TB'];
@@ -570,6 +603,7 @@ async function loadAll(){
     await loadCierres();
     // Cargar ingresos (canjes)
     try{ ingresos=await sbGetAll('ingresos'); }catch(e){ ingresos=[]; }
+    try{ encargos=await sbGetAll('encargos'); }catch(e){ console.warn('Tabla encargos no disponible',e.message); }
     setSyncDot('ok');
   } catch(e) {
     setSyncDot('error');
@@ -689,17 +723,17 @@ function logout(){
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  ['eq','ac','ventas','st','rep','caja','ingresos','enc'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
   if(tab==='rep') renderReporte();
   if(tab==='caja') renderCaja();
   if(tab==='ingresos') renderIngresos();
   try{sessionStorage.setItem('istock_tab',tab);}catch(e){}
 }
 function switchTabByName(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos'][i]===tab));
-  ['eq','ac','ventas','st','rep','caja','ingresos'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos','enc'][i]===tab));
+  ['eq','ac','ventas','st','rep','caja','ingresos','enc'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
-function renderAll(){renderEq();renderAc();renderVentas();renderST();}
+function renderAll(){renderEq();renderAc();renderVentas();renderST();renderEncargos();}
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
   if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
@@ -847,6 +881,90 @@ function renderST(){
       </tr>`;
     }).join('');
 }
+// ===================== ENCARGOS (equipos sellados) =====================
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function encSaldo(e){
+  let s=Number(e.precio)||0;
+  if(e.senaMoneda==='USD') s-=Number(e.sena)||0;
+  if(e.canje) s-=Number(e.canjeCotiz)||0;
+  return s;
+}
+function encSenaTxt(e){
+  if(!e.sena) return '<span class="enc-sub">—</span>';
+  return e.senaMoneda==='USD'?fmtUSD(e.sena):fmtARS(e.sena);
+}
+function encBar(e,ri){
+  const cur=Math.max(0,ENC_ESTADOS.indexOf(e.estado));
+  return `<div class="enc-bar">${ENC_ESTADOS.map((st,i)=>`<button class="enc-step ${i<=cur?'enc-s'+cur:''} ${i===cur?'on':''}" title="Marcar como ${st}" onclick="setEncEstado(${ri},${i})"><div class="seg"></div><div class="lbl">${i===cur?st:'&nbsp;'}</div></button>`).join('')}</div>`;
+}
+async function setEncEstado(ri,i){
+  const e=encargos[ri]; if(!e) return;
+  const nuevo=ENC_ESTADOS[i];
+  if(e.estado===nuevo) return;
+  e.estado=nuevo;
+  if(nuevo==='Encargado'&&!e.fechaEncargado) e.fechaEncargado=Date.now();
+  if(nuevo==='Entregado'&&!e.fechaEntregado) e.fechaEntregado=Date.now();
+  renderEncargos();
+  if(await saveItem('encargos',e)) showSyncBar('✓ Estado: '+nuevo,'ok');
+}
+function renderEncargos(){
+  const tb=document.getElementById('tbody-enc'); if(!tb) return;
+  const q=(document.getElementById('search-enc').value||'').trim().toLowerCase();
+  const fE=document.getElementById('f-enc-estado').value;
+  const fV=document.getElementById('f-enc-vend').value;
+  const fS=document.getElementById('f-enc-suc').value;
+  // vendedores para el filtro
+  const vends=[...new Set(encargos.map(e=>(e.vendedor||'').trim()).filter(Boolean))].sort();
+  const selV=document.getElementById('f-enc-vend');
+  selV.innerHTML='<option value="">Todos los vendedores</option>'+vends.map(v=>`<option ${v===fV?'selected':''}>${esc(v)}</option>`).join('');
+  const data=[...encargos].reverse().filter(e=>{
+    if(fE==='activos'&&e.estado==='Entregado') return false;
+    if(fE&&fE!=='activos'&&e.estado!==fE) return false;
+    if(fV&&(e.vendedor||'').trim()!==fV) return false;
+    if(fS&&e.sucursal!==fS) return false;
+    if(q&&![e.modelo,e.color,e.cliente,e.telefono,e.vendedor,e.canjeModelo].some(v=>v&&String(v).toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const cnt=st=>encargos.filter(e=>e.estado===st).length;
+  document.getElementById('stats-enc').innerHTML=`
+    <div class="sc"><div class="sc-label">TOTAL</div><div class="sc-val">${encargos.length}</div></div>
+    <div class="sc sc-red"><div class="sc-label">SIN ENCARGAR</div><div class="sc-val">${cnt('Sin encargar')}</div></div>
+    <div class="sc sc-blue"><div class="sc-label">ENCARGADOS</div><div class="sc-val">${cnt('Encargado')}</div></div>
+    <div class="sc sc-green"><div class="sc-label">LLEGARON</div><div class="sc-val">${cnt('Llegó')}</div></div>
+    <div class="sc"><div class="sc-label">ENTREGADOS</div><div class="sc-val">${cnt('Entregado')}</div></div>`;
+  tb.innerHTML=data.length===0
+    ?'<tr><td colspan="10" class="empty-state">Sin encargos</td></tr>'
+    :data.map(e=>{
+      const ri=encargos.indexOf(e);
+      const canje=e.canje
+        ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
+        :'<span class="enc-sub">No</span>';
+      return`<tr>
+        <td title="${esc(e.modelo)} ${esc(e.color)}"><strong>${esc(e.modelo)}</strong><div class="enc-sub">${esc(e.color)}</div></td>
+        <td>${fmtUSD(e.precio)}</td>
+        <td>${encSenaTxt(e)}</td>
+        <td title="${esc(e.cliente)}">${esc(e.cliente)}<div class="enc-sub">${e.telefono?`<a href="https://wa.me/549${esc(String(e.telefono).replace(/\D/g,''))}" target="_blank" style="color:#0058B0;text-decoration:none">📞 ${esc(e.telefono)}</a>`:''}</div></td>
+        <td>${esc(e.vendedor)}</td><td>${esc(e.sucursal)}</td>
+        <td>${canje}</td>
+        <td><strong>${fmtUSD(encSaldo(e))}</strong>${e.senaMoneda==='ARS'&&e.sena?'<div class="enc-sub">- seña en $</div>':''}</td>
+        <td>${encBar(e,ri)}</td>
+        <td>
+          <button class="btn-e" onclick="openModal('enc-edit',${ri})">Editar</button>
+          <button class="btn-d" onclick="delItem('enc',${ri})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+function toggleEncCanje(){
+  const on=document.getElementById('enc-canje').checked;
+  document.getElementById('enc-canje-form').style.display=on?'block':'none';
+  updateEncSaldo();
+}
+function updateEncSaldo(){
+  const el=document.getElementById('enc-saldo'); if(!el) return;
+  const e={precio:document.getElementById('enc-precio').value,sena:document.getElementById('enc-sena').value,senaMoneda:document.getElementById('enc-sena-mon').value,canje:document.getElementById('enc-canje').checked,canjeCotiz:document.getElementById('enc-cotiz').value};
+  el.innerHTML='Saldo a cobrar: <strong>'+fmtUSD(encSaldo(e))+'</strong>'+(e.senaMoneda==='ARS'&&Number(e.sena)?' <span class="enc-sub">(menos la seña de '+fmtARS(e.sena)+')</span>':'');
+}
 // ===================== REPORTES =====================
 function switchReporte(periodo,el){
   reportePeriodo=periodo;
@@ -972,13 +1090,14 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo encargo':'Editar encargo'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
   if(type.startsWith('venta')&&type!=='venta-edit'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Confirmar venta</button>`;}
   else{mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;}
   if(type==='venta')setTimeout(updateVentaGeneral,50);
+  if(type==='enc-edit')setTimeout(updateEncSaldo,0);
   document.getElementById('modal').style.display='flex';
 }
 function buildForm(type,idx){
@@ -1072,6 +1191,32 @@ function buildForm(type,idx){
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  if(type==='enc-edit'){
+    const it=idx!==null?encargos[idx]:null;
+    const v=k=>it&&it[k]!=null?esc(it[k]):'';
+    const vends=[...new Set(['yami','igna','agus',...encargos.map(e=>e.vendedor).filter(Boolean)])];
+    const ymd=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
+    const hoy=ymd(Date.now());
+    return`<div class="section-label">EQUIPO SELLADO</div>
+      <div class="mgrid"><div class="mfl"><label>MODELO</label><input id="enc-modelo" type="text" placeholder="ej: 17 Pro Max 256GB" value="${v('modelo')}"/></div><div class="mfl"><label>COLOR</label><input id="enc-color" type="text" placeholder="ej: silver" value="${v('color')}"/></div></div>
+      <div class="mgrid3"><div class="mfl"><label>PRECIO (USD)</label><input id="enc-precio" type="number" min="0" value="${v('precio')}" oninput="updateEncSaldo()"/></div><div class="mfl"><label>SEÑA</label><input id="enc-sena" type="number" min="0" placeholder="0" value="${v('sena')}" oninput="updateEncSaldo()"/></div><div class="mfl"><label>MONEDA SEÑA</label><select id="enc-sena-mon" onchange="updateEncSaldo()"><option value="USD" ${!it||it.senaMoneda!=='ARS'?'selected':''}>USD</option><option value="ARS" ${it&&it.senaMoneda==='ARS'?'selected':''}>Pesos</option></select></div></div>
+      <div class="section-label">CLIENTE</div>
+      <div class="mgrid"><div class="mfl"><label>NOMBRE</label><input id="enc-cliente" type="text" placeholder="Nombre y apellido" value="${v('cliente')}"/></div><div class="mfl"><label>TELÉFONO</label><input id="enc-tel" type="tel" placeholder="2622 000000" value="${v('telefono')}"/></div></div>
+      <div class="mgrid3"><div class="mfl"><label>VENDEDOR</label><input id="enc-vend" type="text" list="enc-vend-list" value="${v('vendedor')}"/><datalist id="enc-vend-list">${vends.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div><div class="mfl"><label>SUCURSAL</label><select id="enc-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div><div class="mfl"><label>ESTADO</label><select id="enc-estado">${ENC_ESTADOS.map(e=>opt(e,it?it.estado:'Sin encargar')).join('')}</select></div></div>
+      <div class="mfl"><label>FECHA DEL PEDIDO</label><input id="enc-fecha" type="date" value="${it&&it.fecha?ymd(it.fecha):hoy}"/></div>
+      <div style="background:#FFF3E0;border-radius:10px;padding:11px 13px;margin:6px 0 12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="enc-canje" style="width:15px;height:15px;accent-color:#E65100;cursor:pointer;" ${it&&it.canje?'checked':''} onchange="toggleEncCanje()"/>
+          <label for="enc-canje" style="font-size:12px;font-weight:600;color:#8A4D00;cursor:pointer;">🔄 Entrega equipo en Plan Canje</label>
+        </div>
+        <div id="enc-canje-form" style="display:${it&&it.canje?'block':'none'};margin-top:10px">
+          <div class="mfl"><label>EQUIPO QUE ENTREGA</label><input id="enc-canje-modelo" type="text" placeholder="ej: iPhone 13 128GB" value="${v('canjeModelo')}"/></div>
+          <div class="mgrid"><div class="mfl"><label>COTIZACIÓN (USD)</label><input id="enc-cotiz" type="number" min="0" placeholder="0" value="${v('canjeCotiz')}" oninput="updateEncSaldo()"/></div><div class="mfl"><label>BATERÍA (%)</label><input id="enc-bat" type="number" min="1" max="100" placeholder="ej: 85" value="${v('canjeBateria')}"/></div></div>
+        </div>
+      </div>
+      <div class="mfl"><label>NOTAS</label><textarea id="enc-notas" placeholder="Opcional">${v('notas')}</textarea></div>
+      <div class="sell-info" id="enc-saldo"></div>`;
   }
   return '';
 }
@@ -1245,6 +1390,30 @@ async function saveModal(){
     await saveItem('ventas',ventas[editIdx]);
     showSyncBar('✓ Venta actualizada','ok');return;
   }
+  if(modalType==='enc-edit'){
+    const g=id=>document.getElementById(id).value.trim();
+    const modelo=g('enc-modelo'); if(!modelo){alert('Ingresá el modelo');return;}
+    const cliente=g('enc-cliente'); if(!cliente){alert('Ingresá el cliente');return;}
+    const canje=document.getElementById('enc-canje').checked;
+    const bat=parseInt(g('enc-bat'))||0;
+    if(canje&&bat&&(bat<1||bat>100)){alert('Batería entre 1 y 100');return;}
+    const prev=editIdx!==null?encargos[editIdx]:{};
+    const fechaStr=g('enc-fecha');
+    const obj={...prev,
+      modelo,color:g('enc-color'),precio:parseFloat(g('enc-precio'))||0,
+      sena:parseFloat(g('enc-sena'))||0,senaMoneda:g('enc-sena-mon'),
+      cliente,telefono:g('enc-tel'),vendedor:g('enc-vend').toLowerCase(),
+      sucursal:g('enc-suc'),estado:g('enc-estado'),
+      fecha:fechaStr?new Date(fechaStr+'T12:00:00').getTime():(prev.fecha||Date.now()),
+      canje,canjeModelo:canje?g('enc-canje-modelo'):'',canjeCotiz:canje?(parseFloat(g('enc-cotiz'))||0):0,canjeBateria:canje?bat:0,
+      notas:g('enc-notas')};
+    if(obj.estado==='Encargado'&&!obj.fechaEncargado) obj.fechaEncargado=Date.now();
+    if(obj.estado==='Entregado'&&!obj.fechaEntregado) obj.fechaEntregado=Date.now();
+    if(editIdx!==null){encargos[editIdx]=obj;}else{encargos.push(obj);}
+    closeModal();renderEncargos();
+    if(await saveItem('encargos',obj)) showSyncBar('✓ Encargo guardado en la nube','ok');
+    return;
+  }
   if(modalType==='st-edit'){
     const nombre=document.getElementById('st-nombre').value.trim();if(!nombre){alert('Ingresá el nombre del cliente');return;}
     const modelo=document.getElementById('st-modelo').value.trim();if(!modelo){alert('Ingresá el modelo del equipo');return;}
@@ -1311,11 +1480,12 @@ async function delItem(type,idx){
   if(!confirm('¿Eliminar?'))return;
   if(type==='eq'){const id=equipos[idx]._id;equipos.splice(idx,1);renderEq();if(id)await deleteItem('equipos',id);}
   else if(type==='ac'){const id=accesorios[idx]._id;accesorios.splice(idx,1);renderAc();if(id)await deleteItem('accesorios',id);}
+  else if(type==='enc'){const id=encargos[idx]._id;encargos.splice(idx,1);renderEncargos();if(id)await deleteItem('encargos',id);}
   else{const id=servicios[idx]._id;servicios.splice(idx,1);renderST();if(id)await deleteItem('servicios',id);}
   showSyncBar('✓ Eliminado de la nube','ok');
 }
 function exportarDatos(){
-  const backup={fecha:new Date().toISOString(),version:'iStockPro-supabase',equipos,accesorios,ventas,servicios};
+  const backup={fecha:new Date().toISOString(),version:'iStockPro-supabase',equipos,accesorios,ventas,servicios,encargos};
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
