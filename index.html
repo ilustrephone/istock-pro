@@ -360,6 +360,7 @@ tr:hover td{background:#FAFAFA;}
       <select id="f-enc-estado" onchange="renderEncargos()"><option value="">Todos los estados</option><option value="activos">Sin entregar</option><option>Sin encargar</option><option>Encargado</option><option>Llegó</option><option>Entregado</option></select>
       <select id="f-enc-vend" onchange="renderEncargos()"><option value="">Todos los vendedores</option></select>
       <select id="f-enc-suc" onchange="renderEncargos()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
+      <span id="enc-pedido-wrap" style="margin-left:auto"></span>
       <button class="btn-add" onclick="openModal('enc-edit',null)">+ Nuevo sellado</button>
     </div>
     <div class="twrap" style="overflow-x:auto"><table style="min-width:1400px">
@@ -989,9 +990,50 @@ function renderEncargos(){
         </td>
       </tr>`;
     }).join('');
-  renderAIng();
+  renderAIng(); renderPedidoBtn();
 }
 function encPendIngreso(){return encargos.filter(e=>e.canje&&!e.ingresado);}
+// ===================== PEDIDO AL PROVEEDOR (solo admin) =====================
+// El número del proveedor NO se guarda en el sistema: el mensaje se abre en el WhatsApp del admin y él elige el chat.
+let pedidoGrupos=[];
+function fmtModeloPedido(m){return String(m||'').trim().split(/\s+/).map(w=>/^\d+(gb|tb)$/i.test(w)?w.toUpperCase():/^\d/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');}
+function renderPedidoBtn(){
+  const w=document.getElementById('enc-pedido-wrap'); if(!w) return;
+  if(!isAdmin()){w.innerHTML='';return;}
+  const n=encargos.filter(e=>e.estado==='Sin encargar').length;
+  w.innerHTML=`<button onclick="openModal('enc-pedido',null)" style="padding:7px 13px;background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;">📲 Pedir al proveedor${n?` <span style="background:#2E7D32;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px">${n}</span>`:''}</button>`;
+}
+function armarGruposPedido(){
+  const map=new Map();
+  encargos.filter(e=>e.estado==='Sin encargar').forEach(e=>{
+    const mod=fmtModeloPedido(e.modelo), col=fmtModeloPedido(e.color);
+    const k=(mod+'|'+col).toLowerCase();
+    if(!map.has(k)) map.set(k,{modelo:mod,color:col,items:[],on:true});
+    map.get(k).items.push(e);
+  });
+  return [...map.values()].sort((a,b)=>a.modelo.localeCompare(b.modelo)||a.color.localeCompare(b.color));
+}
+function textoPedido(){
+  const sel=pedidoGrupos.filter(g=>g.on);
+  const tot=sel.reduce((t,g)=>t+g.items.length,0);
+  return `Hola! Te paso el pedido de sellados:\n\n${sel.map(g=>`• ${g.items.length}× ${/^\d/.test(g.modelo)?'iPhone ':''}${g.modelo}${g.color?' — '+g.color:''}`).join('\n')}\n\nTotal: ${tot} equipo${tot!==1?'s':''}. Gracias!`;
+}
+function togglePedidoGrupo(i,on){pedidoGrupos[i].on=on;const t=document.getElementById('ped-texto');if(t)t.value=textoPedido();const c=document.getElementById('ped-count');if(c)c.textContent=pedidoGrupos.filter(g=>g.on).reduce((t,g)=>t+g.items.length,0);}
+function enviarPedidoWA(){
+  const txt=(document.getElementById('ped-texto')?.value||'').trim();
+  if(!pedidoGrupos.some(g=>g.on)){alert('No hay equipos seleccionados');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  const n=pedidoGrupos.filter(g=>g.on).reduce((t,g)=>t+g.items.length,0);
+  document.getElementById('modal-actions').innerHTML=`<button class="btn-cancel" onclick="closeModal()">Todavía no lo envié</button><button class="btn-save-green" onclick="marcarPedidoEncargado()">Ya lo envié · marcar ${n} como Encargado</button>`;
+}
+async function marcarPedidoEncargado(){
+  const items=pedidoGrupos.filter(g=>g.on).flatMap(g=>g.items);
+  const ahora=Date.now();
+  items.forEach(e=>{e.estado='Encargado';if(!e.fechaEncargado)e.fechaEncargado=ahora;});
+  closeModal(); renderEncargos();
+  let ok=true; for(const e of items){ if(!await saveItem('encargos',e)) ok=false; }
+  if(ok) showSyncBar(`✓ ${items.length} sellado${items.length!==1?'s':''} marcado${items.length!==1?'s':''} como Encargado`,'ok');
+}
 function memDe(txt){const m=String(txt||'').match(/(64|128|256|512)\s*gb|1\s*tb/i);if(!m)return'';return m[0].toLowerCase().includes('tb')?'1TB':m[1]+'GB';}
 function renderAIng(){
   const tb=document.getElementById('tbody-aing'); if(!tb) return;
@@ -1163,7 +1205,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1171,6 +1213,7 @@ function openModal(type,idx){
   else{mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;}
   if(type==='venta')setTimeout(updateVentaGeneral,50);
   if(type==='enc-edit')setTimeout(updateEncSaldo,0);
+  if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='enc-ingreso'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Entregar e ingresar al stock</button>`;setTimeout(()=>document.getElementById('ing-imei')?.focus(),50);}
   document.getElementById('modal').style.display='flex';
 }
@@ -1265,6 +1308,21 @@ function buildForm(type,idx){
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  if(type==='enc-pedido'){
+    if(!isAdmin()) return '<div class="sell-info">Solo el administrador puede hacer pedidos.</div>';
+    pedidoGrupos=armarGruposPedido();
+    if(!pedidoGrupos.length) return '<div class="sell-info">No hay sellados en <strong>Sin encargar</strong>. Todo está pedido 👌</div>';
+    const tot=pedidoGrupos.reduce((t,g)=>t+g.items.length,0);
+    return`<div class="sell-info">Se va a abrir <strong>tu WhatsApp</strong> con el pedido escrito: elegí el chat de tu proveedor y enviá. <span class="enc-sub">(El número no se guarda en iStock.)</span></div>
+      <div class="section-label">EQUIPOS SIN ENCARGAR · <span id="ped-count">${tot}</span></div>
+      <div style="max-height:220px;overflow-y:auto;border:1px solid #E8E8ED;border-radius:10px;padding:4px 10px;margin-bottom:12px">
+        ${pedidoGrupos.map((g,i)=>`<label style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #F5F5F7;cursor:pointer;font-size:13px">
+          <input type="checkbox" checked onchange="togglePedidoGrupo(${i},this.checked)" style="width:15px;height:15px;accent-color:#2E7D32"/>
+          <strong style="min-width:28px">${g.items.length}×</strong><span style="flex:1">${esc(g.modelo)} <span class="enc-sub">${esc(g.color)}</span></span>
+          <span class="enc-sub" title="${esc(g.items.map(x=>x.cliente).join(', '))}">${esc(g.items.map(x=>x.cliente).join(', ')).slice(0,40)}</span></label>`).join('')}
+      </div>
+      <div class="mfl"><label>MENSAJE (lo podés editar)</label><textarea id="ped-texto" style="min-height:150px">${esc(textoPedido())}</textarea></div>`;
   }
   if(type==='enc-ingreso'){
     const e=encargos[idx];
