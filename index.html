@@ -265,15 +265,15 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos</button>
-    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios</button>
     <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
+    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios</button>
+    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos</button>
+    <button class="tab" onclick="switchTab('enc',this)">📦 Sellados</button>
+    <button class="tab" onclick="switchTab('aing',this)">📥 Equipos a ingresar <span id="aing-count" class="rchip" style="background:#FFF3E0;color:#8A4D00;display:none"></span></button>
+    <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
     <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
     <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
     <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
-    <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
-    <button class="tab" onclick="switchTab('enc',this)">📦 Encargos</button>
-    <button class="tab" onclick="switchTab('aing',this)">📥 Equipos a ingresar <span id="aing-count" class="rchip" style="background:#FFF3E0;color:#8A4D00;display:none"></span></button>
   </div>
   <div class="content" id="tab-eq">
     <div class="stats-row" id="stats-eq"></div>
@@ -760,7 +760,7 @@ function switchTab(tab,el){
   try{sessionStorage.setItem('istock_tab',tab);}catch(e){}
 }
 function switchTabByName(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['eq','ac','ventas','st','rep','caja','ingresos','enc','aing'][i]===tab));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',(t.getAttribute('onclick')||'').includes("'"+tab+"'")));
   ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
 function renderAll(){renderEq();renderAc();renderVentas();renderST();renderEncargos();renderAIng();}
