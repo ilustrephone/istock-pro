@@ -59,6 +59,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .eq-senado td{background:#FFF4D6;}.eq-senado td:first-child{box-shadow:inset 4px 0 0 #F5A623;}
 .eq-senado:hover td{background:#FFEDBF;}
 .tag-senado{display:inline-block;background:#F5A623;color:#fff;font-size:9px;font-weight:700;letter-spacing:0.04em;padding:1px 6px;border-radius:6px;vertical-align:1px;}
+.btn-nota{background:#FFF8E1!important;border-color:#FFD54F!important;color:#8A6D00!important;}
+.btn-nota.vacia{background:none!important;border-color:#D2D2D7!important;color:#6E6E73!important;}
+.nota-prev{font-size:10.5px;color:#8A6D00;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nota-item{background:#FFFBEA;border:1px solid #FFE58F;border-radius:10px;padding:8px 11px;margin-bottom:8px;}
+.nota-meta{font-size:10.5px;color:#8A6D00;display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;}
+.nota-txt{font-size:13px;color:#1D1D1F;white-space:pre-wrap;word-break:break-word;}
+.nota-del{background:none;border:none;color:#C62828;cursor:pointer;font-size:12px;padding:0 2px;}
 .sc.sc-purple{background:#F6EEFB;}.sc-purple .sc-val{color:#7B1FA2;}
 .sc.sc-orange{background:#FFF3E0;}.sc-orange .sc-val{color:#D35400;}
 .content{padding:1.25rem 1.5rem;}
@@ -289,11 +296,11 @@ tr:hover td{background:#FAFAFA;}
     <div class="toolbar" id="toolbar-eq"></div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:20%">Modelo</th><th style="width:7%">Mem.</th>
-        <th style="width:9%">Batería</th><th style="width:10%">IMEI</th>
-        <th style="width:10%">Sucursal</th><th style="width:8%">Precio</th>
-        <th style="width:8%" id="th-costo-eq">Costo</th>
-        <th style="width:17%">Acciones</th>
+        <th style="width:20%">Modelo</th><th style="width:6%">Mem.</th>
+        <th style="width:9%">Batería</th><th style="width:9%">IMEI</th>
+        <th style="width:9%">Sucursal</th><th style="width:8%">Precio</th>
+        <th style="width:7%" id="th-costo-eq">Costo</th>
+        <th style="width:22%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-eq"></tbody>
     </table></div>
@@ -309,11 +316,11 @@ tr:hover td{background:#FAFAFA;}
     <div class="toolbar" id="toolbar-ac"></div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:24%">Producto</th><th style="width:15%">Categoría</th>
-        <th style="width:10%">Precio</th><th style="width:9%" id="th-costo-ac">Costo</th>
-        <th style="width:8%">Tunuyán</th><th style="width:9%">La Consulta</th>
-        <th style="width:6%">Total</th><th style="width:7%">Estado</th>
-        <th style="width:12%">Acciones</th>
+        <th style="width:22%">Producto</th><th style="width:13%">Categoría</th>
+        <th style="width:9%">Precio</th><th style="width:8%" id="th-costo-ac">Costo</th>
+        <th style="width:7%">Tunuyán</th><th style="width:8%">La Consulta</th>
+        <th style="width:5%">Total</th><th style="width:7%">Estado</th>
+        <th style="width:21%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-ac"></tbody>
     </table></div>
@@ -701,8 +708,9 @@ function isAdmin(){return rol==='admin';}
 function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empleado';}
 function shortImei(i){return i?'···'+i.slice(-4):'-';}
 function hl(text,q){if(!q)return text;const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');return String(text).replace(re,'<mark class="hl">$1</mark>');}
-function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria)].some(v=>v&&v.toLowerCase().includes(q));}
-function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio)].some(v=>v&&v.toLowerCase().includes(q));}
+function notasTxt(it){return notasDe(it).map(n=>n.txt).join(' ');}
+function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria),notasTxt(e)].some(v=>v&&String(v).toLowerCase().includes(q));}
+function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio),notasTxt(a)].some(v=>v&&String(v).toLowerCase().includes(q));}
 function fmtARS(n){return'$ '+Number(n||0).toLocaleString('es-AR');}
 function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
 function renderToolbar(){
@@ -795,7 +803,7 @@ function renderEq(){
       const costoCell=admin?`<td>USD ${(e.costo||0).toLocaleString('es-AR')}</td>`:`<td style="display:none"></td>`;
       const sen=eqOculto(e);
       return`<tr class="${sen?'eq-senado':''}">
-        <td title="${e.modelo}">${sen?'<span class="tag-senado">SEÑADO</span> ':''}${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
+        <td title="${e.modelo}">${sen?'<span class="tag-senado">SEÑADO</span> ':''}${hl(e.modelo,q)}${notaPrev(e)}</td><td>${hl(e.memoria,q)}</td>
         <td>${batBadge(e.bateria)}</td>
         <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
         <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
@@ -804,6 +812,7 @@ function renderEq(){
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
           <button class="btn-e" onclick="openModal('eq-edit',${ri})">Editar</button>
           <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${e.stock===0?'disabled':''} onclick="agregarEqAlCarrito(${ri})">🛒</button>
+          ${notaBtn('eq',e,ri)}
           <button class="btn-d" onclick="delItem('eq',${ri})">✕</button>
         </td>
       </tr>`;
@@ -838,7 +847,7 @@ function renderAc(){
       const ri=accesorios.indexOf(a); const tot=totalAc(a);
       const costoCell=admin?`<td>${fmtARS(a.costo||0)}</td>`:`<td style="display:none"></td>`;
       return`<tr>
-        <td title="${a.nombre}">${hl(a.nombre,q)}</td><td>${hl(a.cat,q)}</td>
+        <td title="${a.nombre}">${hl(a.nombre,q)}${notaPrev(a)}</td><td>${hl(a.cat,q)}</td>
         <td>${fmtARS(a.precio)}</td>${costoCell}
         <td style="text-align:center;font-weight:600">${a.stockT||0}</td>
         <td style="text-align:center;font-weight:600">${a.stockC||0}</td>
@@ -846,6 +855,7 @@ function renderAc(){
         <td>
           <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
           <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${tot===0?'disabled':''} onclick="agregarAcAlCarrito(${ri})">🛒</button>
+          ${notaBtn('ac',a,ri)}
           ${ce?`<button class="btn-e" onclick="openModal('ac-edit',${ri})">Editar</button>`:''}
           ${ce?`<button class="btn-d" onclick="delItem('ac',${ri})">✕</button>`:''}
         </td>
@@ -1003,6 +1013,57 @@ function renderEncargos(){
   renderAIng(); renderPedidoBtn();
 }
 function encPendIngreso(){return encargos.filter(e=>e.canje&&!e.ingresado);}
+// ===================== NOTAS EN EQUIPOS Y ACCESORIOS =====================
+// Cada equipo/accesorio guarda sus notas en data.notasItem = [{txt, por, rol, suc, ts}]
+let notaCtx=null;
+function notasDe(it){return Array.isArray(it&&it.notasItem)?it.notasItem:[];}
+function notaPrev(it){const n=notasDe(it);if(!n.length)return'';const u=n[n.length-1];return`<div class="nota-prev" title="${esc(u.txt)}">📝 ${esc(u.txt)}</div>`;}
+function notaBtn(t,it,ri){const n=notasDe(it).length;return`<button class="btn-e btn-nota ${n?'':'vacia'}" title="Notas" onclick="abrirNotas('${t}',${ri})">📝${n?' '+n:''}</button>`;}
+function notaArr(t){return t==='eq'?equipos:accesorios;}
+function notaTabla(t){return t==='eq'?'equipos':'accesorios';}
+function notaItemActual(){if(!notaCtx)return null;const arr=notaArr(notaCtx.t);return (notaCtx.id&&arr.find(x=>x._id===notaCtx.id))||notaCtx.ref;}
+function abrirNotas(t,ri){const it=notaArr(t)[ri];if(!it)return;notaCtx={t,id:it._id,ref:it};openModal('notas',null);}
+function nombreNotas(){try{return localStorage.getItem('istock_nombre')||'';}catch(e){return'';}}
+function renderNotasLista(){
+  const box=document.getElementById('notas-lista'); if(!box) return;
+  const it=notaItemActual(); const n=notasDe(it);
+  const yo=nombreNotas().toLowerCase();
+  box.innerHTML=n.length?[...n].map((x,k)=>({...x,k})).reverse().map(x=>`<div class="nota-item">
+      <div class="nota-meta"><span>👤 <strong>${esc(x.por||x.rol||'—')}</strong>${x.suc?' · 📍 '+esc(x.suc):''} · ${fmtDatetime(x.ts)}</span>
+      ${(canEdit()||(yo&&String(x.por||'').toLowerCase()===yo))?`<button class="nota-del" title="Borrar nota" onclick="borrarNota(${x.k})">✕</button>`:''}</div>
+      <div class="nota-txt">${esc(x.txt)}</div></div>`).join('')
+    :'<div class="enc-sub" style="padding:10px 0;text-align:center">Todavía no hay notas.</div>';
+}
+async function refrescarItemNotas(){
+  // Trae la versión más reciente del item para no pisar notas que haya dejado otra persona
+  const it=notaItemActual(); if(!it||!it._id) return it;
+  try{const rows=await sbFetch(`${notaTabla(notaCtx.t)}?id=eq.${it._id}&select=id,data`); if(rows[0]){Object.keys(it).forEach(k=>{if(k!=='_id')delete it[k];}); Object.assign(it,rows[0].data,{_id:rows[0].id});}}catch(e){}
+  return it;
+}
+async function agregarNota(){
+  const ta=document.getElementById('nota-txt'); const txt=(ta?.value||'').trim();
+  if(!txt){alert('Escribí la nota');ta?.focus();return;}
+  const nom=(document.getElementById('nota-por')?.value||'').trim();
+  try{if(nom)localStorage.setItem('istock_nombre',nom);}catch(e){}
+  const btn=document.getElementById('nota-btn'); if(btn){btn.disabled=true;btn.textContent='Guardando…';}
+  const it=await refrescarItemNotas(); if(!it){closeModal();return;}
+  it.notasItem=[...notasDe(it),{txt,por:nom,rol:rolLabel(),suc:sucursal,ts:Date.now()}];
+  const ok=await saveItem(notaTabla(notaCtx.t),it);
+  if(ta) ta.value='';
+  if(btn){btn.disabled=false;btn.textContent='Guardar nota';}
+  renderNotasLista(); notaCtx.t==='eq'?renderEq():renderAc();
+  if(ok) showSyncBar('✓ Nota guardada','ok');
+}
+async function borrarNota(k){
+  if(!confirm('¿Borrar esta nota?')) return;
+  const it=notaItemActual(); if(!it) return;
+  const target=notasDe(it)[k];
+  await refrescarItemNotas();
+  it.notasItem=notasDe(it).filter(x=>!(target&&x.ts===target.ts&&x.txt===target.txt));
+  const ok=await saveItem(notaTabla(notaCtx.t),it);
+  renderNotasLista(); notaCtx.t==='eq'?renderEq():renderAc();
+  if(ok) showSyncBar('✓ Nota borrada','ok');
+}
 // ===================== LISTA DE EQUIPOS PARA WHATSAPP =====================
 const EQ_COLORES=[
   {id:'',emoji:'📱',label:'Sin definir'},
@@ -1287,7 +1348,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1295,6 +1356,7 @@ function openModal(type,idx){
   else{mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;}
   if(type==='venta')setTimeout(updateVentaGeneral,50);
   if(type==='enc-edit')setTimeout(updateEncSaldo,0);
+  if(type==='notas'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='eq-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='enc-ingreso'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Entregar e ingresar al stock</button>`;setTimeout(()=>document.getElementById('ing-imei')?.focus(),50);}
@@ -1395,6 +1457,16 @@ function buildForm(type,idx){
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  if(type==='notas'){
+    const it=notaItemActual(); if(!it) return '';
+    const titulo=notaCtx.t==='eq'?`${esc(it.modelo)} ${esc(it.memoria||'')}${it.imei?` · IMEI ···${esc(String(it.imei).slice(-4))}`:''}`:`${esc(it.nombre)}`;
+    setTimeout(()=>{renderNotasLista();document.getElementById('nota-txt')?.focus();},0);
+    return`<div class="sell-info"><strong>${titulo}</strong>${it.sucursal?`<br>📍 ${esc(it.sucursal)}`:''}</div>
+      <div id="notas-lista" style="max-height:260px;overflow-y:auto;margin-bottom:10px"></div>
+      <div class="mfl"><label>NUEVA NOTA</label><textarea id="nota-txt" placeholder="ej: tiene un rayón en el marco · lo reservó Juan hasta el viernes · falta cargador…" style="min-height:70px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))agregarNota()"></textarea></div>
+      <div class="mgrid"><div class="mfl"><label>TU NOMBRE</label><input id="nota-por" type="text" placeholder="ej: yami" value="${esc(nombreNotas())}"/></div>
+      <div class="mfl" style="display:flex;align-items:flex-end"><button id="nota-btn" class="btn-save" style="width:100%" onclick="agregarNota()">Guardar nota</button></div></div>`;
   }
   if(type==='eq-lista'){
     setTimeout(armarListaWA,0);
@@ -1536,9 +1608,10 @@ async function saveModal(){
     const costEl=document.getElementById('mf-costo');
     const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
       color:document.getElementById('mf-color').value,bc:document.getElementById('mf-bc').checked,ocultoLista:document.getElementById('mf-oculto').checked};
-    if(editIdx!==null){obj._id=equipos[editIdx]._id;equipos[editIdx]=obj;}else{equipos.push(obj);}
+    let fin=obj;
+    if(editIdx!==null){fin={...equipos[editIdx],...obj};equipos[editIdx]=fin;}else{equipos.push(fin);}
     closeModal();renderEq();
-    await saveItem('equipos', obj);
+    await saveItem('equipos', fin);
     showSyncBar('✓ Equipo guardado en la nube','ok');
     return;
   }
@@ -1547,9 +1620,10 @@ async function saveModal(){
     if(!nombre){alert('Ingresá el nombre');return;}
     const costEl=document.getElementById('mf-costo');
     const obj={nombre,cat:document.getElementById('mf-cat-ac').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?accesorios[editIdx].costo:0),stockT:parseInt(document.getElementById('mf-stockT').value)||0,stockC:parseInt(document.getElementById('mf-stockC').value)||0};
-    if(editIdx!==null){obj._id=accesorios[editIdx]._id;accesorios[editIdx]=obj;}else{accesorios.push(obj);}
+    let fin=obj;
+    if(editIdx!==null){fin={...accesorios[editIdx],...obj};accesorios[editIdx]=fin;}else{accesorios.push(fin);}
     closeModal();renderAc();
-    await saveItem('accesorios', obj);
+    await saveItem('accesorios', fin);
     showSyncBar('✓ Accesorio guardado en la nube','ok');
     return;
   }
