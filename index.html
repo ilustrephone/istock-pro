@@ -46,7 +46,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .tabs{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:4px;border-bottom:1px solid #E8E8ED;background:#fff;padding:8px 1rem;overflow-x:auto;}
 .tab{padding:6px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0;cursor:pointer;background:#fff;border:1.5px solid var(--tc);border-radius:9px;white-space:nowrap;flex:1 1 auto;text-align:center;}
+@media(max-width:1600px){.tabs .tab-ic{display:none;}}
 @media(max-width:1340px){.tabs .tab{padding:6px 6px;font-size:10.5px;}}
+@media(max-width:1180px){.tabs{flex-wrap:wrap;justify-content:flex-start;}}
 .tab.active{color:#fff;}
 .tab{--tc:#0071E3;color:var(--tc);}
 .tab:hover:not(.active){background:color-mix(in srgb,var(--tc) 9%,#fff);}
@@ -79,6 +81,11 @@ tr.dia-row:hover td{background:#E3EEFF;}
 .dia-res{font-size:12px;color:#1D1D1F;margin-left:10px;}
 .dia-res b{font-weight:700;}
 .dia-flecha{display:inline-block;width:16px;color:#0058B0;transition:transform .15s;}
+.cc-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:700;}
+.cc-venc{background:#FFEBEE;color:#C62828;}.cc-pronto{background:#FFF3E0;color:#B26A00;}.cc-ok{background:#E8F5E9;color:#1B5E20;}.cc-pag{background:#F0F0F5;color:#6E6E73;}
+tr.cc-row-venc td:first-child{box-shadow:inset 4px 0 0 #E53935;}
+tr.cc-row-pronto td:first-child{box-shadow:inset 4px 0 0 #FB8C00;}
+.cc-mov{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #F0F0F5;}
 .sc.sc-purple{background:#F6EEFB;}.sc-purple .sc-val{color:#7B1FA2;}
 .sc.sc-orange{background:#FFF3E0;}.sc-orange .sc-val{color:#D35400;}
 .content{padding:1.25rem 1.5rem;}
@@ -289,15 +296,16 @@ tr:hover td{background:#FAFAFA;}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" onclick="switchTab('ventas',this)">🧾 Ventas</button>
-    <button class="tab" onclick="switchTab('ac',this)">🎧 Accesorios</button>
-    <button class="tab active" onclick="switchTab('eq',this)">📱 Equipos</button>
-    <button class="tab" onclick="switchTab('enc',this)">📦 Sellados</button>
-    <button class="tab" onclick="switchTab('aing',this)">📥 Equipos a ingresar <span id="aing-count" class="rchip" style="background:#FFF3E0;color:#8A4D00;display:none"></span></button>
-    <button class="tab" onclick="switchTab('ingresos',this)">📋 Registro de Ingresos</button>
-    <button class="tab" onclick="switchTab('st',this)">🔧 Serv. Técnico</button>
-    <button class="tab" onclick="switchTab('rep',this)">📊 Reportes</button>
-    <button class="tab" onclick="switchTab('caja',this)">🏦 Cierre de Caja</button>
+    <button class="tab" onclick="switchTab('ventas',this)"><span class="tab-ic">🧾 </span>Ventas</button>
+    <button class="tab" onclick="switchTab('cc',this)"><span class="tab-ic">💳 </span>Cuentas corrientes <span id="cc-count" class="rchip" style="background:#FFEBEE;color:#C62828;display:none"></span></button>
+    <button class="tab" onclick="switchTab('ac',this)"><span class="tab-ic">🎧 </span>Accesorios</button>
+    <button class="tab active" onclick="switchTab('eq',this)"><span class="tab-ic">📱 </span>Equipos</button>
+    <button class="tab" onclick="switchTab('enc',this)"><span class="tab-ic">📦 </span>Sellados</button>
+    <button class="tab" onclick="switchTab('aing',this)"><span class="tab-ic">📥 </span>Equipos a ingresar <span id="aing-count" class="rchip" style="background:#FFF3E0;color:#8A4D00;display:none"></span></button>
+    <button class="tab" onclick="switchTab('ingresos',this)"><span class="tab-ic">📋 </span>Registro de Ingresos</button>
+    <button class="tab" onclick="switchTab('st',this)"><span class="tab-ic">🔧 </span>Serv. Técnico</button>
+    <button class="tab" onclick="switchTab('rep',this)"><span class="tab-ic">📊 </span>Reportes</button>
+    <button class="tab" onclick="switchTab('caja',this)"><span class="tab-ic">🏦 </span>Cierre de Caja</button>
   </div>
   <div class="content" id="tab-eq">
     <div class="stats-row" id="stats-eq"></div>
@@ -426,6 +434,26 @@ tr:hover td{background:#FAFAFA;}
         <th style="width:10%">Acción</th>
       </tr></thead>
       <tbody id="tbody-aing"></tbody>
+    </table></div>
+  </div>
+  <div class="content" id="tab-cc" style="display:none">
+    <div class="stats-row" id="stats-cc"></div>
+    <div class="search-wrap"><span class="search-icon">🔍</span>
+      <input type="text" id="search-cc" placeholder="Buscar por nombre, apellido o celular…" oninput="renderCuentas()"/>
+    </div>
+    <div class="toolbar">
+      <select id="f-cc-estado" onchange="renderCuentas()"><option value="abiertas">Con saldo pendiente</option><option value="vencidas">Vencidas</option><option value="pagadas">Pagadas</option><option value="">Todas</option></select>
+      <select id="f-cc-suc" onchange="renderCuentas()"><option value="">Ambas sucursales</option><option>Tunuyán</option><option>La Consulta</option></select>
+      <button class="btn-add" onclick="openModal('cc-edit',null)">+ Nueva cuenta</button>
+    </div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:1100px">
+      <thead><tr>
+        <th style="width:17%">Nombre y apellido</th><th style="width:10%">Celular</th>
+        <th style="width:11%">Plazo máximo</th><th style="width:11%">Estado</th>
+        <th style="width:15%">Concepto</th><th style="width:9%">Deuda</th>
+        <th style="width:9%">Saldo</th><th style="width:18%">Acciones</th>
+      </tr></thead>
+      <tbody id="tbody-cc"></tbody>
     </table></div>
   </div>
   <div class="content" id="tab-rep" style="display:none">
@@ -643,7 +671,7 @@ async function sbDelete(tabla, id){
 // ===================== ESTADO LOCAL =====================
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 let searchEq='', searchAc='';
-let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[];
+let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[], cuentas=[];
 const ENC_ESTADOS=['Sin encargar','Encargado','Llegó','Entregado'];
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
@@ -680,6 +708,7 @@ async function loadAll(){
     // Cargar ingresos (canjes)
     try{ ingresos=await sbGetAll('ingresos'); }catch(e){ ingresos=[]; }
     try{ encargos=await sbGetAll('encargos'); }catch(e){ console.warn('Tabla encargos no disponible',e.message); }
+    try{ cuentas=await sbGetAll('cuentas'); }catch(e){ console.warn('Tabla cuentas no disponible',e.message); }
     setSyncDot('ok');
   } catch(e) {
     setSyncDot('error');
@@ -801,7 +830,7 @@ function logout(){
 function switchTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing','cc'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
   if(tab==='rep') renderReporte();
   if(tab==='caja') renderCaja();
   if(tab==='ingresos') renderIngresos();
@@ -809,9 +838,9 @@ function switchTab(tab,el){
 }
 function switchTabByName(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',(t.getAttribute('onclick')||'').includes("'"+tab+"'")));
-  ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing','cc'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
-function renderAll(){renderEq();renderAc();renderVentas();renderST();renderEncargos();renderAIng();}
+function renderAll(){renderEq();renderAc();renderVentas();renderST();renderEncargos();renderAIng();renderCuentas();}
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
   if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
@@ -899,6 +928,72 @@ function renderAc(){
     <div class="sc"><div class="sc-label">LA CONSULTA</div><div class="sc-val">${totC}</div></div>
     <div class="sc"><div class="sc-label">VALOR STOCK</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(val)}</div></div>
     <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>`;
+}
+// ===================== CUENTAS CORRIENTES =====================
+// data: {nombre, telefono, plazo:'YYYY-MM-DD', monto, moneda:'USD'|'ARS', concepto, sucursal, notas, ts, por, pagos:[{monto,ts,por,nota}]}
+function ccPagado(c){return (c.pagos||[]).reduce((a,p)=>a+(Number(p.monto)||0),0);}
+function ccSaldo(c){return Math.max(0,(Number(c.monto)||0)-ccPagado(c));}
+function ccDias(c){if(!c.plazo)return null;const h=new Date(ymdLocal(Date.now())+'T12:00'),p=new Date(c.plazo+'T12:00');return Math.round((p-h)/864e5);}
+function ccEstado(c){
+  const tieneDeuda=(Number(c.monto)||0)>0;
+  if(tieneDeuda&&ccSaldo(c)<=0) return {k:'pag',txt:'✓ Pagada'};
+  const d=ccDias(c); if(d===null) return {k:'ok',txt:'Sin plazo'};
+  if(d<0) return {k:'venc',txt:`Vencida hace ${-d} día${d!==-1?'s':''}`};
+  if(d===0) return {k:'pronto',txt:'Vence hoy'};
+  if(d<=3) return {k:'pronto',txt:`Vence en ${d} día${d!==1?'s':''}`};
+  return {k:'ok',txt:`Faltan ${d} días`};
+}
+function ccMonto(c,v){return c.moneda==='ARS'?fmtARS(v):fmtUSD(v);}
+function ccWa(c){
+  const tel=String(c.telefono||'').replace(/\D/g,''); if(!tel) return '';
+  const fecha=c.plazo?new Date(c.plazo+'T12:00').toLocaleDateString('es-AR'):'';
+  const saldo=ccSaldo(c);
+  const msg=`Hola ${String(c.nombre||'').split(' ')[0]}! 👋 Te escribimos de ILUSTRE PHONE 📲 para recordarte que tenés un saldo pendiente${saldo?` de ${ccMonto(c,saldo)}`:''}${fecha?` con vencimiento el ${fecha}`:''}. Cualquier consulta, escribinos. ¡Gracias!`;
+  return `https://wa.me/549${tel.replace(/^549?/,'')}?text=${encodeURIComponent(msg)}`;
+}
+function renderCuentas(){
+  const tb=document.getElementById('tbody-cc'); if(!tb) return;
+  const q=(document.getElementById('search-cc')?.value||'').trim().toLowerCase();
+  const fE=document.getElementById('f-cc-estado').value, fS=document.getElementById('f-cc-suc').value;
+  const abiertas=cuentas.filter(c=>ccEstado(c).k!=='pag');
+  const vencidas=abiertas.filter(c=>ccEstado(c).k==='venc');
+  const badge=document.getElementById('cc-count'); if(badge){badge.textContent=vencidas.length;badge.style.display=vencidas.length?'inline-block':'none';}
+  const debeUSD=abiertas.filter(c=>c.moneda!=='ARS').reduce((a,c)=>a+ccSaldo(c),0);
+  const debeARS=abiertas.filter(c=>c.moneda==='ARS').reduce((a,c)=>a+ccSaldo(c),0);
+  document.getElementById('stats-cc').innerHTML=`
+    <div class="sc sc-blue"><div class="sc-label">CUENTAS ABIERTAS</div><div class="sc-val">${abiertas.length}</div></div>
+    <div class="sc sc-red"><div class="sc-label">VENCIDAS</div><div class="sc-val">${vencidas.length}</div></div>
+    <div class="sc"><div class="sc-label">A COBRAR USD</div><div class="sc-val" style="font-size:14px;padding-top:3px">${fmtUSD(debeUSD)}</div></div>
+    <div class="sc"><div class="sc-label">A COBRAR $</div><div class="sc-val" style="font-size:14px;padding-top:3px">${fmtARS(debeARS)}</div></div>`;
+  const data=cuentas.filter(c=>{
+    const e=ccEstado(c).k;
+    if(fE==='abiertas'&&e==='pag') return false;
+    if(fE==='vencidas'&&e!=='venc') return false;
+    if(fE==='pagadas'&&e!=='pag') return false;
+    if(fS&&c.sucursal!==fS) return false;
+    if(q&&![c.nombre,c.telefono,c.concepto].some(v=>v&&String(v).toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b)=>{const pa=ccEstado(a).k==='pag',pb=ccEstado(b).k==='pag'; if(pa!==pb) return pa?1:-1; return String(a.plazo||'9999').localeCompare(String(b.plazo||'9999'));});
+  tb.innerHTML=data.length===0?`<tr><td colspan="8" class="empty-state">${q?'No se encontró ninguna cuenta':'No hay cuentas corrientes en esta vista'}</td></tr>`
+    :data.map(c=>{
+      const ri=cuentas.indexOf(c); const e=ccEstado(c); const tieneMonto=(Number(c.monto)||0)>0;
+      const wa=ccWa(c);
+      return`<tr class="cc-row-${e.k}">
+        <td title="${esc(c.nombre)}"><strong>${esc(c.nombre)}</strong>${c.notas?`<div class="nota-prev" title="${esc(c.notas)}">📝 ${esc(c.notas)}</div>`:''}</td>
+        <td>${c.telefono?`<a href="${wa||'#'}" target="_blank" style="color:#0058B0;text-decoration:none">${esc(c.telefono)}</a>`:'<span class="enc-sub">—</span>'}</td>
+        <td><strong>${c.plazo?new Date(c.plazo+'T12:00').toLocaleDateString('es-AR'):'—'}</strong></td>
+        <td><span class="cc-badge cc-${e.k}">${e.txt}</span></td>
+        <td title="${esc(c.concepto)}">${esc(c.concepto)||'<span class="enc-sub">—</span>'}${c.sucursal?`<div class="enc-sub">📍 ${esc(c.sucursal)}</div>`:''}</td>
+        <td>${tieneMonto?ccMonto(c,c.monto):'<span class="enc-sub">—</span>'}</td>
+        <td>${tieneMonto?`<strong style="color:${ccSaldo(c)>0?'#C62828':'#1B5E20'}">${ccMonto(c,ccSaldo(c))}</strong>${(c.pagos||[]).length?`<div class="enc-sub">${c.pagos.length} pago${c.pagos.length!==1?'s':''}</div>`:''}`:'<span class="enc-sub">—</span>'}</td>
+        <td>
+          ${e.k!=='pag'&&tieneMonto?`<button class="btn-sell" onclick="openModal('cc-pago',${ri})">💵 Pago</button>`:''}
+          <button class="btn-e" onclick="openModal('cc-edit',${ri})">Ver / Editar</button>
+          ${wa&&e.k!=='pag'?`<a class="btn-e" style="text-decoration:none;background:#E8F5E9;border-color:#A5D6A7;color:#1B5E20" href="${wa}" target="_blank" title="Recordar por WhatsApp">📲</a>`:''}
+          ${canEdit()?`<button class="btn-d" onclick="delItem('cc',${ri})">✕</button>`:''}
+        </td>
+      </tr>`;
+    }).join('');
 }
 // ===================== VENTAS POR DÍA Y POR FECHAS =====================
 let rangoVentas='7'; const diasCerrados=new Set();
@@ -1421,7 +1516,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas'};
+  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1429,6 +1524,7 @@ function openModal(type,idx){
   else{mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save" onclick="saveModal()">Guardar</button>`;}
   if(type==='venta')setTimeout(updateVentaGeneral,50);
   if(type==='enc-edit')setTimeout(updateEncSaldo,0);
+  if(type==='cc-pago'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Registrar pago</button>`;}
   if(type==='notas'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='eq-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
@@ -1530,6 +1626,27 @@ function buildForm(type,idx){
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+  }
+  if(type==='cc-edit'){
+    const c=idx!==null?cuentas[idx]:null; const v=k=>c&&c[k]!=null?esc(c[k]):'';
+    const movs=c&&(c.pagos||[]).length?`<div class="section-label" style="margin-top:6px">PAGOS RECIBIDOS</div>${[...c.pagos].reverse().map(pg=>`<div class="cc-mov"><span>${fmtDatetime(pg.ts)}${pg.por?' · '+esc(pg.por):''}${pg.nota?` · <span class="enc-sub">${esc(pg.nota)}</span>`:''}</span><strong>${ccMonto(c,pg.monto)}</strong></div>`).join('')}<div class="cc-mov"><span>Saldo pendiente</span><strong style="color:${ccSaldo(c)>0?'#C62828':'#1B5E20'}">${ccMonto(c,ccSaldo(c))}</strong></div>`:'';
+    return`<div class="mfl"><label>NOMBRE Y APELLIDO *</label><input id="cc-nombre" type="text" placeholder="ej: Juan Pérez" value="${v('nombre')}"/></div>
+      <div class="mgrid"><div class="mfl"><label>N° DE CELULAR *</label><input id="cc-tel" type="tel" inputmode="tel" placeholder="2622 000000" value="${v('telefono')}"/></div>
+      <div class="mfl"><label>PLAZO MÁXIMO DE PAGO *</label><input id="cc-plazo" type="date" value="${v('plazo')}"/></div></div>
+      <div class="section-label">DEUDA (opcional)</div>
+      <div class="mgrid3"><div class="mfl"><label>MONTO</label><input id="cc-monto" type="number" min="0" placeholder="0" value="${v('monto')}"/></div>
+      <div class="mfl"><label>MONEDA</label><select id="cc-moneda"><option value="USD" ${!c||c.moneda!=='ARS'?'selected':''}>USD</option><option value="ARS" ${c&&c.moneda==='ARS'?'selected':''}>Pesos</option></select></div>
+      <div class="mfl"><label>SUCURSAL</label><select id="cc-suc">${SUCS.map(x=>opt(x,c?c.sucursal:sucursal)).join('')}</select></div></div>
+      <div class="mfl"><label>CONCEPTO</label><input id="cc-concepto" type="text" placeholder="ej: iPhone 15 128GB + funda" value="${v('concepto')}"/></div>
+      <div class="mfl"><label>NOTAS</label><textarea id="cc-notas" placeholder="Opcional" style="min-height:52px">${v('notas')}</textarea></div>
+      ${movs}`;
+  }
+  if(type==='cc-pago'){
+    const c=cuentas[idx];
+    return`<div class="sell-info"><strong>${esc(c.nombre)}</strong>${c.concepto?' · '+esc(c.concepto):''}<br>Deuda: ${ccMonto(c,c.monto)} · Pagado: ${ccMonto(c,ccPagado(c))} · <strong style="color:#C62828">Saldo: ${ccMonto(c,ccSaldo(c))}</strong></div>
+      <div class="mgrid"><div class="mfl"><label>MONTO QUE PAGA (${c.moneda==='ARS'?'$':'USD'}) *</label><input id="ccp-monto" type="number" min="0" step="any" value="${ccSaldo(c)}"/></div>
+      <div class="mfl"><label>DETALLE</label><input id="ccp-nota" type="text" placeholder="ej: transferencia / efectivo"/></div></div>
+      <div class="enc-sub">Si paga todo el saldo, la cuenta queda como <strong>Pagada</strong>.</div>`;
   }
   if(type==='notas'){
     const it=notaItemActual(); if(!it) return '';
@@ -1781,6 +1898,28 @@ async function saveModal(){
     await saveItem('ventas',ventas[editIdx]);
     showSyncBar('✓ Venta actualizada','ok');return;
   }
+  if(modalType==='cc-edit'){
+    const g=id=>(document.getElementById(id)?.value||'').trim();
+    const nombre=g('cc-nombre'); if(!nombre){alert('Ingresá nombre y apellido');return;}
+    const telefono=g('cc-tel'); if(!telefono){alert('Ingresá el número de celular');return;}
+    const plazo=g('cc-plazo'); if(!plazo){alert('Ingresá el plazo máximo de pago');return;}
+    const prev=editIdx!==null?cuentas[editIdx]:{ts:Date.now(),por:rolLabel(),pagos:[]};
+    const obj={...prev,nombre,telefono,plazo,monto:parseFloat(g('cc-monto'))||0,moneda:g('cc-moneda'),sucursal:g('cc-suc'),concepto:g('cc-concepto'),notas:g('cc-notas')};
+    if(editIdx!==null){cuentas[editIdx]=obj;}else{cuentas.push(obj);}
+    closeModal(); renderCuentas();
+    if(await saveItem('cuentas',obj)) showSyncBar('✓ Cuenta corriente guardada','ok');
+    return;
+  }
+  if(modalType==='cc-pago'){
+    const c=cuentas[editIdx]; if(!c){closeModal();return;}
+    const m=parseFloat(document.getElementById('ccp-monto').value)||0;
+    if(m<=0){alert('Ingresá el monto que paga');return;}
+    if(m>ccSaldo(c)+0.001&&!confirm('El pago es mayor al saldo pendiente. ¿Registrarlo igual?'))return;
+    c.pagos=[...(c.pagos||[]),{monto:m,ts:Date.now(),por:nombreNotas()||rolLabel(),nota:(document.getElementById('ccp-nota').value||'').trim()}];
+    closeModal(); renderCuentas();
+    if(await saveItem('cuentas',c)) showSyncBar(ccSaldo(c)<=0?'✓ Pago registrado · cuenta saldada':'✓ Pago registrado','ok');
+    return;
+  }
   if(modalType==='enc-ingreso'){
     const ri=editIdx; const e=encargos[ri]; if(!e){closeModal();return;}
     const g=id=>(document.getElementById(id)?.value||'').trim();
@@ -1903,11 +2042,12 @@ async function delItem(type,idx){
   if(type==='eq'){const id=equipos[idx]._id;equipos.splice(idx,1);renderEq();if(id)await deleteItem('equipos',id);}
   else if(type==='ac'){const id=accesorios[idx]._id;accesorios.splice(idx,1);renderAc();if(id)await deleteItem('accesorios',id);}
   else if(type==='enc'){const id=encargos[idx]._id;encargos.splice(idx,1);renderEncargos();if(id)await deleteItem('encargos',id);}
+  else if(type==='cc'){const id=cuentas[idx]._id;cuentas.splice(idx,1);renderCuentas();if(id)await deleteItem('cuentas',id);}
   else{const id=servicios[idx]._id;servicios.splice(idx,1);renderST();if(id)await deleteItem('servicios',id);}
   showSyncBar('✓ Eliminado de la nube','ok');
 }
 function exportarDatos(){
-  const backup={fecha:new Date().toISOString(),version:'iStockPro-supabase',equipos,accesorios,ventas,servicios,encargos};
+  const backup={fecha:new Date().toISOString(),version:'iStockPro-supabase',equipos,accesorios,ventas,servicios,encargos,cuentas};
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
