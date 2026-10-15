@@ -66,6 +66,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nota-meta{font-size:10.5px;color:#8A6D00;display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;}
 .nota-txt{font-size:13px;color:#1D1D1F;white-space:pre-wrap;word-break:break-word;}
 .nota-del{background:none;border:none;color:#C62828;cursor:pointer;font-size:12px;padding:0 2px;}
+.ventas-fechas{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;}
+.vf-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.vf-chip{padding:6px 12px;font-size:12px;font-weight:600;border:1.5px solid #0071E3;color:#0071E3;background:#fff;border-radius:18px;cursor:pointer;}
+.vf-chip.on{background:#0071E3;color:#fff;}
+.vf-rango{display:flex;gap:8px;flex-wrap:wrap;}
+.vf-rango label{font-size:12px;color:#6E6E73;display:flex;align-items:center;gap:6px;}
+.vf-rango input{padding:6px 9px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;font-family:inherit;}
+tr.dia-row td{background:#EEF4FF;border-top:2px solid #C7DBFF;cursor:pointer;padding:10px 11px;white-space:normal;}
+tr.dia-row:hover td{background:#E3EEFF;}
+.dia-tit{font-size:13px;font-weight:700;color:#0058B0;}
+.dia-res{font-size:12px;color:#1D1D1F;margin-left:10px;}
+.dia-res b{font-weight:700;}
+.dia-flecha{display:inline-block;width:16px;color:#0058B0;transition:transform .15s;}
 .sc.sc-purple{background:#F6EEFB;}.sc-purple .sc-val{color:#7B1FA2;}
 .sc.sc-orange{background:#FFF3E0;}.sc-orange .sc-val{color:#D35400;}
 .content{padding:1.25rem 1.5rem;}
@@ -333,9 +346,23 @@ tr:hover td{background:#FAFAFA;}
       <select id="f-estado-v" onchange="renderVentas()"><option value="">Todas</option><option value="activa">Activas</option><option value="anulada">Anuladas</option></select>
       <button class="btn-add" onclick="openModal('venta',null)">+ Registrar venta</button>
     </div>
+    <div class="toolbar ventas-fechas">
+      <div class="vf-chips">
+        <button class="vf-chip" data-r="hoy" onclick="setRangoVentas('hoy')">Hoy</button>
+        <button class="vf-chip" data-r="ayer" onclick="setRangoVentas('ayer')">Ayer</button>
+        <button class="vf-chip" data-r="7" onclick="setRangoVentas('7')">Últimos 7 días</button>
+        <button class="vf-chip" data-r="mes" onclick="setRangoVentas('mes')">Este mes</button>
+        <button class="vf-chip" data-r="mespas" onclick="setRangoVentas('mespas')">Mes pasado</button>
+        <button class="vf-chip" data-r="todo" onclick="setRangoVentas('todo')">Todo</button>
+      </div>
+      <div class="vf-rango">
+        <label>Desde <input type="date" id="f-desde-v" onchange="rangoVentas='custom';renderVentas()"/></label>
+        <label>Hasta <input type="date" id="f-hasta-v" onchange="rangoVentas='custom';renderVentas()"/></label>
+      </div>
+    </div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:10%">Fecha</th><th style="width:6%">Tipo</th>
+        <th style="width:8%">Hora</th><th style="width:7%">Tipo</th>
         <th style="width:20%">Producto</th><th style="width:9%">Sucursal</th>
         <th style="width:5%">Cant.</th><th style="width:9%">Total</th>
         <th style="width:14%">Pagos</th><th style="width:6%">Por</th>
@@ -873,28 +900,48 @@ function renderAc(){
     <div class="sc"><div class="sc-label">VALOR STOCK</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(val)}</div></div>
     <div class="sc"><div class="sc-label">SIN STOCK</div><div class="sc-val">${out}</div></div>`;
 }
+// ===================== VENTAS POR DÍA Y POR FECHAS =====================
+let rangoVentas='7'; const diasCerrados=new Set();
+function ymdLocal(d){d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function setRangoVentas(r){
+  rangoVentas=r; const hoy=new Date(); const d=document.getElementById('f-desde-v'), h=document.getElementById('f-hasta-v');
+  const ini=new Date(hoy), fin=new Date(hoy);
+  if(r==='ayer'){ini.setDate(ini.getDate()-1);fin.setDate(fin.getDate()-1);}
+  else if(r==='7'){ini.setDate(ini.getDate()-6);}
+  else if(r==='mes'){ini.setDate(1);}
+  else if(r==='mespas'){ini.setMonth(ini.getMonth()-1,1);fin.setDate(0);}
+  if(r==='todo'){d.value='';h.value='';}else{d.value=ymdLocal(ini);h.value=ymdLocal(fin);}
+  renderVentas();
+}
+function toggleDiaVentas(k){diasCerrados.has(k)?diasCerrados.delete(k):diasCerrados.add(k);renderVentas();}
 function renderVentas(){
   const fS=document.getElementById('f-suc-v').value;
   const fT=document.getElementById('f-tipo-v').value;
   const fE=document.getElementById('f-estado-v').value;
-  const data=[...ventas].reverse().filter(v=>(!fS||v.sucursal===fS)&&(!fT||v.tipo===fT)&&(!fE||v.estado===fE));
-  const activas=ventas.filter(v=>v.estado==='activa');
+  const dEl=document.getElementById('f-desde-v'), hEl=document.getElementById('f-hasta-v');
+  if(dEl&&!dEl.value&&!hEl.value&&rangoVentas!=='todo'&&rangoVentas!=='custom'){setRangoVentas(rangoVentas);return;}
+  const desde=dEl?.value||'', hasta=hEl?.value||'';
+  document.querySelectorAll('.vf-chip').forEach(c=>c.classList.toggle('on',c.dataset.r===rangoVentas));
+  const enRango=v=>{const k=ymdLocal(v.ts);return (!desde||k>=desde)&&(!hasta||k<=hasta);};
+  const data=[...ventas].filter(v=>(!fS||v.sucursal===fS)&&(!fT||v.tipo===fT)&&(!fE||v.estado===fE)&&enRango(v)).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const activas=data.filter(v=>v.estado==='activa');
   const usd=activas.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
   const ars=activas.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
-  const hoy=activas.filter(v=>new Date(v.ts).toDateString()===new Date().toDateString()).length;
+  const nDias=new Set(activas.map(v=>ymdLocal(v.ts))).size;
+  const periodo=rangoVentas==='todo'?'TODO':desde&&hasta&&desde===hasta?new Date(desde+'T12:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}):'PERÍODO';
   document.getElementById('stats-ventas').innerHTML=`
-    <div class="sc"><div class="sc-label">VENTAS HOY</div><div class="sc-val">${hoy}</div></div>
+    <div class="sc"><div class="sc-label">VENTAS · ${periodo}</div><div class="sc-val">${activas.length}</div></div>
     <div class="sc"><div class="sc-label">TOTAL EQUIPOS</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtUSD(usd)}</div></div>
     <div class="sc"><div class="sc-label">TOTAL ACCES.</div><div class="sc-val" style="font-size:13px;padding-top:3px">${fmtARS(ars)}</div></div>
-    <div class="sc"><div class="sc-label">TOTAL VENTAS</div><div class="sc-val">${activas.length}</div></div>`;
-  document.getElementById('tbody-ventas').innerHTML=data.length===0
-    ?'<tr><td colspan="9" class="empty-state">Sin ventas registradas</td></tr>'
-    :data.map(v=>{
+    <div class="sc"><div class="sc-label">DÍAS CON VENTAS</div><div class="sc-val">${nDias}</div></div>`;
+  const grupos=[]; const idx={};
+  data.forEach(v=>{const k=ymdLocal(v.ts); if(!(k in idx)){idx[k]=grupos.length;grupos.push({k,items:[]});} grupos[idx[k]].items.push(v);});
+  const filaVenta=v=>{
       const ri=ventas.indexOf(v); const an=v.estado==='anulada';
       const ph=(v.pagos||[]).map(p=>`<span class="pago-tag">${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}</span>`).join('');
       const canjeTag=v.canje&&v.canje.modelo?`<span class="pago-tag" style="background:#FFF3E0;color:#8A4D00">🔄 Canje: ${v.canje.modelo} − USD ${Number(v.canje.valor).toLocaleString('es-AR')}</span>`:'';
       return`<tr class="${an?'anulada-row':''}">
-        <td style="font-size:10px">${fmtDatetime(v.ts)}</td>
+        <td style="font-size:12px;color:#6E6E73">🕐 ${new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</td>
         <td><span class="vtag ${an?'vtag-an':v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${an?'Anul.':v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
         <td title="${v.producto}">${v.producto}${notaPrev(v)}</td>
         <td>${v.sucursal}</td><td>${v.cantidad}</td>
@@ -903,6 +950,25 @@ function renderVentas(){
         <td style="font-size:10px;color:#6E6E73">${v.por}</td>
         <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button> `:''}${notaBtn('v',v,ri)}</td>
       </tr>`;
+    };
+  document.getElementById('tbody-ventas').innerHTML=grupos.length===0
+    ?`<tr><td colspan="9" class="empty-state">${desde||hasta?'No hay ventas en esas fechas':'Sin ventas registradas'}</td></tr>`
+    :grupos.map(g=>{
+      const act=g.items.filter(v=>v.estado==='activa');
+      const gu=act.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
+      const ga=act.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
+      const nAn=g.items.length-act.length;
+      const cerrado=diasCerrados.has(g.k);
+      const f=new Date(g.k+'T12:00');
+      const hoyK=ymdLocal(Date.now()), ayK=ymdLocal(Date.now()-864e5);
+      let nombre=g.k===hoyK?'Hoy':g.k===ayK?'Ayer':f.toLocaleDateString('es-AR',{weekday:'long'});
+      nombre=nombre.charAt(0).toUpperCase()+nombre.slice(1);
+      const cab=`<tr class="dia-row" onclick="toggleDiaVentas('${g.k}')"><td colspan="9">
+        <span class="dia-flecha" style="transform:rotate(${cerrado?-90:0}deg)">▾</span>
+        <span class="dia-tit">📅 ${nombre} ${f.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})}</span>
+        <span class="dia-res"><b>${act.length}</b> venta${act.length!==1?'s':''}${gu?` · <b>${fmtUSD(gu)}</b>`:''}${ga?` · <b>${fmtARS(ga)}</b>`:''}${nAn?` · <span style="color:#C62828">${nAn} anulada${nAn!==1?'s':''}</span>`:''}</span>
+      </td></tr>`;
+      return cab+(cerrado?'':g.items.map(filaVenta).join(''));
     }).join('');
 }
 function renderST(){
