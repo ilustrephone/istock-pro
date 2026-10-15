@@ -296,11 +296,11 @@ tr:hover td{background:#FAFAFA;}
     <div class="toolbar" id="toolbar-eq"></div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:20%">Modelo</th><th style="width:6%">Mem.</th>
-        <th style="width:9%">Batería</th><th style="width:9%">IMEI</th>
-        <th style="width:9%">Sucursal</th><th style="width:8%">Precio</th>
-        <th style="width:7%" id="th-costo-eq">Costo</th>
-        <th style="width:22%">Acciones</th>
+        <th style="width:20%">Modelo</th><th style="width:7%">Mem.</th>
+        <th style="width:9%">Batería</th><th style="width:10%">IMEI</th>
+        <th style="width:10%">Sucursal</th><th style="width:8%">Precio</th>
+        <th style="width:8%" id="th-costo-eq">Costo</th>
+        <th style="width:17%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-eq"></tbody>
     </table></div>
@@ -316,11 +316,11 @@ tr:hover td{background:#FAFAFA;}
     <div class="toolbar" id="toolbar-ac"></div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:22%">Producto</th><th style="width:13%">Categoría</th>
-        <th style="width:9%">Precio</th><th style="width:8%" id="th-costo-ac">Costo</th>
-        <th style="width:7%">Tunuyán</th><th style="width:8%">La Consulta</th>
-        <th style="width:5%">Total</th><th style="width:7%">Estado</th>
-        <th style="width:21%">Acciones</th>
+        <th style="width:24%">Producto</th><th style="width:15%">Categoría</th>
+        <th style="width:10%">Precio</th><th style="width:9%" id="th-costo-ac">Costo</th>
+        <th style="width:8%">Tunuyán</th><th style="width:9%">La Consulta</th>
+        <th style="width:6%">Total</th><th style="width:7%">Estado</th>
+        <th style="width:12%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-ac"></tbody>
     </table></div>
@@ -335,11 +335,11 @@ tr:hover td{background:#FAFAFA;}
     </div>
     <div class="twrap"><table>
       <thead><tr>
-        <th style="width:11%">Fecha</th><th style="width:6%">Tipo</th>
-        <th style="width:19%">Producto</th><th style="width:10%">Sucursal</th>
+        <th style="width:10%">Fecha</th><th style="width:6%">Tipo</th>
+        <th style="width:20%">Producto</th><th style="width:9%">Sucursal</th>
         <th style="width:5%">Cant.</th><th style="width:9%">Total</th>
         <th style="width:14%">Pagos</th><th style="width:6%">Por</th>
-        <th style="width:20%">Acciones</th>
+        <th style="width:21%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-ventas"></tbody>
     </table></div>
@@ -555,6 +555,10 @@ tr:hover td{background:#FAFAFA;}
         <div id="carrito-pagos-lista" style="display:flex;flex-direction:column;gap:4px;"></div>
         <div id="carrito-pago-resumen" style="margin-top:6px;font-size:12px;color:#6E6E73;"></div>
       </div>
+      <div style="margin-top:10px;">
+        <div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:6px;">📝 NOTA (opcional)</div>
+        <textarea id="carrito-nota" placeholder="ej: falta transferir el resto · garantía 3 meses…" style="width:100%;min-height:48px;padding:7px 10px;font-size:12px;border:1px solid #D2D2D7;border-radius:9px;font-family:inherit;resize:vertical;"></textarea>
+      </div>
       <div style="display:flex;gap:8px;margin-top:12px;">
         <button onclick="limpiarCarrito()" style="flex:0;padding:10px 14px;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;">Limpiar</button>
         <button class="btn-confirmar-venta" id="btnConfirmarVenta" onclick="confirmarVentaCarrito()" disabled style="flex:1;">✅ Confirmar venta</button>
@@ -709,8 +713,8 @@ function rolLabel(){return rol==='admin'?'Admin':rol==='gerente'?'Gerente':'Empl
 function shortImei(i){return i?'···'+i.slice(-4):'-';}
 function hl(text,q){if(!q)return text;const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');return String(text).replace(re,'<mark class="hl">$1</mark>');}
 function notasTxt(it){return notasDe(it).map(n=>n.txt).join(' ');}
-function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria),notasTxt(e)].some(v=>v&&String(v).toLowerCase().includes(q));}
-function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio),notasTxt(a)].some(v=>v&&String(v).toLowerCase().includes(q));}
+function matchEq(e,q){if(!q)return true;return[e.modelo,e.memoria,e.imei,e.sucursal,String(e.precio),String(e.bateria)].some(v=>v&&String(v).toLowerCase().includes(q));}
+function matchAc(a,q){if(!q)return true;return[a.nombre,a.cat,String(a.precio)].some(v=>v&&String(v).toLowerCase().includes(q));}
 function fmtARS(n){return'$ '+Number(n||0).toLocaleString('es-AR');}
 function fmtUSD(n){return'USD '+Number(n||0).toLocaleString('es-AR');}
 function renderToolbar(){
@@ -803,7 +807,7 @@ function renderEq(){
       const costoCell=admin?`<td>USD ${(e.costo||0).toLocaleString('es-AR')}</td>`:`<td style="display:none"></td>`;
       const sen=eqOculto(e);
       return`<tr class="${sen?'eq-senado':''}">
-        <td title="${e.modelo}">${sen?'<span class="tag-senado">SEÑADO</span> ':''}${hl(e.modelo,q)}${notaPrev(e)}</td><td>${hl(e.memoria,q)}</td>
+        <td title="${e.modelo}">${sen?'<span class="tag-senado">SEÑADO</span> ':''}${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
         <td>${batBadge(e.bateria)}</td>
         <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
         <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
@@ -812,7 +816,6 @@ function renderEq(){
           <button class="btn-sell" ${e.stock===0?'disabled':''} onclick="openModal('venta-eq',${ri})">Vender</button>
           <button class="btn-e" onclick="openModal('eq-edit',${ri})">Editar</button>
           <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${e.stock===0?'disabled':''} onclick="agregarEqAlCarrito(${ri})">🛒</button>
-          ${notaBtn('eq',e,ri)}
           <button class="btn-d" onclick="delItem('eq',${ri})">✕</button>
         </td>
       </tr>`;
@@ -847,7 +850,7 @@ function renderAc(){
       const ri=accesorios.indexOf(a); const tot=totalAc(a);
       const costoCell=admin?`<td>${fmtARS(a.costo||0)}</td>`:`<td style="display:none"></td>`;
       return`<tr>
-        <td title="${a.nombre}">${hl(a.nombre,q)}${notaPrev(a)}</td><td>${hl(a.cat,q)}</td>
+        <td title="${a.nombre}">${hl(a.nombre,q)}</td><td>${hl(a.cat,q)}</td>
         <td>${fmtARS(a.precio)}</td>${costoCell}
         <td style="text-align:center;font-weight:600">${a.stockT||0}</td>
         <td style="text-align:center;font-weight:600">${a.stockC||0}</td>
@@ -855,7 +858,6 @@ function renderAc(){
         <td>
           <button class="btn-sell" ${tot===0?'disabled':''} onclick="openModal('venta-ac',${ri})">Vender</button>
           <button class="btn-e" style="background:#E3F0FF;border-color:#90CAF9;color:#0058B0;" ${tot===0?'disabled':''} onclick="agregarAcAlCarrito(${ri})">🛒</button>
-          ${notaBtn('ac',a,ri)}
           ${ce?`<button class="btn-e" onclick="openModal('ac-edit',${ri})">Editar</button>`:''}
           ${ce?`<button class="btn-d" onclick="delItem('ac',${ri})">✕</button>`:''}
         </td>
@@ -894,12 +896,12 @@ function renderVentas(){
       return`<tr class="${an?'anulada-row':''}">
         <td style="font-size:10px">${fmtDatetime(v.ts)}</td>
         <td><span class="vtag ${an?'vtag-an':v.tipo==='equipo'?'vtag-eq':'vtag-ac'}">${an?'Anul.':v.tipo==='equipo'?'Equipo':'Acces.'}</span></td>
-        <td title="${v.producto}">${v.producto}</td>
+        <td title="${v.producto}">${v.producto}${notaPrev(v)}</td>
         <td>${v.sucursal}</td><td>${v.cantidad}</td>
         <td style="font-weight:600;font-size:11px">${v.moneda==='USD'?'USD ':'$ '}${v.total.toLocaleString('es-AR')}</td>
         <td style="white-space:normal;line-height:1.6">${canjeTag}${ph||(!canjeTag?'—':'')}</td>
         <td style="font-size:10px;color:#6E6E73">${v.por}</td>
-        <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button>`:'<span style="font-size:10px;color:#aaa">—</span>'}</td>
+        <td>${!an?`<button class="btn-e" onclick="openModal('venta-edit',${ri})">Editar</button> <button class="btn-anular" onclick="anularVenta(${ri})">Anular</button> `:''}${notaBtn('v',v,ri)}</td>
       </tr>`;
     }).join('');
 }
@@ -1013,14 +1015,18 @@ function renderEncargos(){
   renderAIng(); renderPedidoBtn();
 }
 function encPendIngreso(){return encargos.filter(e=>e.canje&&!e.ingresado);}
-// ===================== NOTAS EN EQUIPOS Y ACCESORIOS =====================
-// Cada equipo/accesorio guarda sus notas en data.notasItem = [{txt, por, rol, suc, ts}]
+// ===================== NOTAS EN VENTAS =====================
+// Cada venta guarda sus notas en data.notasItem = [{txt, por, rol, suc, ts}]
 let notaCtx=null;
 function notasDe(it){return Array.isArray(it&&it.notasItem)?it.notasItem:[];}
 function notaPrev(it){const n=notasDe(it);if(!n.length)return'';const u=n[n.length-1];return`<div class="nota-prev" title="${esc(u.txt)}">📝 ${esc(u.txt)}</div>`;}
 function notaBtn(t,it,ri){const n=notasDe(it).length;return`<button class="btn-e btn-nota ${n?'':'vacia'}" title="Notas" onclick="abrirNotas('${t}',${ri})">📝${n?' '+n:''}</button>`;}
-function notaArr(t){return t==='eq'?equipos:accesorios;}
-function notaTabla(t){return t==='eq'?'equipos':'accesorios';}
+function notaArr(t){return t==='v'?ventas:t==='eq'?equipos:accesorios;}
+function notaTabla(t){return t==='v'?'ventas':t==='eq'?'equipos':'accesorios';}
+function notaRender(t){t==='v'?renderVentas():t==='eq'?renderEq():renderAc();}
+function nuevaNota(txt){return{txt,por:nombreNotas(),rol:rolLabel(),suc:sucursal,ts:Date.now()};}
+// Nota opcional al registrar la venta (campo del formulario o del carrito)
+function notaInicialVenta(id){const el=document.getElementById(id);const t=(el?.value||'').trim();if(el)el.value='';return t?[nuevaNota(t)]:undefined;}
 function notaItemActual(){if(!notaCtx)return null;const arr=notaArr(notaCtx.t);return (notaCtx.id&&arr.find(x=>x._id===notaCtx.id))||notaCtx.ref;}
 function abrirNotas(t,ri){const it=notaArr(t)[ri];if(!it)return;notaCtx={t,id:it._id,ref:it};openModal('notas',null);}
 function nombreNotas(){try{return localStorage.getItem('istock_nombre')||'';}catch(e){return'';}}
@@ -1051,7 +1057,7 @@ async function agregarNota(){
   const ok=await saveItem(notaTabla(notaCtx.t),it);
   if(ta) ta.value='';
   if(btn){btn.disabled=false;btn.textContent='Guardar nota';}
-  renderNotasLista(); notaCtx.t==='eq'?renderEq():renderAc();
+  renderNotasLista(); notaRender(notaCtx.t);
   if(ok) showSyncBar('✓ Nota guardada','ok');
 }
 async function borrarNota(k){
@@ -1061,7 +1067,7 @@ async function borrarNota(k){
   await refrescarItemNotas();
   it.notasItem=notasDe(it).filter(x=>!(target&&x.ts===target.ts&&x.txt===target.txt));
   const ok=await saveItem(notaTabla(notaCtx.t),it);
-  renderNotasLista(); notaCtx.t==='eq'?renderEq():renderAc();
+  renderNotasLista(); notaRender(notaCtx.t);
   if(ok) showSyncBar('✓ Nota borrada','ok');
 }
 // ===================== LISTA DE EQUIPOS PARA WHATSAPP =====================
@@ -1304,7 +1310,8 @@ function renderReporte(){
 // ===================== PAGOS =====================
 function buildPagoSection(esUSD){
   const cotizBlock=esUSD?`<div id="cotiz-block" style="display:none;margin-bottom:10px;background:#fff;border:1px solid #E8E8ED;border-radius:10px;padding:10px 12px;"><div style="font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.04em;margin-bottom:8px;">💱 COTIZACIÓN DEL DÓLAR</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;"><div><label style="display:block;font-size:11px;color:#6E6E73;margin-bottom:4px;">TIPO DE CAMBIO ($ x USD)</label><input id="inp-cotiz" type="number" min="1" placeholder="ej: 1200" style="width:100%;padding:7px 9px;font-size:13px;border:1px solid #D2D2D7;border-radius:9px;background:#fff;color:#1D1D1F;" oninput="updateCotiz()"/></div><div id="cotiz-resultado" style="font-size:12px;color:#6E6E73;padding-bottom:8px;"></div></div></div>`:''
-  return`<div class="pago-section"><div class="pago-section-title">MÉTODO DE PAGO</div>${cotizBlock}<div class="pago-metodos">${METODOS.map(m=>`<div class="pago-item"><label><input type="checkbox" id="chk-${m.id}" onchange="togglePago('${m.id}',${esUSD?'true':'false'})"> ${m.label}</label><input class="pago-amount" type="number" id="amt-${m.id}" placeholder="0" disabled oninput="updateResumen()"/></div>`).join('')}</div><div id="pago-resumen" style="display:none"></div><div id="pago-msg"></div></div>`;
+  return`<div class="pago-section"><div class="pago-section-title">MÉTODO DE PAGO</div>${cotizBlock}<div class="pago-metodos">${METODOS.map(m=>`<div class="pago-item"><label><input type="checkbox" id="chk-${m.id}" onchange="togglePago('${m.id}',${esUSD?'true':'false'})"> ${m.label}</label><input class="pago-amount" type="number" id="amt-${m.id}" placeholder="0" disabled oninput="updateResumen()"/></div>`).join('')}</div><div id="pago-resumen" style="display:none"></div><div id="pago-msg"></div></div>
+  <div class="mfl" style="margin-top:10px"><label>📝 NOTA (opcional)</label><textarea id="mf-nota" placeholder="ej: falta transferir el resto · se lleva funda de regalo · garantía 3 meses…" style="min-height:52px"></textarea></div>`;
 }
 function updateCotiz(){
   const cotiz=parseFloat(document.getElementById('inp-cotiz')?.value)||0;
@@ -1460,11 +1467,12 @@ function buildForm(type,idx){
   }
   if(type==='notas'){
     const it=notaItemActual(); if(!it) return '';
-    const titulo=notaCtx.t==='eq'?`${esc(it.modelo)} ${esc(it.memoria||'')}${it.imei?` · IMEI ···${esc(String(it.imei).slice(-4))}`:''}`:`${esc(it.nombre)}`;
+    const titulo=notaCtx.t==='v'?`🧾 ${esc(it.producto)} · ${it.moneda==='USD'?'USD ':'$ '}${Number(it.total||0).toLocaleString('es-AR')}<br><span class="enc-sub">Venta del ${fmtDatetime(it.ts)}${it.por?' · por '+esc(it.por):''}${it.estado==='anulada'?' · ANULADA':''}</span>`
+      :notaCtx.t==='eq'?`${esc(it.modelo)} ${esc(it.memoria||'')}${it.imei?` · IMEI ···${esc(String(it.imei).slice(-4))}`:''}`:`${esc(it.nombre)}`;
     setTimeout(()=>{renderNotasLista();document.getElementById('nota-txt')?.focus();},0);
     return`<div class="sell-info"><strong>${titulo}</strong>${it.sucursal?`<br>📍 ${esc(it.sucursal)}`:''}</div>
       <div id="notas-lista" style="max-height:260px;overflow-y:auto;margin-bottom:10px"></div>
-      <div class="mfl"><label>NUEVA NOTA</label><textarea id="nota-txt" placeholder="ej: tiene un rayón en el marco · lo reservó Juan hasta el viernes · falta cargador…" style="min-height:70px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))agregarNota()"></textarea></div>
+      <div class="mfl"><label>NUEVA NOTA</label><textarea id="nota-txt" placeholder="ej: falta transferir el resto · se lleva funda de regalo · garantía 3 meses…" style="min-height:70px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))agregarNota()"></textarea></div>
       <div class="mgrid"><div class="mfl"><label>TU NOMBRE</label><input id="nota-por" type="text" placeholder="ej: yami" value="${esc(nombreNotas())}"/></div>
       <div class="mfl" style="display:flex;align-items:flex-end"><button id="nota-btn" class="btn-save" style="width:100%" onclick="agregarNota()">Guardar nota</button></div></div>`;
   }
@@ -1628,7 +1636,7 @@ async function saveModal(){
     return;
   }
   const regVenta=async(tipo,prodIdx,c,p,sv,moneda,producto,sStock,eqIdx,acIdx)=>{
-    const venta={ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx,acIdx,pagos:getPagos()};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx,acIdx,pagos:getPagos()};
     ventas.push(venta);
     await saveItem('ventas', venta);
   };
@@ -1650,7 +1658,7 @@ async function saveModal(){
     closeModal();renderEq();
     await saveItem('equipos', equipos[eIdx]);
     const canjeObj=tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado,cliente:canjeCliente}:null;
-    const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:eIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:eIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
     ventas.push(venta);
     await saveItem('ventas',venta);
     // Si hay canje, registrar también en ingresos
@@ -1670,7 +1678,7 @@ async function saveModal(){
     if(sv==='Tunuyán')accesorios[aIdx].stockT-=c;else accesorios[aIdx].stockC-=c;
     closeModal();renderAc();
     await saveItem('accesorios', accesorios[aIdx]);
-    const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:aIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:aIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
     ventas.push(venta);
     await saveItem('ventas',venta);
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
@@ -1684,7 +1692,7 @@ async function saveModal(){
       const pagosGuardados=getPagos();
       equipos[idx].stock-=c;closeModal();renderEq();
       await saveItem('equipos',equipos[idx]);
-      const venta={ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:null};
+      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     } else {
@@ -1693,7 +1701,7 @@ async function saveModal(){
       if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
       closeModal();renderAc();
       await saveItem('accesorios',accesorios[idx]);
-      const venta={ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:idx,acId:a._id||null,pagos:pagosGuardados,canje:null};
+      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:idx,acId:a._id||null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     }
@@ -2399,13 +2407,14 @@ async function confirmarVentaCarrito(){
   const totalARS=Math.max(0,subtotalARS-descARS);
   const cantTotal=carrito.reduce((a,c)=>a+c.qty,0);
   if(!confirm('Confirmar venta de '+cantTotal+' producto(s) en '+sv+'?'))return;
+  const notaC=notaInicialVenta('carrito-nota');
   document.getElementById('btnConfirmarVenta').disabled=true;
   document.getElementById('btnConfirmarVenta').textContent='Guardando...';
   for(const item of carrito){
     if(item.tipo==='equipo'){
       const eq=equipos.find(e=>(e.modelo+' '+e.memoria)===item.nombre&&e.stock>=item.qty);
       if(eq){eq.stock-=item.qty;await saveItem('equipos',eq);}
-      const venta={ts:Date.now(),tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
       ventas.push(venta);await saveItem('ventas',venta);
     }else{
       const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
@@ -2414,7 +2423,7 @@ async function confirmarVentaCarrito(){
         else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
         await saveItem('accesorios',ac);
       }
-      const venta={ts:Date.now(),tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
       ventas.push(venta);await saveItem('ventas',venta);
     }
   }
