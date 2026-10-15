@@ -787,13 +787,16 @@ function renderToolbar(){
   document.getElementById('th-costo-ac').style.display=isAdmin()?'':'none';
 }
 function onRolChange(){const v=document.getElementById('sel-rol').value;document.getElementById('pin-wrap').style.display=(v==='admin'||v==='gerente')?'block':'none';}
-async function login(){
+async function login(auto){
   const r=document.getElementById('sel-rol').value;
   if(!r){alert('Elegí tu rol para entrar');document.getElementById('sel-rol').focus();return;}
   const s=document.getElementById('sel-suc').value;
   const pin=document.getElementById('inp-pin').value;
-  if(r==='admin'&&pin!==PIN_ADMIN){alert('PIN incorrecto');return;}
-  if(r==='gerente'&&pin!==PIN_GERENTE){alert('PIN incorrecto');return;}
+  // Al actualizar la página se restaura la sesión ya validada: no se vuelve a pedir el PIN
+  if(!auto){
+    if(r==='admin'&&pin!==PIN_ADMIN){alert('PIN incorrecto');return false;}
+    if(r==='gerente'&&pin!==PIN_GERENTE){alert('PIN incorrecto');return false;}
+  }
   rol=r; sucursal=s;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
@@ -2412,8 +2415,8 @@ async function init(){
       if(savedRol&&savedSuc){
         document.getElementById('sel-rol').value=savedRol;
         document.getElementById('sel-suc').value=savedSuc;
-        await login();
-        return;
+        onRolChange();
+        if(await login(true)!==false) return;
       }
     }catch(e){}
     document.getElementById('login-screen').style.display='flex';
