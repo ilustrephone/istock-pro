@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
 <style>
@@ -154,6 +154,7 @@ tr:hover td{background:#FAFAFA;}
 .pago-section{background:#F5F5F7;border-radius:12px;padding:13px;margin-bottom:10px;}
 .pago-section-title{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:11px;}
 .pago-metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-xls-tr{margin-left:auto;background:#1D6F42;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}.btn-xls-tr:hover{background:#155734;}
 .pago-item{display:flex;flex-direction:column;gap:5px;}
 .pago-item label{font-size:12px;color:#1D1D1F;display:flex;align-items:center;gap:6px;cursor:pointer;}
 .pago-item label input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#0071E3;}
@@ -367,6 +368,7 @@ tr:hover td{background:#FAFAFA;}
         <label>Desde <input type="date" id="f-desde-v" onchange="rangoVentas='custom';renderVentas()"/></label>
         <label>Hasta <input type="date" id="f-hasta-v" onchange="rangoVentas='custom';renderVentas()"/></label>
       </div>
+      <button class="btn-xls-tr" onclick="excelTransfAccesorios()" title="Descarga un Excel con las ventas de accesorios pagadas por transferencia, según las fechas y sucursal elegidas">📊 Excel transferencias accesorios</button>
     </div>
     <div class="twrap"><table>
       <thead><tr>
@@ -1000,6 +1002,66 @@ function renderCuentas(){
 }
 // ===================== VENTAS POR DÍA Y POR FECHAS =====================
 let rangoVentas='7'; const diasCerrados=new Set();
+// ===================== EXCEL TRANSFERENCIAS ACCESORIOS =====================
+function cargarXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return new Promise((ok,err)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=ok;sc.onerror=()=>err(new Error('No se pudo cargar la librería de Excel'));document.head.appendChild(sc);});
+}
+// Monto de transferencia que corresponde a esta venta. En ventas por carrito los pagos
+// se guardaron completos en cada ítem, así que se prorratea según el total del ítem.
+function montoTransfVenta(v){
+  const pagos=v.pagos||[];
+  const tr=pagos.filter(p=>p.id==='transferencia').reduce((a,p)=>a+(Number(p.monto)||0),0);
+  if(tr<=0)return 0;
+  const suma=pagos.reduce((a,p)=>a+(Number(p.monto)||0),0);
+  const total=Number(v.total)||0;
+  if(total>0&&suma>total+0.5)return Math.round(tr*total/suma);
+  return tr;
+}
+function xlsSerial(y,m,d){return (Date.UTC(y,m,d)-Date.UTC(1899,11,30))/86400000;}
+async function excelTransfAccesorios(){
+  const fS=document.getElementById('f-suc-v').value;
+  const desde=document.getElementById('f-desde-v')?.value||'', hasta=document.getElementById('f-hasta-v')?.value||'';
+  const filas=ventas.filter(v=>v.tipo==='accesorio'&&v.estado!=='anulada'&&(!fS||v.sucursal===fS))
+    .filter(v=>{const k=ymdLocal(v.ts);return (!desde||k>=desde)&&(!hasta||k<=hasta);})
+    .map(v=>({v,tr:montoTransfVenta(v)})).filter(x=>x.tr>0)
+    .sort((a,b)=>(a.v.ts||0)-(b.v.ts||0));
+  if(!filas.length){showSyncBar('No hay ventas de accesorios por transferencia en ese período','error');setTimeout(()=>document.getElementById('sync-bar').style.display='none',3500);return;}
+  try{await cargarXLSX();}catch(e){showSyncBar('✕ '+e.message,'error');return;}
+  const head=['Fecha','Hora','Sucursal','Accesorio','Cant.','Precio unit. ($)','Total venta ($)','Transferencia ($)','Otros medios','Vendedor','Nota'];
+  const rows=filas.map(({v,tr})=>{
+    const d=new Date(v.ts);
+    const otros=(v.pagos||[]).filter(p=>p.id!=='transferencia').map(p=>`${p.label}: ${p.prefix} ${Number(p.monto).toLocaleString('es-AR')}`).join(' / ');
+    const nota=(v.notasItem||[]).map(n=>n.txt).join(' · ');
+    return [xlsSerial(d.getFullYear(),d.getMonth(),d.getDate()),String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),v.sucursal||'',v.producto||'',Number(v.cantidad)||0,Number(v.precioUnit)||0,Number(v.total)||0,tr,otros,v.por||'',nota];
+  });
+  const n=rows.length, last=n+1;
+  const titulo=`Ventas de accesorios por transferencia · ${fS||'Ambas sucursales'} · ${desde?desde.split('-').reverse().join('/'):'inicio'} al ${hasta?hasta.split('-').reverse().join('/'):'hoy'}`;
+  const aoa=[[titulo],[],head,...rows,[],['TOTAL','','','',{f:`SUM(E4:E${last+2})`},'',{f:`SUM(G4:G${last+2})`},{f:`SUM(H4:H${last+2})`}]];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  for(let r=4;r<=n+3;r++){
+    const a=ws['A'+r];if(a)a.z='dd/mm/yyyy';
+    ['F','G','H'].forEach(c=>{const x=ws[c+r];if(x)x.z='#,##0';});
+  }
+  ['G','H'].forEach(c=>{const x=ws[c+(n+5)];if(x)x.z='#,##0';});
+  ws['!cols']=[{wch:11},{wch:7},{wch:12},{wch:34},{wch:6},{wch:15},{wch:15},{wch:17},{wch:30},{wch:16},{wch:34}];
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
+  ws['!autofilter']={ref:`A3:K${n+3}`};
+  // Resumen por día
+  const porDia={};filas.forEach(({v,tr})=>{const k=ymdLocal(v.ts);(porDia[k]=porDia[k]||{c:0,t:0});porDia[k].c++;porDia[k].t+=tr;});
+  const dias=Object.keys(porDia).sort();
+  const aoa2=[['Fecha','Ventas','Transferencias ($)'],...dias.map(k=>{const[y,m,d]=k.split('-').map(Number);return[xlsSerial(y,m-1,d),porDia[k].c,porDia[k].t];}),[],['TOTAL',{f:`SUM(B2:B${dias.length+1})`},{f:`SUM(C2:C${dias.length+1})`}]];
+  const ws2=XLSX.utils.aoa_to_sheet(aoa2);
+  for(let r=2;r<=dias.length+1;r++){const a=ws2['A'+r];if(a)a.z='dd/mm/yyyy';const c=ws2['C'+r];if(c)c.z='#,##0';}
+  const ct=ws2['C'+(dias.length+3)];if(ct)ct.z='#,##0';
+  ws2['!cols']=[{wch:12},{wch:8},{wch:18}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Transferencias');
+  XLSX.utils.book_append_sheet(wb,ws2,'Resumen por día');
+  const nom=`Transferencias_accesorios_${(fS||'ambas').replace(/\s+/g,'_')}_${desde||'inicio'}_a_${hasta||ymdLocal(Date.now())}.xlsx`;
+  XLSX.writeFile(wb,nom);
+  showSyncBar(`✓ Excel descargado: ${n} venta${n!==1?'s':''} por transferencia`,'ok');
+}
 function ymdLocal(d){d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function setRangoVentas(r){
   rangoVentas=r; const hoy=new Date(); const d=document.getElementById('f-desde-v'), h=document.getElementById('f-hasta-v');
