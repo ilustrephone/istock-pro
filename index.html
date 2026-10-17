@@ -677,7 +677,7 @@ let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[]
 const ENC_ESTADOS=['Sin encargar','Encargado','Llegó','Entregado'];
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
-const MEMS=['64GB','128GB','256GB','512GB','1TB'];
+const MEMS=['64GB','128GB','256GB','512GB','1TB','2TB'];
 const ST_ESTADOS=['Pendiente','En progreso','Listo para entregar','Entregado'];
 const METODOS=[
   {id:'efectivo',label:'💵 Efectivo (ARS)',prefix:'$'},
@@ -869,7 +869,7 @@ function renderEq(){
       const sen=eqOculto(e);
       return`<tr class="${sen?'eq-senado':''}">
         <td title="${e.modelo}">${sen?'<span class="tag-senado">SEÑADO</span> ':''}${hl(e.modelo,q)}</td><td>${hl(e.memoria,q)}</td>
-        <td>${batBadge(e.bateria)}</td>
+        <td>${e.sellado?'<span style="background:#E3F2FD;color:#0D47A1;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;white-space:nowrap">📦 Sellado</span>':batBadge(e.bateria)}</td>
         <td><span class="imei-tag" title="${e.imei}">${shortImei(e.imei)}</span></td>
         <td>${e.sucursal}</td><td>USD ${e.precio.toLocaleString('es-AR')}</td>
         ${costoCell}
@@ -1341,7 +1341,7 @@ function armarListaWA(){
   const lineas=items.map(e=>{
     const col=EQ_COLORES.find(c=>c.id===eqColor(e))||EQ_COLORES[0];
     const mem=String(e.memoria||'').toLowerCase();
-    return `${col.emoji}${eqModeloLista(e)}${mem?' '+mem:''}${e.bateria?' '+e.bateria+'%':''}${eqBC(e)?' (bc)':''} ${Number(e.precio)||0}usd`;
+    return `${col.emoji}${eqModeloLista(e)}${mem?' '+mem:''}${e.sellado?' sellado':(e.bateria?' '+e.bateria+'%':'')}${eqBC(e)&&!e.sellado?' (bc)':''} ${Number(e.precio)||0}usd`;
   });
   const sinColor=items.filter(e=>!eqColor(e)).length;
   const info=document.getElementById('lw-info');
@@ -1596,14 +1596,20 @@ function openModal(type,idx){
   if(type==='enc-ingreso'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Entregar e ingresar al stock</button>`;setTimeout(()=>document.getElementById('ing-imei')?.focus(),50);}
   document.getElementById('modal').style.display='flex';
 }
+function toggleSelladoEq(){
+  const on=document.getElementById('mf-sellado').checked, b=document.getElementById('mf-bat');
+  if(b){b.disabled=on; if(on) b.value=100;}
+  const o=document.getElementById('mf-imei-opt'); if(o) o.style.display=on?'inline':'none';
+}
 function buildForm(type,idx){
   const admin=isAdmin();
   if(type==='eq-edit'){
     const it=idx!==null?equipos[idx]:null;
     const cf=admin?`<div class="mfl"><label>COSTO (USD) 🔒 solo admin</label><input id="mf-costo" type="number" min="0" value="${it?it.costo:''}"/></div>`:'';
     return`<div class="mfl"><label>MODELO</label><input id="mf-modelo" type="text" placeholder="ej: iPhone 16 Pro Max" value="${it?it.modelo:''}"/></div>
-      <div class="mgrid"><div class="mfl"><label>MEMORIA</label><select id="mf-mem">${MEMS.map(m=>opt(m,it?it.memoria:'')).join('')}</select></div><div class="mfl"><label>BATERÍA (%)</label><input id="mf-bat" type="number" min="1" max="100" placeholder="92" value="${it?it.bateria:''}"/></div></div>
-      <div class="mfl"><label>IMEI</label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
+      <div class="mgrid"><div class="mfl"><label>MEMORIA</label><select id="mf-mem">${MEMS.map(m=>opt(m,it?it.memoria:'')).join('')}</select></div><div class="mfl"><label>BATERÍA (%)</label><input id="mf-bat" type="number" min="1" max="100" placeholder="92" value="${it?it.bateria:''}" ${it&&it.sellado?'disabled':''}/></div></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0 0 10px;cursor:pointer;background:#E3F2FD;border-radius:9px;padding:9px 11px"><input type="checkbox" id="mf-sellado" ${it&&it.sellado?'checked':''} onchange="toggleSelladoEq()" style="width:16px;height:16px"/> 📦 Sellado (nuevo en caja) <span class="enc-sub" style="font-weight:400">batería 100% · IMEI opcional</span></label>
+      <div class="mfl"><label>IMEI <span id="mf-imei-opt" class="enc-sub" style="display:${it&&it.sellado?'inline':'none'}">(opcional)</span></label><input id="mf-imei" type="text" maxlength="20" placeholder="354621087432100" value="${it?it.imei:''}"/></div>
       <div class="mgrid"><div class="mfl"><label>PRECIO VENTA (USD)</label><input id="mf-precio" type="number" min="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>SUCURSAL</label><select id="mf-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
       ${cf}<div class="mfl"><label>STOCK</label><input id="mf-stock" type="number" min="0" value="${it!=null?it.stock:''}"/></div>
       <div class="section-label">PARA LA LISTA DE WHATSAPP</div>
@@ -1857,12 +1863,13 @@ async function saveModal(){
   if(modalType==='eq-edit'){
     const modelo=document.getElementById('mf-modelo').value.trim();
     if(!modelo){alert('Ingresá el modelo');return;}
-    const bat=parseInt(document.getElementById('mf-bat').value)||0;
+    const sellado=!!document.getElementById('mf-sellado')?.checked;
+    const bat=sellado?100:(parseInt(document.getElementById('mf-bat').value)||0);
     if(bat<1||bat>100){alert('Batería entre 1 y 100');return;}
     const imei=document.getElementById('mf-imei').value.trim();
-    if(!imei){alert('Ingresá el IMEI');return;}
+    if(!imei&&!sellado){alert('Ingresá el IMEI (o marcá "Sellado" si es nuevo en caja)');return;}
     const costEl=document.getElementById('mf-costo');
-    const obj={modelo,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
+    const obj={modelo,sellado,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
       color:document.getElementById('mf-color').value,bc:document.getElementById('mf-bc').checked,ocultoLista:document.getElementById('mf-oculto').checked};
     let fin=obj;
     if(editIdx!==null){fin={...equipos[editIdx],...obj};equipos[editIdx]=fin;}else{equipos.push(fin);}
