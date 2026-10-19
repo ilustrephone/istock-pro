@@ -413,11 +413,10 @@ tr:hover td{background:#FAFAFA;}
     </div>
     <div class="twrap" style="overflow-x:auto"><table style="min-width:1400px">
       <thead><tr>
-        <th style="width:10%">Modelo</th><th style="width:6%">Color</th><th style="width:7%">Precio</th>
+        <th style="width:92px"></th><th style="width:10%">Modelo</th><th style="width:6%">Color</th><th style="width:7%">Precio</th>
         <th style="width:7%">Seña</th><th style="width:10%">Cliente</th><th style="width:6%">Vendedor</th>
         <th style="width:8%">Teléfono</th><th style="width:8%">Sucursal</th><th style="width:9%">Estado</th>
         <th style="width:10%">Plan canje</th><th style="width:6%">Fecha</th><th style="width:7%">Saldo</th>
-        <th style="width:8%">Acciones</th>
       </tr></thead>
       <tbody id="tbody-enc"></tbody>
     </table></div>
@@ -1220,6 +1219,7 @@ function renderEncargos(){
         ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
         :`<span class="enc-sub">${e.notas?esc(e.notas):'No'}</span>`;
       return`<tr class="enc-row-${Math.max(0,ENC_ESTADOS.indexOf(e.estado))}">
+        <td style="white-space:nowrap;overflow:visible;text-overflow:clip"><button class="btn-e" title="Editar" onclick="openModal('enc-edit',${ri})">✏️</button> <button class="btn-d" title="Eliminar este sellado" onclick="delItem('enc',${ri})">🗑</button></td>
         <td title="${esc(e.modelo)}"><strong>${esc(e.modelo)}</strong></td>
         <td title="${esc(e.color)}">${esc(e.color)}</td>
         <td>${fmtUSD(e.precio)}</td>
@@ -1232,10 +1232,6 @@ function renderEncargos(){
         <td title="${esc(e.canjeModelo||e.notas||'')}">${canje}</td>
         <td style="font-size:11px">${e.fecha?fmtDate(e.fecha):'<span class="enc-sub">—</span>'}</td>
         <td><strong>${fmtUSD(encSaldo(e))}</strong>${e.senaMoneda==='ARS'&&e.sena?'<div class="enc-sub">- seña en $</div>':''}</td>
-        <td>
-          <button class="btn-e" onclick="openModal('enc-edit',${ri})">Editar</button>
-          <button class="btn-d" onclick="delItem('enc',${ri})">✕</button>
-        </td>
       </tr>`;
     }).join('');
   renderAIng(); renderPedidoBtn();
@@ -1792,7 +1788,8 @@ function buildForm(type,idx){
         </div>
       </div>
       <div class="mfl"><label>NOTAS</label><textarea id="enc-notas" placeholder="Opcional">${v('notas')}</textarea></div>
-      <div class="sell-info" id="enc-saldo"></div>`;
+      <div class="sell-info" id="enc-saldo"></div>
+      ${it?`<button type="button" class="btn-d" style="margin-top:10px;padding:7px 12px;font-size:12px" onclick="eliminarEncDesdeModal(${idx})">🗑 Eliminar este sellado</button>`:''}`;
   }
   return '';
 }
@@ -2109,8 +2106,17 @@ async function anularVenta(idx){
   if(document.getElementById('tab-ingresos').style.display!=='none') renderIngresos();
   showSyncBar('✓ Venta anulada y stock devuelto','ok');
 }
+async function eliminarEncDesdeModal(idx){
+  const e=encargos[idx]; if(!e) return;
+  if(!confirm(`¿Eliminar el sellado ${e.modelo||''} de ${e.cliente||''}?`)) return;
+  closeModal();
+  const id=e._id; encargos.splice(idx,1); renderEncargos();
+  if(id) await deleteItem('encargos',id);
+  showSyncBar('✓ Sellado eliminado','ok');
+}
 async function delItem(type,idx){
-  if(!confirm('¿Eliminar?'))return;
+  const encI=type==='enc'?encargos[idx]:null;
+  if(!confirm(encI?`¿Eliminar el sellado ${encI.modelo||''} de ${encI.cliente||''}?`:'¿Eliminar?'))return;
   if(type==='eq'){const id=equipos[idx]._id;equipos.splice(idx,1);renderEq();if(id)await deleteItem('equipos',id);}
   else if(type==='ac'){const id=accesorios[idx]._id;accesorios.splice(idx,1);renderAc();if(id)await deleteItem('accesorios',id);}
   else if(type==='enc'){const id=encargos[idx]._id;encargos.splice(idx,1);renderEncargos();if(id)await deleteItem('encargos',id);}
