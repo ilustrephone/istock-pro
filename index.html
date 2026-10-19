@@ -671,6 +671,19 @@ async function sbDelete(tabla, id){
 }
 // ===================== ESTADO LOCAL =====================
 let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
+// El formulario abierto guarda una referencia al registro (no solo su posición en la lista),
+// porque la lista se recarga cada 30 s y las posiciones pueden cambiar.
+let editRef=null;
+const MODAL_ARR={'eq-edit':()=>equipos,'venta-eq':()=>equipos,'ac-edit':()=>accesorios,'venta-ac':()=>accesorios,'enc-edit':()=>encargos,'enc-ingreso':()=>encargos,'cc-edit':()=>cuentas,'cc-pago':()=>cuentas,'st-edit':()=>servicios,'venta-edit':()=>ventas};
+function modalArr(t){const f=MODAL_ARR[t];return f?f():null;}
+function resyncEditIdx(){
+  if(!editRef||!modalType) return true;
+  const a=modalArr(modalType); if(!a) return true;
+  let i=a.indexOf(editRef);
+  if(i<0&&editRef._id) i=a.findIndex(x=>x&&x._id===editRef._id);
+  if(i<0){editIdx=-1;return false;}
+  editIdx=i; editRef=a[i]; return true;
+}
 let searchEq='', searchAc='';
 let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[], cuentas=[];
 const ENC_ESTADOS=['Sin encargar','Encargado','Llegó','Entregado'];
@@ -698,18 +711,23 @@ function showSyncBar(msg, type='info'){
   b.style.display = 'block';
   if(type !== 'error') setTimeout(()=>b.style.display='none', 2500);
 }
-async function loadAll(){
+async function loadAll(auto){
   setSyncDot('syncing');
   try {
-    [equipos, accesorios, ventas, servicios] = await Promise.all([
+    const [nEq, nAc, nVe, nSt] = await Promise.all([
       sbGetAll('equipos'), sbGetAll('accesorios'),
       sbGetAll('ventas'), sbGetAll('servicios')
     ]);
     await loadCierres();
-    // Cargar ingresos (canjes)
-    try{ ingresos=await sbGetAll('ingresos'); }catch(e){ ingresos=[]; }
-    try{ encargos=await sbGetAll('encargos'); }catch(e){ console.warn('Tabla encargos no disponible',e.message); }
-    try{ cuentas=await sbGetAll('cuentas'); }catch(e){ console.warn('Tabla cuentas no disponible',e.message); }
+    let nIng=[], nEnc=encargos, nCc=cuentas;
+    try{ nIng=await sbGetAll('ingresos'); }catch(e){ nIng=[]; }
+    try{ nEnc=await sbGetAll('encargos'); }catch(e){ console.warn('Tabla encargos no disponible',e.message); }
+    try{ nCc=await sbGetAll('cuentas'); }catch(e){ console.warn('Tabla cuentas no disponible',e.message); }
+    // Se reemplazan todas las listas juntas (sin esperas en el medio) para que los botones de cada fila
+    // nunca apunten a una lista distinta de la que se ve en pantalla.
+    if(auto&&modalType){setSyncDot('ok');return;} // se abrió un formulario mientras se descargaba: no tocar las listas
+    equipos=nEq; accesorios=nAc; ventas=nVe; servicios=nSt; ingresos=nIng; encargos=nEnc; cuentas=nCc;
+    resyncEditIdx();
     setSyncDot('ok');
   } catch(e) {
     setSyncDot('error');
@@ -750,7 +768,9 @@ async function deleteItem(tabla, id){
 function startAutoRefresh(){
   setInterval(async ()=>{
     if(!rol) return;
-    await loadAll();
+    if(modalType) return; // no recargar mientras hay un formulario abierto
+    await loadAll(true);
+    if(modalType) return;
     renderAll();
   }, 30000);
 }
@@ -1577,6 +1597,7 @@ function getPagos(){
 // ===================== MODAL =====================
 function openModal(type,idx){
   modalType=type;editIdx=idx;
+  {const a=modalArr(type); editRef=(a&&idx!==null&&idx!==undefined&&idx>=0)?a[idx]:null;}
   const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
@@ -1857,6 +1878,7 @@ function updateVentaGeneral(){
 }
 // ===================== SAVE / DELETE =====================
 async function saveModal(){
+  if(!resyncEditIdx()){alert('Este registro fue eliminado o cambiado desde otro dispositivo. Cerrá esta ventana y volvé a abrirlo.');return;}
   if(modalType==='eq-edit'){
     const modelo=document.getElementById('mf-modelo').value.trim();
     if(!modelo){alert('Ingresá el modelo');return;}
@@ -1961,10 +1983,11 @@ async function saveModal(){
   }
   if(modalType==='venta-edit'){
     const v=ventas[editIdx];const cN=parseInt(document.getElementById('mf-cant').value)||1;const pN=parseFloat(document.getElementById('mf-pventa').value)||v.precioUnit;const svN=document.getElementById('mf-suc-venta').value;
-    if(v.tipo==='equipo'&&v.eqIdx!=null){equipos[v.eqIdx].stock+=v.cantidad;if(cN>equipos[v.eqIdx].stock){alert('Stock insuficiente');equipos[v.eqIdx].stock-=v.cantidad;return;}equipos[v.eqIdx].stock-=cN;await saveItem('equipos',equipos[v.eqIdx]);}
-    ventas[editIdx]={...v,cantidad:cN,precioUnit:pN,total:cN*pN,sucursal:svN};
+    const vEq=v.tipo==='equipo'?(v.eqId?equipos.find(e=>e._id===v.eqId):(v.eqIdx!=null?equipos[v.eqIdx]:null)):null;
+    if(vEq){vEq.stock+=v.cantidad;if(cN>vEq.stock){alert('Stock insuficiente');vEq.stock-=v.cantidad;return;}vEq.stock-=cN;await saveItem('equipos',vEq);}
+    const vi=editIdx; const vNew={...v,cantidad:cN,precioUnit:pN,total:cN*pN,sucursal:svN}; ventas[vi]=vNew;
     closeModal();renderEq();renderAc();renderVentas();
-    await saveItem('ventas',ventas[editIdx]);
+    await saveItem('ventas',vNew);
     showSyncBar('✓ Venta actualizada','ok');return;
   }
   if(modalType==='cc-edit'){
@@ -2107,7 +2130,8 @@ async function anularVenta(idx){
   showSyncBar('✓ Venta anulada y stock devuelto','ok');
 }
 async function eliminarEncDesdeModal(idx){
-  const e=encargos[idx]; if(!e) return;
+  if(!resyncEditIdx()){alert('Este sellado ya fue eliminado o cambiado desde otro dispositivo.');closeModal();renderEncargos();return;}
+  idx=editIdx; const e=encargos[idx]; if(!e) return;
   if(!confirm(`¿Eliminar el sellado ${e.modelo||''} de ${e.cliente||''}?`)) return;
   closeModal();
   const id=e._id; encargos.splice(idx,1); renderEncargos();
@@ -2475,7 +2499,7 @@ function renderIngresos(){
 }
 function closeModal(){
   document.getElementById('modal').style.display='none';
-  modalType=''; editIdx=null;
+  modalType=''; editIdx=null; editRef=null;
 }
 function switchReporte(periodo,el){reportePeriodo=periodo;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderReporte();}
 // ===================== INICIO =====================
