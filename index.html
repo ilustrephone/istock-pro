@@ -1492,6 +1492,21 @@ function getPeriodRange(periodo){
   }
   return{desde,hasta};
 }
+// Costo unitario de un producto (null si no tiene costo cargado)
+function costoDe(x){const c=x?Number(x.costo):0;return c>0?c:null;}
+// Costo unitario de una venta: el que se guardó al vender; si es una venta vieja, se busca el producto
+// por su id (solo si sigue teniendo el mismo nombre) o por nombre. null = costo desconocido.
+function costoVenta(v){
+  if(Number(v.costoUnit)>0) return Number(v.costoUnit);
+  const prod=String(v.producto||'').toLowerCase().trim();
+  if(v.tipo==='accesorio'){
+    let a=v.acId?accesorios.find(x=>x._id===v.acId):null;
+    if(!a||String(a.nombre||'').toLowerCase().trim()!==prod) a=accesorios.find(x=>String(x.nombre||'').toLowerCase().trim()===prod);
+    return costoDe(a);
+  }
+  const e=v.eqId?equipos.find(x=>x._id===v.eqId):null;
+  return costoDe(e);
+}
 function renderReporte(){
   const {desde,hasta}=getPeriodRange(reportePeriodo);
   const labels={dia:'Hoy '+fmtDate(Date.now()),semana:`Semana: ${fmtDate(desde)} — ${fmtDate(hasta)}`,mes:`Mes: ${desde.toLocaleString('es-AR',{month:'long',year:'numeric'})}`};
@@ -1500,11 +1515,14 @@ function renderReporte(){
   const usd=data.filter(v=>v.moneda==='USD').reduce((a,v)=>a+v.total,0);
   const ars=data.filter(v=>v.moneda==='ARS').reduce((a,v)=>a+v.total,0);
   let gananciaUSD=0,gananciaARS=0;
+  const R={USD:{ing:0,costo:0,n:0,sinN:0,sinIng:0},ARS:{ing:0,costo:0,n:0,sinN:0,sinIng:0}};
   if(isAdmin()){
     data.forEach(v=>{
-      if(v.tipo==='equipo'&&v.eqIdx!=null){const e=equipos[v.eqIdx];if(e)gananciaUSD+=(v.precioUnit-(e.costo||0))*v.cantidad;}
-      if(v.tipo==='accesorio'&&v.acIdx!=null){const a=accesorios[v.acIdx];if(a)gananciaARS+=(v.precioUnit-(a.costo||0))*v.cantidad;}
+      const k=v.moneda==='USD'?'USD':'ARS'; const cu=costoVenta(v); const tot=Number(v.total)||0;
+      if(cu==null){R[k].sinN++;R[k].sinIng+=tot;return;}
+      R[k].n++; R[k].ing+=tot; R[k].costo+=cu*(Number(v.cantidad)||1);
     });
+    gananciaUSD=R.USD.ing-R.USD.costo; gananciaARS=R.ARS.ing-R.ARS.costo;
   }
   document.getElementById('rep-stats').innerHTML=`
     <div class="sc sc-blue"><div class="sc-label">VENTAS</div><div class="sc-val">${data.length}</div></div>
@@ -1533,11 +1551,13 @@ function renderReporte(){
   if(isAdmin()){
     document.getElementById('rep-ganancia').innerHTML=`
       <div class="reporte-row"><span class="label">Ingresos equipos</span><span class="val blue">${fmtUSD(usd)}</span></div>
-      <div class="reporte-row"><span class="label">Costo equipos</span><span class="val red">${fmtUSD(usd-gananciaUSD)}</span></div>
-      <div class="reporte-row"><span class="label">Ganancia equipos</span><span class="val green">${fmtUSD(gananciaUSD)}</span></div>
+      <div class="reporte-row"><span class="label">Costo equipos</span><span class="val red">${fmtUSD(R.USD.costo)}</span></div>
+      <div class="reporte-row"><span class="label">Ganancia equipos</span><span class="val green">${fmtUSD(gananciaUSD)}${R.USD.ing>0?` <span class="enc-sub">(${Math.round(gananciaUSD/R.USD.ing*100)}%)</span>`:''}</span></div>
+      ${R.USD.sinN?`<div class="costo-lock" style="margin:6px 0 0">⚠️ ${R.USD.sinN} venta${R.USD.sinN!==1?'s':''} de equipos sin costo cargado (${fmtUSD(R.USD.sinIng)}) — no se cuentan en la ganancia</div>`:''}
       <div class="reporte-row" style="margin-top:8px"><span class="label">Ingresos accesorios</span><span class="val blue">${fmtARS(ars)}</span></div>
-      <div class="reporte-row"><span class="label">Costo accesorios</span><span class="val red">${fmtARS(ars-gananciaARS)}</span></div>
-      <div class="reporte-row"><span class="label">Ganancia accesorios</span><span class="val green">${fmtARS(gananciaARS)}</span></div>`;
+      <div class="reporte-row"><span class="label">Costo accesorios</span><span class="val red">${fmtARS(R.ARS.costo)}</span></div>
+      <div class="reporte-row"><span class="label">Ganancia accesorios</span><span class="val green">${fmtARS(gananciaARS)}${R.ARS.ing>0?` <span class="enc-sub">(${Math.round(gananciaARS/R.ARS.ing*100)}%)</span>`:''}</span></div>
+      ${R.ARS.sinN?`<div class="costo-lock" style="margin:6px 0 0">⚠️ ${R.ARS.sinN} venta${R.ARS.sinN!==1?'s':''} de accesorios sin costo cargado (${fmtARS(R.ARS.sinIng)}) — no se cuentan en la ganancia</div>`:''}`;
   } else {
     document.getElementById('rep-ganancia').innerHTML='<div class="costo-lock">🔒 Solo el Administrador puede ver la rentabilidad</div>';
   }
@@ -1910,7 +1930,7 @@ async function saveModal(){
     return;
   }
   const regVenta=async(tipo,prodIdx,c,p,sv,moneda,producto,sStock,eqIdx,acIdx)=>{
-    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo,producto,sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx,acIdx,pagos:getPagos()};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo,producto,costoUnit:costoDe(eqIdx!=null?equipos[eqIdx]:(acIdx!=null?accesorios[acIdx]:null)),sucursal:sv,stockSucursal:sStock,cantidad:c,precioUnit:p,total:c*p,moneda,por:rolLabel(),estado:'activa',eqIdx,acIdx,pagos:getPagos()};
     ventas.push(venta);
     await saveItem('ventas', venta);
   };
@@ -1932,7 +1952,7 @@ async function saveModal(){
     closeModal();renderEq();
     await saveItem('equipos', equipos[eIdx]);
     const canjeObj=tieneCanje?{modelo:canjeModelo,imei:canjeImei,valor:canjeValor,estado:canjeEstado,cliente:canjeCliente}:null;
-    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:eIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,costoUnit:costoDe(e),sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p,total:totalFinal,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:eIdx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:canjeObj};
     ventas.push(venta);
     await saveItem('ventas',venta);
     // Si hay canje, registrar también en ingresos
@@ -1952,7 +1972,7 @@ async function saveModal(){
     if(sv==='Tunuyán')accesorios[aIdx].stockT-=c;else accesorios[aIdx].stockC-=c;
     closeModal();renderAc();
     await saveItem('accesorios', accesorios[aIdx]);
-    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:aIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
+    const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,costoUnit:costoDe(a),sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p,total:c*p,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:aIdx,acId:a._id||null,pagos:pagosGuardados,canje:null};
     ventas.push(venta);
     await saveItem('ventas',venta);
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
@@ -1966,7 +1986,7 @@ async function saveModal(){
       const pagosGuardados=getPagos();
       equipos[idx].stock-=c;closeModal();renderEq();
       await saveItem('equipos',equipos[idx]);
-      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:null};
+      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'equipo',producto:`${e.modelo} ${e.memoria}`,costoUnit:costoDe(e),sucursal:sv,stockSucursal:e.sucursal,cantidad:c,precioUnit:p||e.precio,total:c*(p||e.precio),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:idx,eqId:e._id||null,acIdx:null,acId:null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     } else {
@@ -1975,7 +1995,7 @@ async function saveModal(){
       if((a.stockT||0)>=(a.stockC||0))a.stockT=Math.max(0,(a.stockT||0)-c);else a.stockC=Math.max(0,(a.stockC||0)-c);
       closeModal();renderAc();
       await saveItem('accesorios',accesorios[idx]);
-      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:idx,acId:a._id||null,pagos:pagosGuardados,canje:null};
+      const venta={notasItem:notaInicialVenta('mf-nota'),ts:Date.now(),tipo:'accesorio',producto:a.nombre,costoUnit:costoDe(a),sucursal:sv,stockSucursal:sv,cantidad:c,precioUnit:p||a.precio,total:c*(p||a.precio),moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:idx,acId:a._id||null,pagos:pagosGuardados,canje:null};
       ventas.push(venta);
       await saveItem('ventas',venta);
     }
@@ -2722,7 +2742,7 @@ async function confirmarVentaCarrito(){
     if(item.tipo==='equipo'){
       const eq=equipos.find(e=>(e.modelo+' '+e.memoria)===item.nombre&&e.stock>=item.qty);
       if(eq){eq.stock-=item.qty;await saveItem('equipos',eq);}
-      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'equipo',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'equipo',producto:item.nombre,costoUnit:costoDe(eq),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
       ventas.push(venta);await saveItem('ventas',venta);
     }else{
       const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
@@ -2731,7 +2751,7 @@ async function confirmarVentaCarrito(){
         else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
         await saveItem('accesorios',ac);
       }
-      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'accesorio',producto:item.nombre,sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'accesorio',producto:item.nombre,costoUnit:costoDe(ac),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
       ventas.push(venta);await saveItem('ventas',venta);
     }
   }
