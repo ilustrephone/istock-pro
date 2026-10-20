@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-10-20b">
+<meta name="istock-build" content="2026-10-20c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -678,7 +678,7 @@ let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 // El formulario abierto guarda una referencia al registro (no solo su posición en la lista),
 // porque la lista se recarga cada 30 s y las posiciones pueden cambiar.
 let editRef=null;
-const MODAL_ARR={'eq-edit':()=>equipos,'venta-eq':()=>equipos,'ac-edit':()=>accesorios,'venta-ac':()=>accesorios,'enc-edit':()=>encargos,'enc-ingreso':()=>encargos,'cc-edit':()=>cuentas,'cc-pago':()=>cuentas,'st-edit':()=>servicios,'venta-edit':()=>ventas};
+const MODAL_ARR={'eq-edit':()=>equipos,'venta-eq':()=>equipos,'ac-edit':()=>accesorios,'venta-ac':()=>accesorios,'enc-edit':()=>encargos,'enc-ingreso':()=>encargos,'enc-venta':()=>encargos,'cc-edit':()=>cuentas,'cc-pago':()=>cuentas,'st-edit':()=>servicios,'venta-edit':()=>ventas};
 function modalArr(t){const f=MODAL_ARR[t];return f?f():null;}
 function resyncEditIdx(){
   if(!editRef||!modalType) return true;
@@ -1223,6 +1223,24 @@ async function setEncEstado(ri,i){
   if(nuevo==='Entregado'&&!e.fechaEntregado) e.fechaEntregado=Date.now();
   renderEncargos();
   if(await saveItem('encargos',e)) showSyncBar('✓ Estado: '+nuevo,'ok');
+  if(nuevo==='Entregado'&&!e.ventaId) pedirVentaSellado(e);
+}
+function updSaldoSellado(i){
+  const e=encargos[i]; if(!e) return;
+  const p=parseFloat(document.getElementById('sv-precio').value)||0;
+  let sal=p; if(e.senaMoneda==='USD') sal-=Number(e.sena)||0; if(e.canje) sal-=Number(e.canjeCotiz)||0;
+  const t=document.getElementById('vtotal'); if(t) t.textContent='USD '+Math.max(0,sal);
+  updateResumen();
+}
+async function omitirVentaSellado(){
+  if(!resyncEditIdx()){closeModal();return;}
+  const e=encargos[editIdx]; closeModal();
+  if(e&&!e.ventaId){e.ventaId='manual'; await saveItem('encargos',e); renderEncargos();}
+}
+function pedirVentaSellado(e){
+  const i=encargos.indexOf(e); if(i<0) return;
+  if(modalType) return;
+  openModal('enc-venta',i);
 }
 function renderEncargos(){
   const tb=document.getElementById('tbody-enc'); if(!tb) return;
@@ -1257,7 +1275,7 @@ function renderEncargos(){
         ?`<span class="canje-tag">🔄 ${esc(e.canjeModelo||'Canje')}</span><div class="enc-sub">${fmtUSD(e.canjeCotiz)}${e.canjeBateria?' · 🔋 '+e.canjeBateria+'%':''}</div>`
         :`<span class="enc-sub">${e.notas?esc(e.notas):'No'}</span>`;
       return`<tr class="enc-row-${Math.max(0,ENC_ESTADOS.indexOf(e.estado))}">
-        <td style="white-space:nowrap;overflow:visible;text-overflow:clip"><button class="btn-e" title="Editar" onclick="openModal('enc-edit',${ri})">✏️</button> <button class="btn-d" title="Eliminar este sellado" onclick="delItem('enc',${ri})">🗑</button></td>
+        <td style="white-space:nowrap;overflow:visible;text-overflow:clip"><button class="btn-e" title="Editar" onclick="openModal('enc-edit',${ri})">✏️</button> <button class="btn-d" title="Eliminar este sellado" onclick="delItem('enc',${ri})">🗑</button>${e.estado==='Entregado'&&!e.ventaId?`<br><button class="btn-sell" style="margin-top:4px;font-size:11px" title="Este sellado se entregó pero no está en Ventas" onclick="openModal('enc-venta',${ri})">💲 Venta</button>`:''}</td>
         <td title="${esc(e.modelo)}"><strong>${esc(e.modelo)}</strong></td>
         <td title="${esc(e.color)}">${esc(e.color)}</td>
         <td>${fmtUSD(e.precio)}</td>
@@ -1636,7 +1654,7 @@ function getPagos(){
 function openModal(type,idx){
   modalType=type;editIdx=idx;
   {const a=modalArr(type); editRef=(a&&idx!==null&&idx!==undefined&&idx>=0)?a[idx]:null;}
-  const ttls={'eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
+  const ttls={'enc-venta':'💲 Registrar venta del sellado','eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1648,6 +1666,7 @@ function openModal(type,idx){
   if(type==='notas'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='eq-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
+  if(type==='enc-venta'){mac.innerHTML=`<button class="btn-cancel" onclick="omitirVentaSellado()">Ya está en Ventas / no registrar</button><button class="btn-save-green" onclick="saveModal()">Registrar venta</button>`;setTimeout(updateResumen,30);}
   if(type==='enc-ingreso'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Entregar e ingresar al stock</button>`;setTimeout(()=>document.getElementById('ing-imei')?.focus(),50);}
   document.getElementById('modal').style.display='flex';
 }
@@ -1810,6 +1829,17 @@ function buildForm(type,idx){
           <span class="enc-sub" title="${esc(g.items.map(x=>x.cliente).join(', '))}">${esc(g.items.map(x=>x.cliente).join(', ')).slice(0,40)}</span></label>`).join('')}
       </div>
       <div class="mfl"><label>MENSAJE (lo podés editar)</label><textarea id="ped-texto" style="min-height:150px">${esc(textoPedido())}</textarea></div>`;
+  }
+  if(type==='enc-venta'){
+    const e=encargos[idx]; if(!e) return '';
+    const sena=Number(e.sena)||0, cot=e.canje?(Number(e.canjeCotiz)||0):0;
+    const saldo=Math.max(0,encSaldo(e));
+    return`<div class="sell-info"><strong>${esc(e.modelo)} ${esc(e.color||'')}</strong> · sellado<br>Cliente: <strong>${esc(e.cliente||'—')}</strong> · ${esc(e.sucursal||'')}<br>
+      Precio: <strong>${fmtUSD(e.precio)}</strong>${sena?` · Seña: ${encSenaTxt(e)}`:''}${cot?` · Canje ${esc(e.canjeModelo||'')}: −${fmtUSD(cot)}`:''}<br>
+      Saldo a cobrar hoy: <strong id="vtotal">USD ${saldo}</strong></div>
+      <div class="mgrid"><div class="mfl"><label>PRECIO DE VENTA (USD)</label><input id="sv-precio" type="number" min="0" value="${Number(e.precio)||0}" oninput="updSaldoSellado(${idx})"/></div>
+      <div class="mfl"><label>SUCURSAL</label><select id="sv-suc">${SUCS.map(x=>opt(x,e.sucursal||sucursal)).join('')}</select></div></div>
+      ${buildPagoSection(true)}`;
   }
   if(type==='enc-ingreso'){
     const e=encargos[idx];
@@ -2050,6 +2080,25 @@ async function saveModal(){
     if(await saveItem('cuentas',c)) showSyncBar(ccSaldo(c)<=0?'✓ Pago registrado · cuenta saldada':'✓ Pago registrado','ok');
     return;
   }
+  if(modalType==='enc-venta'){
+    const e=encargos[editIdx]; if(!e){closeModal();return;}
+    if(e.ventaId){alert('Este sellado ya tiene la venta registrada.');closeModal();return;}
+    const precio=parseFloat(document.getElementById('sv-precio').value)||0; if(!(precio>0)){alert('Ingresá el precio de venta');return;}
+    const suc=document.getElementById('sv-suc').value;
+    const cot=e.canje?(Number(e.canjeCotiz)||0):0;
+    const pagos=getPagos();
+    const notas=notaInicialVenta('mf-nota')||[];
+    const extra=[`Sellado de ${e.cliente||'—'}`]; if(Number(e.sena)) extra.push(`seña cobrada antes: ${e.senaMoneda==='ARS'?'$':'USD'} ${Number(e.sena).toLocaleString('es-AR')}`);
+    notas.unshift({txt:extra.join(' · '),por:nombreNotas()||rolLabel(),rol:rolLabel(),suc:suc,ts:Date.now()});
+    const venta={notasItem:notas,ts:Date.now(),tipo:'equipo',sellado:true,encId:e._id||null,producto:`${e.modelo} ${e.color||''} (sellado)`.replace(/\s+/g,' ').trim(),cliente:e.cliente||'',costoUnit:null,sucursal:suc,stockSucursal:suc,cantidad:1,precioUnit:precio,total:Math.max(0,precio-cot),moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:null,pagos,
+      canje:e.canje?{modelo:e.canjeModelo||'',imei:e.ingresoImei||'',valor:cot,estado:'',cliente:e.cliente||''}:null};
+    closeModal();
+    ventas.push(venta); await saveItem('ventas',venta);
+    e.ventaId=venta._id||'ok'; await saveItem('encargos',e);
+    renderVentas(); renderEncargos();
+    showSyncBar('✓ Venta del sellado registrada en Ventas','ok');
+    return;
+  }
   if(modalType==='enc-ingreso'){
     const ri=editIdx; const e=encargos[ri]; if(!e){closeModal();return;}
     const g=id=>(document.getElementById(id)?.value||'').trim();
@@ -2073,6 +2122,7 @@ async function saveModal(){
     await saveItem('encargos',e);
     const ingreso={ts:ahora,cliente:e.cliente||'—',modelo:`${modelo} ${eq.memoria}`,imei,estado:g('ing-cond')||'Bueno',bateria:bat,valor:Number(e.canjeCotiz)||0,sucursal:suc,por:rolLabel(),ventaProducto:`Sellado ${e.modelo} ${e.color||''}`.trim()};
     ingresos.push(ingreso); await saveItem('ingresos',ingreso);
+    if(!e.ventaId) setTimeout(()=>pedirVentaSellado(e),300);
     renderIngresos();
     if(okEq) showSyncBar('✓ Sellado entregado · equipo cargado al stock','ok');
     return;
@@ -2103,6 +2153,7 @@ async function saveModal(){
     closeModal();renderEncargos();
     if(await saveItem('encargos',obj)) showSyncBar('✓ Sellado guardado en la nube','ok');
     if(pedirIng) openModal('enc-ingreso',encargos.indexOf(obj));
+    else if(obj.estado==='Entregado'&&prev.estado!=='Entregado'&&!obj.ventaId) pedirVentaSellado(obj);
     return;
   }
   if(modalType==='st-edit'){
@@ -2120,7 +2171,10 @@ async function anularVenta(idx){
   if(!confirm('¿Anular esta venta? El stock será devuelto.'))return;
   const v=ventas[idx];
   if(!v){alert('No se encontró la venta.');return;}
-  if(v.tipo==='equipo'){
+  if(v.sellado){
+    const en=encargos.find(x=>(v.encId&&x._id===v.encId));
+    if(en&&en.ventaId){delete en.ventaId; await saveItem('encargos',en);}
+  } else if(v.tipo==='equipo'){
     // Buscar por eqId (ID de Supabase guardado en la venta) o por nombre como fallback
     const eq = equipos.find(e=>
       (v.eqId && e._id===v.eqId) ||
