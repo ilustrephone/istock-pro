@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
+<meta name="istock-build" content="2026-10-20b">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -768,8 +769,22 @@ async function deleteItem(tabla, id){
   }
 }
 // Refresca datos cada 30 segundos automáticamente
+// Si se publicó una versión nueva de iStock, las ventanas abiertas se actualizan solas
+// (nunca con un formulario abierto), para que nadie siga usando una versión vieja.
+const APP_BUILD=(document.querySelector('meta[name="istock-build"]')||{}).content||'';
+let ultimoChequeoVersion=0;
+async function chequearVersion(){
+  if(!APP_BUILD||Date.now()-ultimoChequeoVersion<120000) return;
+  ultimoChequeoVersion=Date.now();
+  try{
+    const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});
+    const m=(await r.text()).match(/name="istock-build" content="([^"]+)"/);
+    if(m&&m[1]&&m[1]!==APP_BUILD&&!modalType){ showSyncBar('🔄 Actualizando iStock a la última versión…','ok'); setTimeout(()=>location.reload(),1200); }
+  }catch(e){}
+}
 function startAutoRefresh(){
   setInterval(async ()=>{
+    chequearVersion();
     if(!rol) return;
     if(modalType) return; // no recargar mientras hay un formulario abierto
     await loadAll(true);
