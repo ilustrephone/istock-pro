@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-10-20c">
+<meta name="istock-build" content="2026-10-25a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -55,10 +55,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab:hover:not(.active){background:color-mix(in srgb,var(--tc) 9%,#fff);}
 .tabs .tab.active{background:var(--tc);color:#fff;box-shadow:0 2px 8px color-mix(in srgb,var(--tc) 35%,transparent);}
 .tabs .tab.active .rchip{background:#fff!important;}
-.enc-row-0 td{background:#FFF8EE;}.enc-row-0 td:first-child{box-shadow:inset 4px 0 0 #FF9500;}
-.enc-row-1 td{background:#EEF5FF;}.enc-row-1 td:first-child{box-shadow:inset 4px 0 0 #0071E3;}
-.enc-row-2 td{background:#EAF8EE;}.enc-row-2 td:first-child{box-shadow:inset 4px 0 0 #34C759;}
-.enc-row-3 td{background:#F6EEFB;}.enc-row-3 td:first-child{box-shadow:inset 4px 0 0 #AF52DE;}
+.enc-row-0 td{background:#FFE3BF;border-bottom-color:#F5C58A;}.enc-row-0 td:first-child{box-shadow:inset 8px 0 0 #EF6C00;}
+.enc-row-1 td{background:#CFE3FF;border-bottom-color:#9EC3F5;}.enc-row-1 td:first-child{box-shadow:inset 8px 0 0 #1565C0;}
+.enc-row-2 td{background:#C9F0D3;border-bottom-color:#93D9A6;}.enc-row-2 td:first-child{box-shadow:inset 8px 0 0 #2E7D32;}
+.enc-row-3 td{background:#E9D5F5;border-bottom-color:#CDA8E6;}.enc-row-3 td:first-child{box-shadow:inset 8px 0 0 #7B1FA2;}
 .eq-senado td{background:#FFF4D6;}.eq-senado td:first-child{box-shadow:inset 4px 0 0 #F5A623;}
 .eq-senado:hover td{background:#FFEDBF;}
 .tag-senado{display:inline-block;background:#F5A623;color:#fff;font-size:9px;font-weight:700;letter-spacing:0.04em;padding:1px 6px;border-radius:6px;vertical-align:1px;}
@@ -213,11 +213,15 @@ tr:hover td{background:#FAFAFA;}
 .sell-info strong{color:#1D1D1F;font-weight:500;}
 .divider{border:none;border-top:1px solid #E8E8ED;margin:11px 0;}
 .enc-bar{display:flex;gap:3px;min-width:0;width:100%;}
-.enc-step{flex:1;border:none;cursor:pointer;padding:0;background:none;text-align:center;}
-.enc-step .seg{height:6px;border-radius:3px;background:#E8E8ED;margin-bottom:3px;}
+.enc-step{flex:1 1 0;min-width:0;overflow:visible;border:none;cursor:pointer;padding:0;background:none;text-align:center;}
+.enc-step .lbl{position:relative;z-index:1;}
+.enc-step .seg{height:9px;border-radius:4px;background:rgba(0,0,0,0.10);margin-bottom:4px;}
 .enc-step .lbl{font-size:9px;color:#AEAEB2;white-space:nowrap;}
-.enc-step.on .lbl{color:#1D1D1F;font-weight:600;}
-.enc-s0 .seg{background:#FF9500;}.enc-s1 .seg{background:#0071E3;}.enc-s2 .seg{background:#34C759;}.enc-s3 .seg{background:#AF52DE;}
+.enc-step.on .lbl{color:#fff;font-weight:700;font-size:10px;border-radius:6px;padding:2px 6px;display:inline-block;letter-spacing:0.02em;}
+.enc-pill{display:inline-block;color:#fff;font-weight:700;font-size:10.5px;border-radius:6px;padding:2px 8px;letter-spacing:0.02em;white-space:nowrap;}
+.enc-p0{background:#EF6C00;}.enc-p1{background:#1565C0;}.enc-p2{background:#2E7D32;}.enc-p3{background:#7B1FA2;}
+.enc-s0.on .lbl{background:#EF6C00;}.enc-s1.on .lbl{background:#1565C0;}.enc-s2.on .lbl{background:#2E7D32;}.enc-s3.on .lbl{background:#7B1FA2;}
+.enc-s0 .seg{background:#EF6C00;}.enc-s1 .seg{background:#1565C0;}.enc-s2 .seg{background:#2E7D32;}.enc-s3 .seg{background:#7B1FA2;}
 .enc-step:disabled{cursor:default;}
 .canje-tag{display:inline-block;background:#FFF3E0;color:#8A4D00;border-radius:8px;padding:1px 7px;font-size:10px;font-weight:600;}
 .enc-sub{font-size:10px;color:#6E6E73;}
@@ -1211,7 +1215,7 @@ function encSenaTxt(e){
 }
 function encBar(e,ri){
   const cur=Math.max(0,ENC_ESTADOS.indexOf(e.estado));
-  return `<div class="enc-bar">${ENC_ESTADOS.map((st,i)=>`<button class="enc-step ${i<=cur?'enc-s'+cur:''} ${i===cur?'on':''}" title="Marcar como ${st}" onclick="setEncEstado(${ri},${i})"><div class="seg"></div><div class="lbl">${i===cur?st:'&nbsp;'}</div></button>`).join('')}</div>`;
+  return `<div class="enc-bar">${ENC_ESTADOS.map((st,i)=>`<button class="enc-step ${i<=cur?'enc-s'+cur:''} ${i===cur?'on':''}" title="Marcar como ${st}" onclick="setEncEstado(${ri},${i})"><div class="seg"></div></button>`).join('')}</div><div class="enc-pill enc-p${cur}">${ENC_ESTADOS[cur]}</div>`;
 }
 async function setEncEstado(ri,i){
   const e=encargos[ri]; if(!e) return;
