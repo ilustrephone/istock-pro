@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-10-25a">
+<meta name="istock-build" content="2026-11-05a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -2814,11 +2814,31 @@ async function confirmarVentaCarrito(){
   const notaC=notaInicialVenta('carrito-nota');
   document.getElementById('btnConfirmarVenta').disabled=true;
   document.getElementById('btnConfirmarVenta').textContent='Guardando...';
+  // El pago y el descuento son del carrito entero: se reparten entre los productos según su precio,
+  // para que la suma de las ventas sea igual a lo que realmente pagó el cliente.
+  const carritoId='c'+Date.now();
+  const fUSD=subtotalUSD>0?totalUSD/subtotalUSD:1, fARS=subtotalARS>0?totalARS/subtotalARS:1;
+  const r2=x=>Math.round(x*100)/100;
+  const r0=x=>Math.round(x);
+  const repartir=(pagos,items,f,rd)=>{
+    const tots=items.map(it=>it.precioUnit*it.qty*f); const T=tots.reduce((a,b)=>a+b,0);
+    const res=items.map(()=>[]);
+    pagos.forEach(pg=>{let acc=0;items.forEach((it,i)=>{const m=i===items.length-1?rd(pg.monto-acc):rd(pg.monto*(T>0?tots[i]/T:1/items.length));acc=rd(acc+m);if(m>0)res[i].push({...pg,monto:m});});});
+    return res;
+  };
+  const itUSD=carrito.filter(c=>c.moneda==='USD'), itARS=carrito.filter(c=>c.moneda!=='USD');
+  const pagUSD=repartir(getCarritoPagos(),itUSD,fUSD,r2), pagARS=repartir(getCarritoPagos('ars'),itARS,fARS,r0);
+  const pagosDe=item=>item.moneda==='USD'?pagUSD[itUSD.indexOf(item)]:pagARS[itARS.indexOf(item)];
+  // Totales: el último producto de cada moneda absorbe el redondeo, así la suma da exacto el total del carrito
+  const totalesDe=(items,f,total,rd)=>{let acc=0;return items.map((it,i)=>{const t=i===items.length-1?rd(total-acc):rd(it.precioUnit*it.qty*f);acc=rd(acc+t);return t;});};
+  const totUSD=totalesDe(itUSD,fUSD,totalUSD,r2), totARS=totalesDe(itARS,fARS,totalARS,r0);
+  const totalDe=item=>item.moneda==='USD'?totUSD[itUSD.indexOf(item)]:totARS[itARS.indexOf(item)];
+  const descDe=item=>{const d=item.precioUnit*item.qty-totalDe(item);return d>0?(item.moneda==='USD'?r2(d):r0(d)):0;};
   for(const item of carrito){
     if(item.tipo==='equipo'){
       const eq=equipos.find(e=>(e.modelo+' '+e.memoria)===item.nombre&&e.stock>=item.qty);
       if(eq){eq.stock-=item.qty;await saveItem('equipos',eq);}
-      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'equipo',producto:item.nombre,costoUnit:costoDe(eq),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:getCarritoPagos()};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'equipo',producto:item.nombre,costoUnit:costoDe(eq),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:totalDe(item),descuento:descDe(item)||undefined,carritoId,moneda:'USD',por:rolLabel(),estado:'activa',eqIdx:null,eqId:eq?eq._id||null:null,acIdx:null,acId:null,pagos:pagosDe(item)};
       ventas.push(venta);await saveItem('ventas',venta);
     }else{
       const ac=accesorios.find(a=>a.nombre===item.nombre&&totalAc(a)>=item.qty);
@@ -2827,7 +2847,7 @@ async function confirmarVentaCarrito(){
         else ac.stockC=Math.max(0,(ac.stockC||0)-item.qty);
         await saveItem('accesorios',ac);
       }
-      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'accesorio',producto:item.nombre,costoUnit:costoDe(ac),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:item.precioUnit*item.qty,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:getCarritoPagos('ars')};
+      const venta={notasItem:notaC&&notaC.map(x=>({...x})),ts:Date.now(),tipo:'accesorio',producto:item.nombre,costoUnit:costoDe(ac),sucursal:sv,stockSucursal:sv,cantidad:item.qty,precioUnit:item.precioUnit,total:totalDe(item),descuento:descDe(item)||undefined,carritoId,moneda:'ARS',por:rolLabel(),estado:'activa',eqIdx:null,eqId:null,acIdx:null,acId:ac?ac._id||null:null,pagos:pagosDe(item)};
       ventas.push(venta);await saveItem('ventas',venta);
     }
   }
