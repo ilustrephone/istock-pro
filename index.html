@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-11-05a">
+<meta name="istock-build" content="2026-11-05b">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -1962,6 +1962,8 @@ async function saveModal(){
     const costEl=document.getElementById('mf-costo');
     const obj={modelo,sellado,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
       color:document.getElementById('mf-color').value,bc:document.getElementById('mf-bc').checked,ocultoLista:document.getElementById('mf-oculto').checked};
+    // Si el equipo entró por canje (su IMEI está en Registro de Ingresos) y no tiene costo, el costo es el valor del canje
+    if(!(obj.costo>0)&&imei){const ing=[...ingresos].filter(i=>String(i.imei||'').trim()===imei&&Number(i.valor)>0).sort((a,b)=>(b.ts||0)-(a.ts||0))[0];if(ing)obj.costo=Number(ing.valor);}
     let fin=obj;
     if(editIdx!==null){fin={...equipos[editIdx],...obj};equipos[editIdx]=fin;}else{equipos.push(fin);}
     closeModal();renderEq();
