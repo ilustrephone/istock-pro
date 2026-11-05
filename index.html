@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-11-05b">
+<meta name="istock-build" content="2026-11-05c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -1732,6 +1732,7 @@ function buildForm(type,idx){
                 <option value="Malo">Malo</option>
               </select>
             </div>
+            ${stBloqueHTML('canje')}
           </div>
           <div id="canje-resumen" style="font-size:12px;color:#8A4D00;background:#fff;border-radius:8px;padding:8px 10px;margin-top:2px;"></div>
         </div>
@@ -1774,7 +1775,8 @@ function buildForm(type,idx){
       <div class="mfl"><label>DETALLE DEL PROBLEMA</label><textarea id="st-detalle" placeholder="Describí el problema…">${it?it.detalle:''}</textarea></div>
       <div class="section-label">SERVICIO</div>
       <div class="mgrid3"><div class="mfl"><label>PRECIO (ARS $)</label><input id="st-precio" type="number" min="0" placeholder="0" value="${it?it.precio:''}"/></div><div class="mfl"><label>ESTADO</label><select id="st-estado">${ST_ESTADOS.map(e=>opt(e,it?it.estado:'Pendiente')).join('')}</select></div><div class="mfl"><label>SUCURSAL</label><select id="st-suc">${SUCS.map(s=>opt(s,it?it.sucursal:sucursal)).join('')}</select></div></div>
-      <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>`;
+      <div class="mfl"><label>FECHA DE INGRESO</label><input id="st-fecha" type="date" value="${it?new Date(it.fechaIngreso).toISOString().split('T')[0]:hoy}"/></div>
+      ${it&&it.canjeImei!==undefined?`<div class="section-label">EQUIPO DE CANJE (ILUSTRE)</div><div class="mfl"><label>COSTO REAL DEL ARREGLO (USD)</label><input id="st-costorep" type="number" min="0" value="${Number(it.costoReparacion)||0}"/></div><div class="enc-sub">Al guardar, se actualiza el costo del equipo en stock (valor del canje + arreglo).</div>`:''}`;
   }
   if(type==='cc-edit'){
     const c=idx!==null?cuentas[idx]:null; const v=k=>c&&c[k]!=null?esc(c[k]):'';
@@ -1855,6 +1857,7 @@ function buildForm(type,idx){
       <div class="mgrid"><div class="mfl"><label>MODELO</label><input id="ing-modelo" type="text" value="${esc(modeloLimpio)}"/></div><div class="mfl"><label>MEMORIA</label><select id="ing-mem">${MEMS.map(m=>opt(m,mem||'128GB')).join('')}</select></div></div>
       <div class="mgrid"><div class="mfl"><label>BATERÍA (%)</label><input id="ing-bat" type="number" min="1" max="100" value="${e.canjeBateria||''}"/></div><div class="mfl"><label>SUCURSAL</label><select id="ing-suc">${SUCS.map(s=>opt(s,e.sucursal||sucursal)).join('')}</select></div></div>
       <div class="mfl"><label>CONDICIÓN</label><select id="ing-cond"><option>Bueno</option><option>Regular</option><option>Malo</option></select></div>
+      ${stBloqueHTML('ing')}
       <div class="mgrid"><div class="mfl"><label>PRECIO VENTA (USD) *</label><input id="ing-precio" type="number" min="0" placeholder="a cuánto lo vendés"/></div>${cf||`<div class="mfl"><label>COTIZACIÓN (USD)</label><input type="text" value="${e.canjeCotiz||0}" disabled/></div>`}</div>`;
   }
   if(type==='enc-edit'){
@@ -1885,6 +1888,30 @@ function buildForm(type,idx){
       ${it?`<button type="button" class="btn-d" style="margin-top:10px;padding:7px 12px;font-size:12px" onclick="eliminarEncDesdeModal(${idx})">🗑 Eliminar este sellado</button>`:''}`;
   }
   return '';
+}
+// ===== Canje que va a servicio técnico (cambio de partes) =====
+function stBloqueHTML(p){
+  return `<div style="background:#EEF5FF;border:1px solid #BBDEFB;border-radius:10px;padding:9px 11px;margin:4px 0 10px">
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#0D47A1;cursor:pointer"><input type="checkbox" id="${p}-st" onchange="document.getElementById('${p}-st-box').style.display=this.checked?'block':'none'" style="width:15px;height:15px"/> 🔧 Va a servicio técnico (cambio de partes)</label>
+    <div id="${p}-st-box" style="display:none;margin-top:8px"><div class="mgrid">
+      <div class="mfl"><label>¿QUÉ SE CAMBIA?</label><input id="${p}-st-rep" type="text" placeholder="ej: batería, pantalla, cámara…"/></div>
+      <div class="mfl"><label>COSTO DEL ARREGLO (USD)</label><input id="${p}-st-costo" type="number" min="0" placeholder="0"/></div></div>
+      <div class="enc-sub">El costo del equipo será valor del canje + costo del arreglo. Se crea solo en Serv. Técnico.</div></div></div>`;
+}
+function leerST(p){
+  const on=!!document.getElementById(p+'-st')?.checked;
+  if(!on) return {servicio:false};
+  return {servicio:true,reparacion:(document.getElementById(p+'-st-rep')?.value||'').trim(),costoReparacion:parseFloat(document.getElementById(p+'-st-costo')?.value)||0};
+}
+// Costo de un equipo que entró por canje = valor del canje + arreglo (si fue a servicio técnico)
+function costoCanje(ing){return (Number(ing.valor)||0)+(ing.servicio?(Number(ing.costoReparacion)||0):0);}
+async function crearServicioCanje(ing){
+  if(!ing||!ing.servicio) return;
+  const st={nombre:`ilustre (${ing.cliente||'canje'})`,telefono:'',correo:'',modelo:ing.modelo||'',icloud:'',codigo:'',
+    detalle:`Equipo de canje${ing.imei?' · IMEI '+ing.imei:''} — cambio de: ${ing.reparacion||'(a definir)'}`,
+    precio:0,estado:'Pendiente',sucursal:ing.sucursal||sucursal,fechaIngreso:Date.now(),
+    canjeImei:ing.imei||'',costoReparacion:Number(ing.costoReparacion)||0,ingresoTs:ing.ts};
+  servicios.push(st); await saveItem('servicios',st); if(typeof renderST==='function') renderST();
 }
 function toggleCanje(){
   const chk=document.getElementById('chk-canje');
@@ -1963,7 +1990,7 @@ async function saveModal(){
     const obj={modelo,sellado,memoria:document.getElementById('mf-mem').value,bateria:bat,imei,sucursal:document.getElementById('mf-suc').value,precio:parseInt(document.getElementById('mf-precio').value)||0,costo:costEl?parseInt(costEl.value)||0:(editIdx!==null?equipos[editIdx].costo:0),stock:parseInt(document.getElementById('mf-stock').value)||0,
       color:document.getElementById('mf-color').value,bc:document.getElementById('mf-bc').checked,ocultoLista:document.getElementById('mf-oculto').checked};
     // Si el equipo entró por canje (su IMEI está en Registro de Ingresos) y no tiene costo, el costo es el valor del canje
-    if(!(obj.costo>0)&&imei){const ing=[...ingresos].filter(i=>String(i.imei||'').trim()===imei&&Number(i.valor)>0).sort((a,b)=>(b.ts||0)-(a.ts||0))[0];if(ing)obj.costo=Number(ing.valor);}
+    if(!(obj.costo>0)&&imei){const ing=[...ingresos].filter(i=>String(i.imei||'').trim()===imei&&costoCanje(i)>0).sort((a,b)=>(b.ts||0)-(a.ts||0))[0];if(ing)obj.costo=costoCanje(ing);}
     let fin=obj;
     if(editIdx!==null){fin={...equipos[editIdx],...obj};equipos[editIdx]=fin;}else{equipos.push(fin);}
     closeModal();renderEq();
@@ -1999,6 +2026,7 @@ async function saveModal(){
     const canjeEstado=tieneCanje?document.getElementById('canje-estado')?.value:'';
     const canjeCliente=tieneCanje?document.getElementById('canje-cliente')?.value.trim():'';
     const canjeBateria=tieneCanje?parseInt(document.getElementById('canje-bateria')?.value)||0:0;
+    const stCanje=tieneCanje?leerST('canje'):{servicio:false};
     const totalFinal=Math.max(0,c*p-canjeValor);
     const pagosGuardados=getPagos();
     const eIdx=editIdx;
@@ -2011,9 +2039,10 @@ async function saveModal(){
     await saveItem('ventas',venta);
     // Si hay canje, registrar también en ingresos
     if(tieneCanje&&canjeModelo){
-      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,bateria:canjeBateria,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`};
+      const ingreso={ts:Date.now(),cliente:canjeCliente||'—',modelo:canjeModelo,imei:canjeImei,estado:canjeEstado,bateria:canjeBateria,valor:canjeValor,sucursal:sv,por:rolLabel(),ventaProducto:`${e.modelo} ${e.memoria}`,...stCanje};
       ingresos.push(ingreso);
       await saveItem('ingresos',ingreso);
+      await crearServicioCanje(ingreso);
     }
     renderVentas();showSyncBar('✓ Venta guardada en la nube','ok');return;
   }
@@ -2117,7 +2146,8 @@ async function saveModal(){
     const precio=parseInt(g('ing-precio')); if(!(precio>0)){alert('Ingresá el precio de venta');return;}
     const costEl=document.getElementById('ing-costo');
     const suc=g('ing-suc');
-    const eq={modelo,memoria:g('ing-mem'),bateria:bat,imei,sucursal:suc,precio,costo:costEl?(parseInt(costEl.value)||0):(Number(e.canjeCotiz)||0),stock:1};
+    const stIng=leerST('ing');
+    const eq={modelo,memoria:g('ing-mem'),bateria:bat,imei,sucursal:suc,precio,costo:(costEl?(parseInt(costEl.value)||0):(Number(e.canjeCotiz)||0))+(stIng.servicio?stIng.costoReparacion:0),stock:1};
     const ahora=Date.now();
     equipos.push(eq);
     e.estado='Entregado'; if(!e.fechaEntregado) e.fechaEntregado=ahora;
@@ -2126,8 +2156,9 @@ async function saveModal(){
     const okEq=await saveItem('equipos',eq);
     if(eq._id) e.ingresoEqId=eq._id;
     await saveItem('encargos',e);
-    const ingreso={ts:ahora,cliente:e.cliente||'—',modelo:`${modelo} ${eq.memoria}`,imei,estado:g('ing-cond')||'Bueno',bateria:bat,valor:Number(e.canjeCotiz)||0,sucursal:suc,por:rolLabel(),ventaProducto:`Sellado ${e.modelo} ${e.color||''}`.trim()};
+    const ingreso={ts:ahora,cliente:e.cliente||'—',modelo:`${modelo} ${eq.memoria}`,imei,estado:g('ing-cond')||'Bueno',bateria:bat,valor:Number(e.canjeCotiz)||0,sucursal:suc,por:rolLabel(),ventaProducto:`Sellado ${e.modelo} ${e.color||''}`.trim(),...stIng};
     ingresos.push(ingreso); await saveItem('ingresos',ingreso);
+    await crearServicioCanje(ingreso);
     if(!e.ventaId) setTimeout(()=>pedirVentaSellado(e),300);
     renderIngresos();
     if(okEq) showSyncBar('✓ Sellado entregado · equipo cargado al stock','ok');
@@ -2167,9 +2198,16 @@ async function saveModal(){
     const modelo=document.getElementById('st-modelo').value.trim();if(!modelo){alert('Ingresá el modelo del equipo');return;}
     const fechaVal=document.getElementById('st-fecha').value;
     const obj={nombre,telefono:document.getElementById('st-tel').value.trim(),correo:document.getElementById('st-correo').value.trim(),modelo,icloud:document.getElementById('st-icloud').value.trim(),codigo:document.getElementById('st-codigo').value.trim(),detalle:document.getElementById('st-detalle').value.trim(),precio:parseInt(document.getElementById('st-precio').value)||0,estado:document.getElementById('st-estado').value,sucursal:document.getElementById('st-suc').value,fechaIngreso:fechaVal?new Date(fechaVal+'T00:00:00').getTime():Date.now()};
-    if(editIdx!==null){obj._id=servicios[editIdx]._id;servicios[editIdx]=obj;}else{servicios.push(obj);}
+    const crEl=document.getElementById('st-costorep');
+    if(editIdx!==null){const prev=servicios[editIdx];Object.assign(obj,{...prev,...obj});if(crEl)obj.costoReparacion=parseFloat(crEl.value)||0;servicios[editIdx]=obj;}else{servicios.push(obj);}
     closeModal();renderST();
     await saveItem('servicios',obj);
+    if(crEl&&obj.canjeImei){
+      const ing=[...ingresos].filter(i=>String(i.imei||'')===obj.canjeImei).sort((a,b)=>(b.ts||0)-(a.ts||0))[0];
+      if(ing&&Number(ing.costoReparacion||0)!==obj.costoReparacion){ing.servicio=true;ing.costoReparacion=obj.costoReparacion;await saveItem('ingresos',ing);}
+      const eq=equipos.find(x=>String(x.imei||'')===obj.canjeImei);
+      if(eq&&ing){const nc=costoCanje(ing);if(eq.costo!==nc){eq.costo=nc;await saveItem('equipos',eq);renderEq();showSyncBar('✓ Costo del equipo actualizado: USD '+nc,'ok');return;}}
+    }
     showSyncBar('✓ Servicio guardado en la nube','ok');return;
   }
 }
@@ -2589,7 +2627,7 @@ function renderIngresos(){
       <!-- Valor -->
       <div style="text-align:right;min-width:90px;">
         <div style="font-size:10px;color:#6E6E73;font-weight:500;letter-spacing:0.04em;margin-bottom:4px;">VALOR CANJE</div>
-        <div style="font-size:15px;font-weight:700;color:#1D1D1F;">USD ${(i.valor||0).toLocaleString('es-AR')}</div>
+        <div style="font-size:15px;font-weight:700;color:#1D1D1F;">USD ${(i.valor||0).toLocaleString('es-AR')}</div>${i.servicio?`<div style="font-size:10.5px;color:#0D47A1;font-weight:600">🔧 ${esc(i.reparacion||'arreglo')}: +USD ${(Number(i.costoReparacion)||0).toLocaleString('es-AR')}</div>`:''}
         <div style="font-size:10px;color:#6E6E73;margin-top:1px;">📍 ${i.sucursal||'—'}</div>
       </div>
     </div>`;
