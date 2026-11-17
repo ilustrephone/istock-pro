@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-11-05c">
+<meta name="istock-build" content="2026-11-17a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -158,6 +158,11 @@ tr:hover td{background:#FAFAFA;}
 .pago-section{background:#F5F5F7;border-radius:12px;padding:13px;margin-bottom:10px;}
 .pago-section-title{font-size:11px;font-weight:600;color:#6E6E73;letter-spacing:0.05em;margin-bottom:11px;}
 .pago-metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.eq-subtabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap;}
+.eq-subtabs button{padding:9px 16px;border-radius:10px;border:1.5px solid #D2D2D7;background:#fff;font-size:13px;font-weight:600;color:#1D1D1F;cursor:pointer;font-family:inherit;}
+.eq-subtabs button.on{background:#1D1D1F;border-color:#1D1D1F;color:#fff;}
+.ps-disp{display:inline-block;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;white-space:nowrap;}
+.ps-d0{background:#E8F5E9;color:#1B5E20;}.ps-d1{background:#FFF3E0;color:#8A4D00;}.ps-d2{background:#F2F2F7;color:#8E8E93;}
 .btn-xls-tr{margin-left:auto;background:#1D6F42;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}.btn-xls-tr:hover{background:#155734;}
 .pago-item{display:flex;flex-direction:column;gap:5px;}
 .pago-item label{font-size:12px;color:#1D1D1F;display:flex;align-items:center;gap:6px;cursor:pointer;}
@@ -317,6 +322,21 @@ tr:hover td{background:#FAFAFA;}
     <button class="tab" onclick="switchTab('caja',this)"><span class="tab-ic">🏦 </span>Cierre de Caja</button>
   </div>
   <div class="content" id="tab-eq">
+    <div class="eq-subtabs">
+      <button id="eqv-stock" class="on" onclick="setEqVista('stock')">📱 Stock de equipos</button>
+      <button id="eqv-ps" onclick="setEqVista('ps')">📦 Lista de precios · Sellados</button>
+    </div>
+    <div id="eq-vista-ps" style="display:none">
+      <div class="toolbar" id="toolbar-ps"></div>
+      <div class="twrap"><table>
+        <thead><tr>
+          <th style="width:26%">Modelo</th><th style="width:9%">Capacidad</th><th style="width:22%">Colores</th>
+          <th style="width:10%">Precio</th><th style="width:17%">Disponibilidad</th><th style="width:16%">Acciones</th>
+        </tr></thead>
+        <tbody id="tbody-ps"></tbody>
+      </table></div>
+    </div>
+    <div id="eq-vista-stock">
     <div class="stats-row" id="stats-eq"></div>
     <div class="search-wrap"><span class="search-icon">🔍</span>
       <input type="text" id="search-eq" placeholder="Buscar por modelo, IMEI, memoria…" oninput="onSearch('eq',this)"/>
@@ -334,6 +354,7 @@ tr:hover td{background:#FAFAFA;}
       </tr></thead>
       <tbody id="tbody-eq"></tbody>
     </table></div>
+    </div>
   </div>
   <div class="content" id="tab-ac" style="display:none">
     <div class="stats-row" id="stats-ac"></div>
@@ -682,7 +703,7 @@ let rol='', sucursal='', modalType='', editIdx=null, reportePeriodo='dia';
 // El formulario abierto guarda una referencia al registro (no solo su posición en la lista),
 // porque la lista se recarga cada 30 s y las posiciones pueden cambiar.
 let editRef=null;
-const MODAL_ARR={'eq-edit':()=>equipos,'venta-eq':()=>equipos,'ac-edit':()=>accesorios,'venta-ac':()=>accesorios,'enc-edit':()=>encargos,'enc-ingreso':()=>encargos,'enc-venta':()=>encargos,'cc-edit':()=>cuentas,'cc-pago':()=>cuentas,'st-edit':()=>servicios,'venta-edit':()=>ventas};
+const MODAL_ARR={'eq-edit':()=>equipos,'venta-eq':()=>equipos,'ac-edit':()=>accesorios,'venta-ac':()=>accesorios,'enc-edit':()=>encargos,'enc-ingreso':()=>encargos,'enc-venta':()=>encargos,'cc-edit':()=>cuentas,'ps-edit':()=>preciosSellados,'cc-pago':()=>cuentas,'st-edit':()=>servicios,'venta-edit':()=>ventas};
 function modalArr(t){const f=MODAL_ARR[t];return f?f():null;}
 function resyncEditIdx(){
   if(!editRef||!modalType) return true;
@@ -693,7 +714,7 @@ function resyncEditIdx(){
   editIdx=i; editRef=a[i]; return true;
 }
 let searchEq='', searchAc='';
-let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[], cuentas=[];
+let equipos=[], accesorios=[], ventas=[], servicios=[], ingresos=[], encargos=[], cuentas=[], preciosSellados=[];
 const ENC_ESTADOS=['Sin encargar','Encargado','Llegó','Entregado'];
 const SUCS=['Tunuyán','La Consulta'];
 const CATS=['Fundas / Cases','Cargadores / Cables','AirPods / Auriculares','Vidrios templados'];
@@ -731,10 +752,11 @@ async function loadAll(auto){
     try{ nIng=await sbGetAll('ingresos'); }catch(e){ nIng=[]; }
     try{ nEnc=await sbGetAll('encargos'); }catch(e){ console.warn('Tabla encargos no disponible',e.message); }
     try{ nCc=await sbGetAll('cuentas'); }catch(e){ console.warn('Tabla cuentas no disponible',e.message); }
+    let nPs=preciosSellados; try{ nPs=await sbGetAll('precios_sellados'); }catch(e){ console.warn('Tabla precios_sellados no disponible',e.message); }
     // Se reemplazan todas las listas juntas (sin esperas en el medio) para que los botones de cada fila
     // nunca apunten a una lista distinta de la que se ve en pantalla.
     if(auto&&modalType){setSyncDot('ok');return;} // se abrió un formulario mientras se descargaba: no tocar las listas
-    equipos=nEq; accesorios=nAc; ventas=nVe; servicios=nSt; ingresos=nIng; encargos=nEnc; cuentas=nCc;
+    equipos=nEq; accesorios=nAc; ventas=nVe; servicios=nSt; ingresos=nIng; encargos=nEnc; cuentas=nCc; preciosSellados=nPs;
     resyncEditIdx();
     setSyncDot('ok');
   } catch(e) {
@@ -886,7 +908,54 @@ function switchTabByName(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',(t.getAttribute('onclick')||'').includes("'"+tab+"'")));
   ['eq','ac','ventas','st','rep','caja','ingresos','enc','aing','cc'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
 }
-function renderAll(){renderEq();renderAc();renderVentas();renderST();renderEncargos();renderAIng();renderCuentas();}
+// ===================== LISTA DE PRECIOS · SELLADOS =====================
+const PS_DISP=['Entrega inmediata','A pedido','Sin stock'];
+let eqVista='stock';
+function setEqVista(v){
+  eqVista=v;
+  document.getElementById('eq-vista-stock').style.display=v==='stock'?'':'none';
+  document.getElementById('eq-vista-ps').style.display=v==='ps'?'':'none';
+  document.getElementById('eqv-stock').classList.toggle('on',v==='stock');
+  document.getElementById('eqv-ps').classList.toggle('on',v==='ps');
+  if(v==='ps') renderPS();
+}
+function psOrden(a,b){const x=eqOrdenLista({modelo:/iphone/i.test(a.modelo)?a.modelo:'iPhone '+a.modelo,memoria:a.memoria,precio:a.precio}),y=eqOrdenLista({modelo:/iphone/i.test(b.modelo)?b.modelo:'iPhone '+b.modelo,memoria:b.memoria,precio:b.precio});for(let i=0;i<x.length;i++){if(x[i]!==y[i])return y[i]-x[i];}return 0;}
+function renderPS(){
+  const tb=document.getElementById('tbody-ps'); if(!tb) return;
+  const ce=canEdit();
+  document.getElementById('toolbar-ps').innerHTML=(ce?`<button class="btn-add" onclick="openModal('ps-edit',null)">+ Agregar modelo</button> `:'')+
+    `<button onclick="openModal('ps-lista',null)" style="padding:7px 13px;background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;">📲 Enviar lista de sellados por WhatsApp</button>`+
+    (preciosSellados.length?`<span class="enc-sub" style="margin-left:auto">Actualizada: ${new Date(Math.max(...preciosSellados.map(p=>p.editado||0))).toLocaleDateString('es-AR')}</span>`:'');
+  const rows=preciosSellados.map((p,i)=>({p,i})).sort((a,b)=>psOrden(a.p,b.p));
+  tb.innerHTML=rows.length?rows.map(({p,i})=>{const d=Math.max(0,PS_DISP.indexOf(p.disp));return`<tr${d===2?' style="opacity:.55"':''}>
+    <td><strong>${esc(p.modelo)}</strong></td><td>${esc(p.memoria||'')}</td><td title="${esc(p.colores||'')}">${esc(p.colores||'—')}</td>
+    <td><strong>${fmtUSD(p.precio)}</strong></td><td><span class="ps-disp ps-d${d}">${esc(p.disp||PS_DISP[0])}</span>${p.nota?`<div class="enc-sub">${esc(p.nota)}</div>`:''}</td>
+    <td>${ce?`<button class="btn-e" onclick="openModal('ps-edit',${i})">Editar</button> <button class="btn-d" onclick="delPS(${i})">✕</button>`:'<span class="enc-sub">—</span>'}</td></tr>`;}).join('')
+    :`<tr><td colspan="6" class="empty-state">Todavía no hay modelos en la lista.${ce?' Tocá "+ Agregar modelo".':''}</td></tr>`;
+}
+async function delPS(i){
+  const p=preciosSellados[i]; if(!p) return;
+  if(!confirm(`¿Quitar ${p.modelo} ${p.memoria||''} de la lista de sellados?`)) return;
+  preciosSellados.splice(i,1); renderPS();
+  if(p._id) await deleteItem('precios_sellados',p._id);
+  showSyncBar('✓ Quitado de la lista','ok');
+}
+function armarListaSellados(){
+  const inclSin=document.getElementById('psl-sin')?.checked;
+  const items=preciosSellados.filter(p=>inclSin||p.disp!=='Sin stock').sort(psOrden);
+  const lineas=items.map(p=>{
+    const mod=/iphone/i.test(p.modelo)?p.modelo:'iPhone '+p.modelo;
+    let l=`▪️${mod} ${String(p.memoria||'').toLowerCase()} ${Number(p.precio)||0}usd`;
+    if(p.colores) l+=`\n    🎨 ${p.colores}`;
+    if(p.disp&&p.disp!=='Entrega inmediata') l+=`\n    ${p.disp==='Sin stock'?'❌':'⏳'} ${p.disp}${p.nota?' · '+p.nota:''}`;
+    else if(p.nota) l+=`\n    ✅ ${p.nota}`;
+    return l;
+  });
+  const info=document.getElementById('lw-info'); if(info) info.innerHTML=`<strong>${items.length}</strong> modelo${items.length!==1?'s':''} en la lista`;
+  const ta=document.getElementById('lw-texto');
+  if(ta) ta.value=`${LISTA_HEADER}\n📦 IPHONE SELLADOS · LISTA DE PRECIOS\n\n${lineas.join('\n\n')}\n\n✅ Nuevos, sellados y con garantía oficial\n🔄 Tomamos tu usado en parte de pago\n\n📲 CONSULTÁ EN LA SUCURSAL QUE VAYAS A ASISTIR ‼️\n-La consulta: 2622-225153\n-Tunuyán: 2622-271093\n\n   Los precios no incluyen IVA ❗️`;
+}
+function renderAll(){renderEq();renderPS();renderAc();renderVentas();renderST();renderEncargos();renderAIng();renderCuentas();}
 function onSearch(tipo,inp){
   const q=inp.value.trim().toLowerCase();
   if(tipo==='eq'){searchEq=q;document.getElementById('clear-eq').style.display=q?'block':'none';renderEq();}
@@ -1658,7 +1727,7 @@ function getPagos(){
 function openModal(type,idx){
   modalType=type;editIdx=idx;
   {const a=modalArr(type); editRef=(a&&idx!==null&&idx!==undefined&&idx>=0)?a[idx]:null;}
-  const ttls={'enc-venta':'💲 Registrar venta del sellado','eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
+  const ttls={'ps-edit':idx===null?'Agregar a la lista de sellados':'Editar precio de sellado','ps-lista':'📲 Lista de precios de sellados por WhatsApp','enc-venta':'💲 Registrar venta del sellado','eq-edit':idx===null?'Agregar equipo':'Editar equipo','ac-edit':idx===null?'Agregar accesorio':'Editar accesorio','venta':'Registrar venta','venta-eq':'Registrar venta — Equipo','venta-ac':'Registrar venta — Accesorio','venta-edit':'Editar venta','st-edit':idx===null?'Nuevo servicio técnico':'Editar servicio técnico','enc-edit':idx===null?'Nuevo sellado':'Editar sellado','enc-ingreso':'📥 Ingresar equipo de plan canje','enc-pedido':'📲 Pedido al proveedor','eq-lista':'📲 Lista de equipos para WhatsApp','notas':'📝 Notas','cc-edit':idx===null?'💳 Nueva cuenta corriente':'💳 Cuenta corriente','cc-pago':'💵 Registrar pago'};
   document.getElementById('modal-ttl').textContent=ttls[type]||'';
   document.getElementById('modal-body').innerHTML=buildForm(type,idx);
   const mac=document.getElementById('modal-actions');
@@ -1668,6 +1737,7 @@ function openModal(type,idx){
   if(type==='enc-edit')setTimeout(updateEncSaldo,0);
   if(type==='cc-pago'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="saveModal()">Registrar pago</button>`;}
   if(type==='notas'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
+  if(type==='ps-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='eq-lista'){mac.innerHTML=`<button class="btn-cancel" onclick="closeModal()">Cerrar</button><button class="btn-save" onclick="copiarListaWA()">📋 Copiar</button><button class="btn-save-green" onclick="enviarListaWA()">📲 Abrir WhatsApp</button>`;}
   if(type==='enc-pedido'){mac.innerHTML=pedidoGrupos.length&&isAdmin()?`<button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-save-green" onclick="enviarPedidoWA()">📲 Abrir WhatsApp</button>`:`<button class="btn-cancel" onclick="closeModal()">Cerrar</button>`;}
   if(type==='enc-venta'){mac.innerHTML=`<button class="btn-cancel" onclick="omitirVentaSellado()">Ya está en Ventas / no registrar</button><button class="btn-save-green" onclick="saveModal()">Registrar venta</button>`;setTimeout(updateResumen,30);}
@@ -1809,6 +1879,22 @@ function buildForm(type,idx){
       <div class="mfl"><label>NUEVA NOTA</label><textarea id="nota-txt" placeholder="ej: falta transferir el resto · se lleva funda de regalo · garantía 3 meses…" style="min-height:70px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))agregarNota()"></textarea></div>
       <div class="mgrid"><div class="mfl"><label>TU NOMBRE</label><input id="nota-por" type="text" placeholder="ej: yami" value="${esc(nombreNotas())}"/></div>
       <div class="mfl" style="display:flex;align-items:flex-end"><button id="nota-btn" class="btn-save" style="width:100%" onclick="agregarNota()">Guardar nota</button></div></div>`;
+  }
+  if(type==='ps-edit'){
+    const it=idx!==null?preciosSellados[idx]:null; const v=k=>it&&it[k]!=null?esc(it[k]):'';
+    return`<div class="mgrid"><div class="mfl"><label>MODELO</label><input id="ps-modelo" type="text" placeholder="ej: iPhone 18 Pro Max" value="${v('modelo')}"/></div>
+      <div class="mfl"><label>CAPACIDAD</label><select id="ps-mem">${MEMS.map(m=>opt(m,it?it.memoria:'256GB')).join('')}</select></div></div>
+      <div class="mfl"><label>COLORES DISPONIBLES</label><input id="ps-colores" type="text" placeholder="ej: silver, glacier, burgundy" value="${v('colores')}"/></div>
+      <div class="mgrid"><div class="mfl"><label>PRECIO (USD)</label><input id="ps-precio" type="number" min="0" value="${v('precio')}"/></div>
+      <div class="mfl"><label>DISPONIBILIDAD</label><select id="ps-disp">${PS_DISP.map(d=>opt(d,it?it.disp:PS_DISP[0])).join('')}</select></div></div>
+      <div class="mfl"><label>NOTA (opcional, sale en la lista)</label><input id="ps-nota" type="text" placeholder="ej: demora 5 días hábiles" value="${v('nota')}"/></div>`;
+  }
+  if(type==='ps-lista'){
+    setTimeout(armarListaSellados,0);
+    return`<label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="psl-sin" onchange="armarListaSellados()"/> Incluir modelos "Sin stock"</label>
+      <div id="lw-info" style="font-size:12px;color:#6E6E73;margin-bottom:8px"></div>
+      <div id="lw-aviso" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;color:#1B5E20;border-radius:10px;padding:9px 12px;font-size:12.5px;margin-bottom:10px">✅ <strong>Lista copiada.</strong> En WhatsApp abrí el chat (o tu estado) y pegá con <strong>Ctrl+V</strong>.</div>
+      <div class="mfl"><label>MENSAJE (lo podés editar antes de enviar)</label><textarea id="lw-texto" style="min-height:300px;font-size:13px;line-height:1.45"></textarea></div>`;
   }
   if(type==='eq-lista'){
     setTimeout(armarListaWA,0);
@@ -2092,6 +2178,15 @@ async function saveModal(){
     closeModal();renderEq();renderAc();renderVentas();
     await saveItem('ventas',vNew);
     showSyncBar('✓ Venta actualizada','ok');return;
+  }
+  if(modalType==='ps-edit'){
+    const modelo=document.getElementById('ps-modelo').value.trim(); if(!modelo){alert('Ingresá el modelo');return;}
+    const precio=parseFloat(document.getElementById('ps-precio').value)||0; if(!(precio>0)){alert('Ingresá el precio');return;}
+    const obj={modelo,memoria:document.getElementById('ps-mem').value,colores:document.getElementById('ps-colores').value.trim(),precio,disp:document.getElementById('ps-disp').value,nota:document.getElementById('ps-nota').value.trim(),editado:Date.now(),por:rolLabel()};
+    let fin=obj; if(editIdx!==null){fin={...preciosSellados[editIdx],...obj};preciosSellados[editIdx]=fin;}else{preciosSellados.push(fin);}
+    closeModal(); renderPS();
+    if(await saveItem('precios_sellados',fin)) showSyncBar('✓ Lista de sellados actualizada','ok');
+    return;
   }
   if(modalType==='cc-edit'){
     const g=id=>(document.getElementById(id)?.value||'').trim();
