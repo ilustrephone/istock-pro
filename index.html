@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-11-17b">
+<meta name="istock-build" content="2026-11-17c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -948,7 +948,7 @@ function armarListaSellados(){
   const algunoPedido=items.some(p=>p.disp==='A pedido');
   const lineas=items.map(p=>{
     const mod=/iphone/i.test(p.modelo)?p.modelo:'iPhone '+p.modelo;
-    let l=`▪️${mod} ${String(p.memoria||'').toLowerCase()} ${Number(p.precio)||0}usd`;
+    let l=`▪️${mod.toUpperCase()} ${String(p.memoria||'').toUpperCase()} ${Number(p.precio)||0}USD`;
     if(p.colores) l+=`\n    🎨 ${p.colores}`;
     if(!todosPedido&&p.disp&&p.disp!=='Entrega inmediata') l+=`\n    ${p.disp==='Sin stock'?'❌ Sin stock':'⏳ Por pedido'}`;
     return l;
