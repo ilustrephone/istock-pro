@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="istock-build" content="2026-11-17a">
+<meta name="istock-build" content="2026-11-17b">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://rvnvixiuigluutbzftxq.supabase.co https://cdnjs.cloudflare.com; connect-src 'self' https://rvnvixiuigluutbzftxq.supabase.co;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>iStock Pro</title>
@@ -919,7 +919,7 @@ function setEqVista(v){
   document.getElementById('eqv-ps').classList.toggle('on',v==='ps');
   if(v==='ps') renderPS();
 }
-function psOrden(a,b){const x=eqOrdenLista({modelo:/iphone/i.test(a.modelo)?a.modelo:'iPhone '+a.modelo,memoria:a.memoria,precio:a.precio}),y=eqOrdenLista({modelo:/iphone/i.test(b.modelo)?b.modelo:'iPhone '+b.modelo,memoria:b.memoria,precio:b.precio});for(let i=0;i<x.length;i++){if(x[i]!==y[i])return y[i]-x[i];}return 0;}
+function psOrden(a,b){const x=eqOrdenLista({modelo:/iphone/i.test(a.modelo)?a.modelo:'iPhone '+a.modelo,memoria:a.memoria,precio:a.precio}),y=eqOrdenLista({modelo:/iphone/i.test(b.modelo)?b.modelo:'iPhone '+b.modelo,memoria:b.memoria,precio:b.precio});for(let i=0;i<x.length;i++){if(x[i]!==y[i])return i<3?y[i]-x[i]:x[i]-y[i];}return 0;}
 function renderPS(){
   const tb=document.getElementById('tbody-ps'); if(!tb) return;
   const ce=canEdit();
@@ -940,20 +940,22 @@ async function delPS(i){
   if(p._id) await deleteItem('precios_sellados',p._id);
   showSyncBar('✓ Quitado de la lista','ok');
 }
+const PS_PIE_PEDIDO='Llegan por encargo con previa seña de 10usd, en 5/6 días hábiles aproximadamente';
 function armarListaSellados(){
   const inclSin=document.getElementById('psl-sin')?.checked;
   const items=preciosSellados.filter(p=>inclSin||p.disp!=='Sin stock').sort(psOrden);
+  const todosPedido=items.length&&items.every(p=>p.disp==='A pedido');
+  const algunoPedido=items.some(p=>p.disp==='A pedido');
   const lineas=items.map(p=>{
     const mod=/iphone/i.test(p.modelo)?p.modelo:'iPhone '+p.modelo;
     let l=`▪️${mod} ${String(p.memoria||'').toLowerCase()} ${Number(p.precio)||0}usd`;
     if(p.colores) l+=`\n    🎨 ${p.colores}`;
-    if(p.disp&&p.disp!=='Entrega inmediata') l+=`\n    ${p.disp==='Sin stock'?'❌':'⏳'} ${p.disp}${p.nota?' · '+p.nota:''}`;
-    else if(p.nota) l+=`\n    ✅ ${p.nota}`;
+    if(!todosPedido&&p.disp&&p.disp!=='Entrega inmediata') l+=`\n    ${p.disp==='Sin stock'?'❌ Sin stock':'⏳ Por pedido'}`;
     return l;
   });
   const info=document.getElementById('lw-info'); if(info) info.innerHTML=`<strong>${items.length}</strong> modelo${items.length!==1?'s':''} en la lista`;
   const ta=document.getElementById('lw-texto');
-  if(ta) ta.value=`${LISTA_HEADER}\n📦 IPHONE SELLADOS · LISTA DE PRECIOS\n\n${lineas.join('\n\n')}\n\n✅ Nuevos, sellados y con garantía oficial\n🔄 Tomamos tu usado en parte de pago\n\n📲 CONSULTÁ EN LA SUCURSAL QUE VAYAS A ASISTIR ‼️\n-La consulta: 2622-225153\n-Tunuyán: 2622-271093\n\n   Los precios no incluyen IVA ❗️`;
+  if(ta) ta.value=`ILUSTRE PHONE 📱${todosPedido?'\n\nSOLO POR PEDIDO':''}\n\nEQUIPOS SELLADOS\n\n${lineas.join('\n\n')}\n\nLos precios no incluyen IVA ‼️${algunoPedido?'\n\n'+PS_PIE_PEDIDO:''}`;
 }
 function renderAll(){renderEq();renderPS();renderAc();renderVentas();renderST();renderEncargos();renderAIng();renderCuentas();}
 function onSearch(tipo,inp){
